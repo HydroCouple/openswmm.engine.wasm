@@ -138,13 +138,21 @@ export class Solver {
   /**
    * Create a new engine context and domain collection wrappers.
    *
-   * @param mod  The Emscripten module returned by `createOpenSwmmModule()`.
-   * @throws {@link EngineError} if the engine context cannot be allocated.
+   * @param mod             The Emscripten module returned by `createOpenSwmmModule()`.
+   * @param existingHandle  Optional existing engine handle (e.g. from {@link ModelBuilder.toSolver}).
+   *                        When provided, the solver takes ownership of this handle without
+   *                        calling `swmm_engine_create`.
+   * @throws {@link EngineError} if a new engine context cannot be allocated.
    */
-  constructor(mod: OpenSwmmWasmModule) {
+  constructor(mod: OpenSwmmWasmModule, existingHandle?: number) {
     this._mod = mod;
-    const h = mod.swmm_engine_create();
-    if (!h) throw new EngineError(7, "swmm_engine_create() returned NULL");
+    let h: number;
+    if (existingHandle !== undefined && existingHandle !== 0) {
+      h = existingHandle;
+    } else {
+      h = mod.swmm_engine_create();
+      if (!h) throw new EngineError(7, "swmm_engine_create() returned NULL");
+    }
     this.handle = h;
     this.nodes = new Nodes(mod, h);
     this.links = new Links(mod, h);

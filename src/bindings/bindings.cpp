@@ -35,6 +35,7 @@
 #include <emscripten/val.h>
 
 #include "openswmm/engine/openswmm_engine.h"
+#include "openswmm/engine/openswmm_model.h"
 #include "openswmm/engine/openswmm_nodes.h"
 #include "openswmm/engine/openswmm_links.h"
 #include "openswmm/engine/openswmm_subcatchments.h"
@@ -274,6 +275,225 @@ static int js_swmm_forcing_gage_rainfall(int h, int gi, double v, int m) {
 static int js_swmm_forcing_clear    (int h, int type, int idx) { return swmm_forcing_clear(to_engine(h), type, idx); }
 static int js_swmm_forcing_clear_all(int h)                    { return swmm_forcing_clear_all(to_engine(h)); }
 
+// ---------------------------------------------------------------------------
+// Model builder — engine creation
+// ---------------------------------------------------------------------------
+
+static int js_swmm_engine_new() { return from_engine(swmm_engine_new()); }
+
+// ---------------------------------------------------------------------------
+// Model builder — finalisation / validation / write
+// ---------------------------------------------------------------------------
+
+static int         js_swmm_validate_model(int h)                           { return swmm_validate_model(to_engine(h)); }
+static int         js_swmm_finalize_model(int h)                           { return swmm_finalize_model(to_engine(h)); }
+static int         js_swmm_model_write(int h, const std::string& path)     { return swmm_model_write(to_engine(h), path.c_str()); }
+static int         js_swmm_model_write_with_plugin(int h, const std::string& path, const std::string& plugin_id) {
+    return swmm_model_write_with_plugin(to_engine(h), path.c_str(),
+                                        plugin_id.empty() ? nullptr : plugin_id.c_str());
+}
+
+// ---------------------------------------------------------------------------
+// Model builder — node / link / subcatchment / gage add & pop
+// ---------------------------------------------------------------------------
+
+static int js_swmm_node_add     (int h, const std::string& id, int type) { return swmm_node_add(to_engine(h), id.c_str(), type); }
+static int js_swmm_node_pop_last(int h, const std::string& id)           { return swmm_node_pop_last(to_engine(h), id.c_str()); }
+
+static int js_swmm_link_add     (int h, const std::string& id, int type) { return swmm_link_add(to_engine(h), id.c_str(), type); }
+static int js_swmm_link_pop_last(int h, const std::string& id)           { return swmm_link_pop_last(to_engine(h), id.c_str()); }
+
+static int js_swmm_subcatch_add(int h, const std::string& id) { return swmm_subcatch_add(to_engine(h), id.c_str()); }
+static int js_swmm_gage_add    (int h, const std::string& id) { return swmm_gage_add(to_engine(h), id.c_str()); }
+
+// ---------------------------------------------------------------------------
+// Model builder — link geometry setters
+// ---------------------------------------------------------------------------
+
+static int js_swmm_link_set_nodes    (int h, int i, int from_node, int to_node) {
+    return swmm_link_set_nodes(to_engine(h), i, from_node, to_node);
+}
+static int js_swmm_link_set_length   (int h, int i, double v) { return swmm_link_set_length(to_engine(h), i, v); }
+static int js_swmm_link_set_roughness(int h, int i, double v) { return swmm_link_set_roughness(to_engine(h), i, v); }
+static int js_swmm_link_set_xsect   (int h, int i, int shape,
+                                       double g1, double g2, double g3, double g4) {
+    return swmm_link_set_xsect(to_engine(h), i, shape, g1, g2, g3, g4);
+}
+
+// ---------------------------------------------------------------------------
+// Model builder — [TITLE] section
+// ---------------------------------------------------------------------------
+
+static int         js_swmm_title_get_count(int h, int* count)             { return swmm_title_get_count(to_engine(h), count); }
+static std::string js_swmm_title_get_line (int h, int index) {
+    char buf[4096];
+    if (swmm_title_get_line(to_engine(h), index, buf, (int)sizeof(buf)) != 0)
+        return std::string();
+    return std::string(buf);
+}
+static int js_swmm_title_add_line(int h, const std::string& line) { return swmm_title_add_line(to_engine(h), line.c_str()); }
+static int js_swmm_title_set     (int h, const std::string& text) { return swmm_title_set(to_engine(h), text.c_str()); }
+static int js_swmm_title_clear   (int h)                          { return swmm_title_clear(to_engine(h)); }
+
+// ---------------------------------------------------------------------------
+// Model builder — [OPTIONS] / CRS
+// ---------------------------------------------------------------------------
+
+static std::string js_swmm_options_get    (int h, const std::string& key) {
+    char buf[512];
+    if (swmm_options_get(to_engine(h), key.c_str(), buf, (int)sizeof(buf)) != 0)
+        return std::string();
+    return std::string(buf);
+}
+static int         js_swmm_options_set    (int h, const std::string& key, const std::string& val) {
+    return swmm_options_set(to_engine(h), key.c_str(), val.c_str());
+}
+static std::string js_swmm_options_get_ext(int h, const std::string& key) {
+    char buf[512];
+    if (swmm_options_get_ext(to_engine(h), key.c_str(), buf, (int)sizeof(buf)) != 0)
+        return std::string();
+    return std::string(buf);
+}
+static int         js_swmm_options_set_ext(int h, const std::string& key, const std::string& val) {
+    return swmm_options_set_ext(to_engine(h), key.c_str(), val.c_str());
+}
+static std::string js_swmm_get_crs        (int h) {
+    char buf[512];
+    if (swmm_get_crs(to_engine(h), buf, (int)sizeof(buf)) != 0)
+        return std::string();
+    return std::string(buf);
+}
+
+// ---------------------------------------------------------------------------
+// Model builder — typed date/time options
+// ---------------------------------------------------------------------------
+
+static int js_swmm_options_get_start_date  (int h, double* t) { return swmm_options_get_start_date  (to_engine(h), t); }
+static int js_swmm_options_set_start_date  (int h, double  t) { return swmm_options_set_start_date  (to_engine(h), t); }
+static int js_swmm_options_get_end_date    (int h, double* t) { return swmm_options_get_end_date    (to_engine(h), t); }
+static int js_swmm_options_set_end_date    (int h, double  t) { return swmm_options_set_end_date    (to_engine(h), t); }
+static int js_swmm_options_get_report_start(int h, double* t) { return swmm_options_get_report_start(to_engine(h), t); }
+static int js_swmm_options_set_report_start(int h, double  t) { return swmm_options_set_report_start(to_engine(h), t); }
+
+// ---------------------------------------------------------------------------
+// Model builder — user flags (schema-level)
+// ---------------------------------------------------------------------------
+
+static int js_swmm_userflag_get_bool(int h, const std::string& n, int*    v) { return swmm_userflag_get_bool(to_engine(h), n.c_str(), v); }
+static int js_swmm_userflag_get_int (int h, const std::string& n, int*    v) { return swmm_userflag_get_int (to_engine(h), n.c_str(), v); }
+static int js_swmm_userflag_get_real(int h, const std::string& n, double* v) { return swmm_userflag_get_real(to_engine(h), n.c_str(), v); }
+static int js_swmm_userflag_set_bool(int h, const std::string& n, int    v)  { return swmm_userflag_set_bool(to_engine(h), n.c_str(), v); }
+static int js_swmm_userflag_set_int (int h, const std::string& n, int    v)  { return swmm_userflag_set_int (to_engine(h), n.c_str(), v); }
+static int js_swmm_userflag_set_real(int h, const std::string& n, double v)  { return swmm_userflag_set_real(to_engine(h), n.c_str(), v); }
+
+static int js_swmm_userflag_def_count(int h, int* count) { return swmm_userflag_def_count(to_engine(h), count); }
+
+// swmm_userflag_def_get: name_buf, type, desc_buf as WASM raw ptrs
+static int js_swmm_userflag_def_get(int h, int index,
+                                     int name_buf, int name_buflen,
+                                     int type_ptr,
+                                     int desc_buf, int desc_buflen) {
+    char* nb = reinterpret_cast<char*>(static_cast<uintptr_t>(name_buf));
+    int*  tp = reinterpret_cast<int* >(static_cast<uintptr_t>(type_ptr));
+    char* db = reinterpret_cast<char*>(static_cast<uintptr_t>(desc_buf));
+    return swmm_userflag_def_get(to_engine(h), index, nb, name_buflen, tp, db, desc_buflen);
+}
+static int js_swmm_userflag_define  (int h, const std::string& n, int type, const std::string& desc) {
+    return swmm_userflag_define(to_engine(h), n.c_str(), type, desc.c_str());
+}
+static int js_swmm_userflag_undefine(int h, const std::string& n) { return swmm_userflag_undefine(to_engine(h), n.c_str()); }
+
+// ---------------------------------------------------------------------------
+// Model builder — user flag per-object values
+// ---------------------------------------------------------------------------
+
+// swmm_userflag_value_get: buf / buflen as WASM raw ptr; found as WASM int*
+static int js_swmm_userflag_value_get(int h,
+                                       const std::string& obj_type,
+                                       const std::string& obj_name,
+                                       const std::string& flag_name,
+                                       int buf, int buflen, int found_ptr) {
+    char* b = reinterpret_cast<char*>(static_cast<uintptr_t>(buf));
+    int*  f = reinterpret_cast<int* >(static_cast<uintptr_t>(found_ptr));
+    return swmm_userflag_value_get(to_engine(h),
+                                    obj_type.c_str(), obj_name.c_str(), flag_name.c_str(),
+                                    b, buflen, f);
+}
+static int js_swmm_userflag_value_set(int h,
+                                       const std::string& obj_type,
+                                       const std::string& obj_name,
+                                       const std::string& flag_name,
+                                       const std::string& value) {
+    return swmm_userflag_value_set(to_engine(h),
+                                    obj_type.c_str(), obj_name.c_str(),
+                                    flag_name.c_str(), value.c_str());
+}
+static int js_swmm_userflag_value_clear(int h,
+                                         const std::string& obj_type,
+                                         const std::string& obj_name,
+                                         const std::string& flag_name) {
+    return swmm_userflag_value_clear(to_engine(h),
+                                      obj_type.c_str(), obj_name.c_str(), flag_name.c_str());
+}
+
+// ---------------------------------------------------------------------------
+// Model builder — [PLUGINS] section
+// ---------------------------------------------------------------------------
+
+static int js_swmm_plugins_count(int h, int* count) { return swmm_plugins_count(to_engine(h), count); }
+
+// swmm_plugin_get: path_buf/args_buf as WASM raw ptrs
+static int js_swmm_plugin_get(int h, int idx,
+                               int path_buf, int path_sz,
+                               int args_buf, int args_sz) {
+    char* pb = reinterpret_cast<char*>(static_cast<uintptr_t>(path_buf));
+    char* ab = reinterpret_cast<char*>(static_cast<uintptr_t>(args_buf));
+    return swmm_plugin_get(to_engine(h), idx, pb, path_sz, ab, args_sz);
+}
+static int js_swmm_plugin_set   (int h, const std::string& path_or_id, const std::string& args) {
+    return swmm_plugin_set(to_engine(h), path_or_id.c_str(), args.c_str());
+}
+static int js_swmm_plugin_remove(int h, const std::string& path_or_id) {
+    return swmm_plugin_remove(to_engine(h), path_or_id.c_str());
+}
+
+// ---------------------------------------------------------------------------
+// Model builder — [FILES] section
+// ---------------------------------------------------------------------------
+
+static std::string js_swmm_files_get(int h, const std::string& key) {
+    char buf[1024];
+    if (swmm_files_get(to_engine(h), key.c_str(), buf, (int)sizeof(buf)) != 0)
+        return std::string();
+    return std::string(buf);
+}
+static int js_swmm_files_set(int h, const std::string& key, const std::string& value) {
+    return swmm_files_set(to_engine(h), key.c_str(), value.c_str());
+}
+
+// ---------------------------------------------------------------------------
+// Model builder — external file path slots (IO-9)
+// ---------------------------------------------------------------------------
+
+// swmm_file_path_get: abs_buf / orig_buf as WASM raw ptrs
+static int js_swmm_file_path_get(int h, int role, const std::string& owner,
+                                  int abs_buf, int abs_sz,
+                                  int orig_buf, int orig_sz) {
+    char* ab = reinterpret_cast<char*>(static_cast<uintptr_t>(abs_buf));
+    char* ob = reinterpret_cast<char*>(static_cast<uintptr_t>(orig_buf));
+    return swmm_file_path_get(to_engine(h),
+                               static_cast<SWMM_FilePathRole>(role),
+                               owner.empty() ? nullptr : owner.c_str(),
+                               ab, abs_sz, ob, orig_sz);
+}
+static int js_swmm_file_path_set(int h, int role, const std::string& owner,
+                                  const std::string& new_path) {
+    return swmm_file_path_set(to_engine(h),
+                               static_cast<SWMM_FilePathRole>(role),
+                               owner.empty() ? nullptr : owner.c_str(),
+                               new_path.c_str());
+}
+
 // ===========================================================================
 // Embind registrations
 // ===========================================================================
@@ -421,4 +641,102 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     function("swmm_forcing_gage_rainfall",      &js_swmm_forcing_gage_rainfall);
     function("swmm_forcing_clear",              &js_swmm_forcing_clear);
     function("swmm_forcing_clear_all",          &js_swmm_forcing_clear_all);
+
+    // -----------------------------------------------------------------------
+    // Model builder — lifecycle
+    // -----------------------------------------------------------------------
+    function("swmm_engine_new",              &js_swmm_engine_new);
+    function("swmm_validate_model",          &js_swmm_validate_model);
+    function("swmm_finalize_model",          &js_swmm_finalize_model);
+    function("swmm_model_write",             &js_swmm_model_write);
+    function("swmm_model_write_with_plugin", &js_swmm_model_write_with_plugin);
+
+    // -----------------------------------------------------------------------
+    // Model builder — add / pop
+    // -----------------------------------------------------------------------
+    function("swmm_node_add",      &js_swmm_node_add);
+    function("swmm_node_pop_last", &js_swmm_node_pop_last);
+
+    function("swmm_link_add",      &js_swmm_link_add);
+    function("swmm_link_pop_last", &js_swmm_link_pop_last);
+
+    function("swmm_subcatch_add",  &js_swmm_subcatch_add);
+    function("swmm_gage_add",      &js_swmm_gage_add);
+
+    // -----------------------------------------------------------------------
+    // Model builder — link geometry setters
+    // -----------------------------------------------------------------------
+    function("swmm_link_set_nodes",     &js_swmm_link_set_nodes);
+    function("swmm_link_set_length",    &js_swmm_link_set_length);
+    function("swmm_link_set_roughness", &js_swmm_link_set_roughness);
+    function("swmm_link_set_xsect",     &js_swmm_link_set_xsect);
+
+    // -----------------------------------------------------------------------
+    // Model builder — [TITLE]
+    // -----------------------------------------------------------------------
+    function("swmm_title_get_count", &js_swmm_title_get_count, allow_raw_pointers());
+    function("swmm_title_get_line",  &js_swmm_title_get_line);
+    function("swmm_title_add_line",  &js_swmm_title_add_line);
+    function("swmm_title_set",       &js_swmm_title_set);
+    function("swmm_title_clear",     &js_swmm_title_clear);
+
+    // -----------------------------------------------------------------------
+    // Model builder — [OPTIONS] / CRS
+    // -----------------------------------------------------------------------
+    function("swmm_options_get",     &js_swmm_options_get);
+    function("swmm_options_set",     &js_swmm_options_set);
+    function("swmm_options_get_ext", &js_swmm_options_get_ext);
+    function("swmm_options_set_ext", &js_swmm_options_set_ext);
+    function("swmm_get_crs",         &js_swmm_get_crs);
+
+    // -----------------------------------------------------------------------
+    // Model builder — typed date/time options
+    // -----------------------------------------------------------------------
+    function("swmm_options_get_start_date",   &js_swmm_options_get_start_date,   allow_raw_pointers());
+    function("swmm_options_set_start_date",   &js_swmm_options_set_start_date);
+    function("swmm_options_get_end_date",     &js_swmm_options_get_end_date,     allow_raw_pointers());
+    function("swmm_options_set_end_date",     &js_swmm_options_set_end_date);
+    function("swmm_options_get_report_start", &js_swmm_options_get_report_start, allow_raw_pointers());
+    function("swmm_options_set_report_start", &js_swmm_options_set_report_start);
+
+    // -----------------------------------------------------------------------
+    // Model builder — user flags (schema-level)
+    // -----------------------------------------------------------------------
+    function("swmm_userflag_get_bool",  &js_swmm_userflag_get_bool,  allow_raw_pointers());
+    function("swmm_userflag_get_int",   &js_swmm_userflag_get_int,   allow_raw_pointers());
+    function("swmm_userflag_get_real",  &js_swmm_userflag_get_real,  allow_raw_pointers());
+    function("swmm_userflag_set_bool",  &js_swmm_userflag_set_bool);
+    function("swmm_userflag_set_int",   &js_swmm_userflag_set_int);
+    function("swmm_userflag_set_real",  &js_swmm_userflag_set_real);
+    function("swmm_userflag_def_count", &js_swmm_userflag_def_count, allow_raw_pointers());
+    function("swmm_userflag_def_get",   &js_swmm_userflag_def_get);
+    function("swmm_userflag_define",    &js_swmm_userflag_define);
+    function("swmm_userflag_undefine",  &js_swmm_userflag_undefine);
+
+    // -----------------------------------------------------------------------
+    // Model builder — user flag per-object values
+    // -----------------------------------------------------------------------
+    function("swmm_userflag_value_get",   &js_swmm_userflag_value_get);
+    function("swmm_userflag_value_set",   &js_swmm_userflag_value_set);
+    function("swmm_userflag_value_clear", &js_swmm_userflag_value_clear);
+
+    // -----------------------------------------------------------------------
+    // Model builder — [PLUGINS]
+    // -----------------------------------------------------------------------
+    function("swmm_plugins_count",  &js_swmm_plugins_count, allow_raw_pointers());
+    function("swmm_plugin_get",     &js_swmm_plugin_get);
+    function("swmm_plugin_set",     &js_swmm_plugin_set);
+    function("swmm_plugin_remove",  &js_swmm_plugin_remove);
+
+    // -----------------------------------------------------------------------
+    // Model builder — [FILES]
+    // -----------------------------------------------------------------------
+    function("swmm_files_get", &js_swmm_files_get);
+    function("swmm_files_set", &js_swmm_files_set);
+
+    // -----------------------------------------------------------------------
+    // Model builder — external file path slots (IO-9)
+    // -----------------------------------------------------------------------
+    function("swmm_file_path_get", &js_swmm_file_path_get);
+    function("swmm_file_path_set", &js_swmm_file_path_set);
 }

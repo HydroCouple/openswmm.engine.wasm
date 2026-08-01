@@ -37,6 +37,12 @@
 export { Solver } from "./Solver.js";
 
 // ---------------------------------------------------------------------------
+// Model builder (programmatic model construction)
+// ---------------------------------------------------------------------------
+export { ModelBuilder } from "./ModelBuilder.js";
+export type { UserFlagDef, FilePaths, PluginEntry } from "./ModelBuilder.js";
+
+// ---------------------------------------------------------------------------
 // Domain collections and element accessors
 // ---------------------------------------------------------------------------
 export { Nodes, Node } from "./Nodes.js";
