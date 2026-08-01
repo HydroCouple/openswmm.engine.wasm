@@ -1,0 +1,62 @@
+{
+  "name": "@hydrocouple/openswmm-engine-wasm",
+  "version": "6.0.0-dev.0",
+  "description": "WebAssembly bindings for the OpenSWMM Engine C++ API — mirrors the openswmm.engine Python bindings surface.",
+  "license": "MIT",
+  "author": "Caleb Buahin <caleb.buahin@gmail.com>",
+  "homepage": "https://github.com/HydroCouple/openswmm.engine.wasm",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HydroCouple/openswmm.engine.wasm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/HydroCouple/openswmm.engine.wasm/issues"
+  },
+  "keywords": [
+    "swmm",
+    "openswmm",
+    "stormwater",
+    "hydrology",
+    "hydraulics",
+    "webassembly",
+    "wasm",
+    "emscripten"
+  ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist/",
+    "src/",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build:wasm": "cmake --build build --config Release",
+    "build:ts": "tsc --project tsconfig.json",
+    "build": "npm run build:ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "coverage": "vitest run --coverage",
+    "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
+    "@vitest/coverage-v8": "^3.2.7",
+    "eslint": "^9.0.0",
+    "typescript": "^5.5.0",
+    "vitest": "^3.2.7"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

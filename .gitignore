@@ -1,0 +1,29 @@
+# Build artifacts
+build/
+dist/
+*.wasm
+*.js.map
+
+# Node
+node_modules/
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+
+# Coverage
+coverage/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
