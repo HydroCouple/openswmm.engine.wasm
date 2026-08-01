@@ -96,7 +96,7 @@ target_link_libraries(openswmm_wasm PRIVATE
 # Apply Emscripten link flags
 foreach(flag IN LISTS WASM_LINK_FLAGS)
     target_link_options(openswmm_wasm PRIVATE "${flag}")
-done
+endforeach()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     foreach(flag IN LISTS WASM_LINK_FLAGS_DEBUG)
