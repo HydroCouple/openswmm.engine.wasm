@@ -1,0 +1,4 @@
+[submodule "extern/openswmm.engine"]
+	path = extern/openswmm.engine
+	url = https://github.com/HydroCouple/openswmm.engine.git
+	branch = swmm6_rel
