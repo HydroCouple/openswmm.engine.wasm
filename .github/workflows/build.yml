@@ -13,6 +13,8 @@ jobs:
   typecheck:
     name: TypeScript — type-check & unit tests
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -41,6 +43,8 @@ jobs:
   wasm-build:
     name: WASM — Emscripten build
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     container:
       image: emscripten/emsdk:latest
 
