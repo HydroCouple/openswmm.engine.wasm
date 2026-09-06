@@ -15,6 +15,12 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+const nodeMajor = Number(process.versions.node.split(".")[0]);
+if (nodeMajor < 18) {
+  console.error(`smoke: Node >= 18 required (WebAssembly exceptions); running ${process.version}`);
+  process.exit(2);
+}
+
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..", "..");
 const dist = resolve(root, "dist");
