@@ -33,54 +33,71 @@ for (const f of ["openswmm_engine.js", "openswmm_engine.wasm", "index.js"]) {
   }
 }
 
-const { default: createOpenSwmmModule } = await import(resolve(dist, "openswmm_engine.js"));
-const { Solver } = await import(resolve(dist, "index.js"));
-
-const mod = await createOpenSwmmModule();
-const solver = new Solver(mod);
-
-const inp = readFileSync(resolve(root, "tests", "fixtures", "smoke.inp"), "utf8");
-solver.writeFile("/smoke.inp", inp);
-
-solver.open("/smoke.inp", "/smoke.rpt", "/smoke.out");
-solver.initialize();
-solver.start(true);
-
-let steps = 0;
-let peakOutfall = 0;
-const o1 = solver.nodes.getIndex("O1");
-assert(o1 >= 0, "outfall O1 not found");
-const outfall = solver.nodes.get(o1);
-while (solver.step() > 0) {
-  steps++;
-  peakOutfall = Math.max(peakOutfall, outfall.inflow);
+// Catch everything ourselves: an uncaught exception makes Node print the
+// 100 KB minified glue line as "context", burying the actual message.
+process.on("uncaughtException", fail);
+process.on("unhandledRejection", fail);
+function fail(err) {
+  const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
+  console.error(`smoke: FAIL — ${msg}`);
+  if (err instanceof Error && err.stack) {
+    const frames = err.stack.split("\n").slice(1).filter((l) => !/openswmm_engine\.js:1\b/.test(l) || l.length < 300);
+    console.error(frames.slice(0, 12).join("\n"));
+  }
+  process.exit(1);
 }
-solver.end();
-solver.report();
-solver.close();
 
-const rpt = solver.readFile("/smoke.rpt", "utf8");
-solver.destroy();
+await main();
 
-mkdirSync(work, { recursive: true });
-writeFileSync(resolve(work, "smoke.wasm.rpt"), rpt);
+async function main() {
+  const { default: createOpenSwmmModule } = await import(resolve(dist, "openswmm_engine.js"));
+  const { Solver } = await import(resolve(dist, "index.js"));
 
-// ---- Compare against the native reference ---------------------------------
-const ref = readFileSync(resolve(root, "tests", "fixtures", "smoke.native.rpt"), "utf8");
-const refPeak = outfallPeak(ref, "O1");
-const wasmPeak = outfallPeak(rpt, "O1");
-const refCE = routingContinuityError(ref);
-const wasmCE = routingContinuityError(rpt);
+  const mod = await createOpenSwmmModule();
+  const solver = new Solver(mod);
 
-console.log(`smoke: ${steps} routing steps`);
-console.log(`smoke: O1 peak flow   native=${refPeak}  wasm=${wasmPeak}  (stepwise max inflow ${peakOutfall.toFixed(3)})`);
-console.log(`smoke: routing CE (%) native=${refCE}  wasm=${wasmCE}`);
+  const inp = readFileSync(resolve(root, "tests", "fixtures", "smoke.inp"), "utf8");
+  solver.writeFile("/smoke.inp", inp);
 
-assert(steps > 100, `too few steps: ${steps}`);
-assert(/Continuity Error/.test(rpt), "report lacks continuity section");
-assert(relDiff(refPeak, wasmPeak) < 0.02, `outfall peak differs >2%: ${refPeak} vs ${wasmPeak}`);
-assert(Math.abs(wasmCE) < 1.0, `routing continuity error too large: ${wasmCE}%`);
-console.log("smoke: OK");
+  solver.open("/smoke.inp", "/smoke.rpt", "/smoke.out");
+  solver.initialize();
+  solver.start(true);
+
+  let steps = 0;
+  let peakOutfall = 0;
+  const o1 = solver.nodes.getIndex("O1");
+  assert(o1 >= 0, "outfall O1 not found");
+  const outfall = solver.nodes.get(o1);
+  while (solver.step() > 0) {
+    steps++;
+    peakOutfall = Math.max(peakOutfall, outfall.inflow);
+  }
+  solver.end();
+  solver.report();
+  solver.close();
+
+  const rpt = solver.readFile("/smoke.rpt", "utf8");
+  solver.destroy();
+
+  mkdirSync(work, { recursive: true });
+  writeFileSync(resolve(work, "smoke.wasm.rpt"), rpt);
+
+  // ---- Compare against the native reference ---------------------------------
+  const ref = readFileSync(resolve(root, "tests", "fixtures", "smoke.native.rpt"), "utf8");
+  const refPeak = outfallPeak(ref, "O1");
+  const wasmPeak = outfallPeak(rpt, "O1");
+  const refCE = routingContinuityError(ref);
+  const wasmCE = routingContinuityError(rpt);
+
+  console.log(`smoke: ${steps} routing steps`);
+  console.log(`smoke: O1 peak flow   native=${refPeak}  wasm=${wasmPeak}  (stepwise max inflow ${peakOutfall.toFixed(3)})`);
+  console.log(`smoke: routing CE (%) native=${refCE}  wasm=${wasmCE}`);
+
+  assert(steps > 100, `too few steps: ${steps}`);
+  assert(/Continuity Error/.test(rpt), "report lacks continuity section");
+  assert(relDiff(refPeak, wasmPeak) < 0.02, `outfall peak differs >2%: ${refPeak} vs ${wasmPeak}`);
+  assert(Math.abs(wasmCE) < 1.0, `routing continuity error too large: ${wasmCE}%`);
+  console.log("smoke: OK");}
 
 // ---- helpers ----------------------------------------------------------------
 function assert(cond, msg) {
