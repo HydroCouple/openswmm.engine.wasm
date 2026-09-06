@@ -1,4 +1,5 @@
 # Build artifacts
+tests/_work/
 build/
 tools/host_shim/out/
 dist/

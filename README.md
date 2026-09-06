@@ -330,20 +330,27 @@ EngineError (base — code, codeEnum, message)
 git clone --recurse-submodules https://github.com/HydroCouple/openswmm.engine.wasm.git
 cd openswmm.engine.wasm
 
-# 2. Configure with Emscripten toolchain
-emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release
+# 2. Configure with the Emscripten toolchain
+npm run configure:wasm        # = emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release
 
-# 3. Build
-cmake --build build --parallel
+# 3. Build (engine + GeoPackage/SQLite + bindings)
+npm run build:wasm            # = cmake --build build --parallel
 
 # 4. Outputs land in dist/
 ls dist/
 # openswmm_engine.js   openswmm_engine.wasm
 
-# 5. Build TypeScript wrappers
+# 5. Build TypeScript wrappers and run the checks
 npm ci
 npm run build
+npm test                      # unit tests (mock module, no WASM needed)
+npm run smoke                 # end-to-end run of tests/fixtures/smoke.inp against dist/
+npm run check:bindings        # native compile of bindings.cpp vs engine headers (no emsdk needed)
 ```
+
+The engine is built 1D-only with GeoPackage support (`-DOPENSWMM_WASM_GEOPACKAGE=ON`,
+SQLite compiled from the pinned amalgamation). The 2D surface module (HDF5) and
+the GPU plugin are not part of the WASM build.
 
 The npm package then ships:
 

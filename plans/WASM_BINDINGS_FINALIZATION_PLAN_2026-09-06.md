@@ -47,7 +47,7 @@
 3. **High-level TS layer mirrors Python 1:1** — same class names, same property/method names in camelCase, same sub-namespace accessors on `Solver` (`solver.hotstart`, `solver.climate`, …). One file per Python module under `src/js/`.
 4. **Bulk data**: getters return `Float64Array`/`Int32Array` *copies* (heap may move on growth; no views handed out). Setters accept `ArrayLike<number>`.
 5. **Files**: all paths are MEMFS paths. `Solver.writeFile/readFile/mountNodeFS(dir)` helpers; `-sFORCE_FILESYSTEM=1`. NODEFS enabled only for the `node` environment.
-6. **GeoPackage**: engine built with `-DOPENSWMM_WITH_GEOPACKAGE=ON`; sqlite3 supplied by vcpkg `wasm32-emscripten` triplet (manifest features: `geopackage`; default features disabled). `.gpkg` files are read/written in MEMFS.
+6. **GeoPackage**: engine built with `-DOPENSWMM_WITH_GEOPACKAGE=ON`; sqlite3 compiled from the pinned amalgamation (FetchContent, SHA3-verified) and exposed to the engine's `find_package(unofficial-sqlite3 CONFIG)` through a generated config package — no vcpkg bootstrap needed (decided in Phase 0: simpler than vcpkg's `wasm32-emscripten` triplet). `.gpkg` files are read/written in MEMFS.
 7. **Engine changes stay minimal and upstreamed** to `openswmm.engine` (`swmm6_rel`), guarded by `if(EMSCRIPTEN)` / `#ifdef __EMSCRIPTEN__` only.
 8. **Versioning**: package version tracks engine (`6.0.0-alpha.N` → `6.0.0`). npm dist-tag `next` for pre-releases, `latest` for finals. Tag `v6.0.0` on the wasm repo triggers release.
 
@@ -60,12 +60,12 @@ Each phase ends with a commit; verification criteria are the gate.
 ### Phase 0 — Green baseline build
 1. Bump submodule to engine HEAD; add `ForcingPersist`, `ForcingType`, `RouteModel.FV`; fix 6 forcing arities.
 2. Engine (`openswmm.engine`, surgical):
-   - `src/engine/CMakeLists.txt`: `if(EMSCRIPTEN)` → `STATIC` library type, skip `dl`, skip OpenMP/Threads link, skip `--whole-archive` (replace with `$<LINK_LIBRARY:WHOLE_ARCHIVE,…>` which lld/wasm supports), skip SIMD flags.
+   - `src/engine/CMakeLists.txt`: `if(EMSCRIPTEN)` → `STATIC` library type + `OPENSWMM_ENGINE_STATIC`, skip `dl`, skip OpenMP/Threads link, skip `--whole-archive` (link options on a static lib are inert; the wasm consumer retains `swmm_gpkg_*` via `-sEXPORTED_FUNCTIONS`). SIMD flags already don't fire (`CMAKE_SYSTEM_PROCESSOR` is `x86` under emcc).
    - `output/IOThread`: synchronous execution under `__EMSCRIPTEN__` (no `std::thread`).
-   - `plugins/PluginFactory`: `dlopen` path returns `SWMM_ERR_PLUGIN` under `__EMSCRIPTEN__`.
-   - `core/ThreadInfo`: report 1 thread under `__EMSCRIPTEN__`.
-3. `openswmm.engine.wasm/CMakeLists.txt`: `-DOPENSWMM_BUILD_2D=OFF -DOPENSWMM_BUILD_GPU_PLUGIN=OFF -DOPENSWMM_WITH_GEOPACKAGE=ON`, vcpkg toolchain chain-loaded with emscripten toolchain, `-sEXPORTED_FUNCTIONS=@…`, `-sALLOW_TABLE_GROWTH`, `-sFORCE_FILESYSTEM`, `-sEXPORT_ES6=1`, `-sSTACK_SIZE=1MB`, `-sINITIAL_MEMORY=64MB`.
-4. CI `build.yml`: vcpkg cache + emsdk container; wasm job must produce `dist/openswmm_engine.{js,wasm}` and run a Node smoke test (`examples/` model → `.rpt` contains "Continuity Error").
+   - `plugins/PluginFactory`, `core/ThreadInfo`: **no change needed** — Emscripten's libc provides `dlopen` (returns NULL → existing error path) and `std::thread::hardware_concurrency`.
+   - Done: engine commit `d204ea78` on `swmm6_rel`.
+3. `openswmm.engine.wasm/CMakeLists.txt`: `-DOPENSWMM_BUILD_2D=OFF -DOPENSWMM_BUILD_GPU_PLUGIN=OFF -DOPENSWMM_WITH_GEOPACKAGE=ON`, sqlite amalgamation via FetchContent, `-fwasm-exceptions` (engine throws internally), `-sEXPORTED_FUNCTIONS`, `-sALLOW_TABLE_GROWTH`, `-sFORCE_FILESYSTEM`, `-sEXPORT_ES6=1`, `-sSTACK_SIZE=1MB`, `-sINITIAL_MEMORY=64MB`.
+4. CI `build.yml`: emsdk container; wasm job must produce `dist/openswmm_engine.{js,wasm}` and run `npm run smoke` (`tests/fixtures/smoke.inp` → outfall peak within 2 % of the native reference `tests/fixtures/smoke.native.rpt`, routing continuity error < 1 %).
 - **Verify:** CI wasm job green; smoke test passes; `.wasm` size reported in job summary.
 
 ### Phase 1 — Generated raw layer + host-shim check
@@ -116,7 +116,7 @@ Order chosen by dependency and value; each step = TS module + mock tests + real-
 | Risk | Mitigation |
 |---|---|
 | Engine C++ has non-portable code beyond threads/dlopen (e.g. `std::filesystem`, `mmap`, SIMD intrinsics) | Surfaces in Phase 0 CI build; fix under `__EMSCRIPTEN__` guards; SIMD already has scalar fallback |
-| vcpkg sqlite3 for `wasm32-emscripten` fails | Fallback: FetchContent sqlite amalgamation compiled directly (documented switch in CMake) |
+| sqlite.org download unavailable in CI | Mirror the pinned amalgamation zip into the repo's GitHub Release assets and point `FetchContent` at it |
 | `.wasm` size > ~5 MB | `-Oz` variant, `-flto`, strip GeoPackage into optional second build if needed |
 | Embind + `EXPORTED_FUNCTIONS` name clashes | Generator excludes callback functions; single source of truth for names |
 | Generated `raw.ts` drifts from engine headers | `check:bindings` + parity test in CI on every push |
