@@ -224,22 +224,22 @@ export interface OpenSwmmWasmModule {
   // Forcing
   // -------------------------------------------------------------------------
   swmm_forcing_node_lat_inflow(
-    engine: number, nodeIdx: number, value: number, mode: number
+    engine: number, nodeIdx: number, value: number, mode: number, persist: number
   ): number;
   swmm_forcing_node_head_boundary(
-    engine: number, nodeIdx: number, value: number, mode: number
+    engine: number, nodeIdx: number, value: number, mode: number, persist: number
   ): number;
   swmm_forcing_link_flow(
-    engine: number, linkIdx: number, value: number, mode: number
+    engine: number, linkIdx: number, value: number, mode: number, persist: number
   ): number;
   swmm_forcing_link_setting(
-    engine: number, linkIdx: number, value: number, mode: number
+    engine: number, linkIdx: number, value: number, mode: number, persist: number
   ): number;
   swmm_forcing_subcatch_rainfall(
-    engine: number, scIdx: number, value: number, mode: number
+    engine: number, scIdx: number, value: number, mode: number, persist: number
   ): number;
   swmm_forcing_gage_rainfall(
-    engine: number, gageIdx: number, value: number, mode: number
+    engine: number, gageIdx: number, value: number, mode: number, persist: number
   ): number;
   swmm_forcing_clear(engine: number, type: number, idx: number): number;
   swmm_forcing_clear_all(engine: number): number;

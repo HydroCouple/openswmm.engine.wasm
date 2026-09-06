@@ -24,6 +24,7 @@ import {
   LinkType,
   FlowUnits,
   ForcingMode,
+  ForcingPersist,
   ForcingTarget,
   XSectShape,
   // Errors
@@ -97,6 +98,11 @@ describe("FlowUnits", () => {
 describe("ForcingMode", () => {
   it("REPLACE = 1", () => expect(ForcingMode.REPLACE).toBe(1));
   it("ADD = 2", () => expect(ForcingMode.ADD).toBe(2));
+});
+
+describe("ForcingPersist", () => {
+  it("RESET = 0", () => expect(ForcingPersist.RESET).toBe(0));
+  it("PERSIST = 1", () => expect(ForcingPersist.PERSIST).toBe(1));
 });
 
 describe("ForcingTarget", () => {
@@ -477,6 +483,20 @@ describe("Solver", () => {
     expect(solver.gages).toBeInstanceOf(Gages);
     expect(solver.controls).toBeInstanceOf(Controls);
     expect(solver.forcing).toBeInstanceOf(Forcing);
+  });
+
+  it("forcing passes mode and persist flag through to the C API", () => {
+    const mod = makeMockModule();
+    const calls: number[][] = [];
+    mod.swmm_forcing_node_lat_inflow = (...args: number[]) => {
+      calls.push(args);
+      return 0;
+    };
+    const solver = new Solver(mod);
+    solver.forcing.nodeLatInflow(3, 0.5);
+    solver.forcing.nodeLatInflow(3, 0.5, ForcingMode.ADD, true);
+    expect(calls[0].slice(1)).toEqual([3, 0.5, ForcingMode.REPLACE, ForcingPersist.RESET]);
+    expect(calls[1].slice(1)).toEqual([3, 0.5, ForcingMode.ADD, ForcingPersist.PERSIST]);
   });
 
   it("state returns EngineState value", () => {

@@ -7,9 +7,10 @@
  * (e.g. override node lateral inflows, gage rainfall, link flows) without
  * modifying the .inp file.
  *
- * Forced values persist until explicitly cleared — either for a specific
- * object via {@link Forcing.clear} or for all objects via
- * {@link Forcing.clearAll}.
+ * By default a forced value applies to the current routing step only and is
+ * auto-cleared afterwards (`persist = false`). Pass `persist = true` to keep
+ * it until explicitly cleared — either for a specific object via
+ * {@link Forcing.clear} or for all objects via {@link Forcing.clearAll}.
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
@@ -78,14 +79,16 @@ export class Forcing {
    * @param nodeIdx  Zero-based node index.
    * @param value    Forced inflow value (flow units).
    * @param mode     {@link ForcingMode.REPLACE} or {@link ForcingMode.ADD}.
+   * @param persist  `true` keeps the forcing until cleared; `false` (default) auto-clears after the step.
    */
   nodeLatInflow(
     nodeIdx: number,
     value: number,
     mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_node_lat_inflow(this._engine, nodeIdx, value, mode),
+      this._mod.swmm_forcing_node_lat_inflow(this._engine, nodeIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -95,14 +98,16 @@ export class Forcing {
    * @param nodeIdx  Zero-based node index.
    * @param value    Forced head (m or ft).
    * @param mode     {@link ForcingMode.REPLACE} or {@link ForcingMode.ADD}.
+   * @param persist  `true` keeps the forcing until cleared; `false` (default) auto-clears after the step.
    */
   nodeHeadBoundary(
     nodeIdx: number,
     value: number,
     mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_node_head_boundary(this._engine, nodeIdx, value, mode),
+      this._mod.swmm_forcing_node_head_boundary(this._engine, nodeIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -116,14 +121,16 @@ export class Forcing {
    * @param linkIdx  Zero-based link index.
    * @param value    Forced flow (flow units).
    * @param mode     {@link ForcingMode.REPLACE} or {@link ForcingMode.ADD}.
+   * @param persist  `true` keeps the forcing until cleared; `false` (default) auto-clears after the step.
    */
   linkFlow(
     linkIdx: number,
     value: number,
     mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_link_flow(this._engine, linkIdx, value, mode),
+      this._mod.swmm_forcing_link_flow(this._engine, linkIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -133,14 +140,16 @@ export class Forcing {
    * @param linkIdx  Zero-based link index.
    * @param value    Forced setting (0–1).
    * @param mode     {@link ForcingMode.REPLACE} or {@link ForcingMode.ADD}.
+   * @param persist  `true` keeps the forcing until cleared; `false` (default) auto-clears after the step.
    */
   linkSetting(
     linkIdx: number,
     value: number,
     mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_link_setting(this._engine, linkIdx, value, mode),
+      this._mod.swmm_forcing_link_setting(this._engine, linkIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -154,14 +163,16 @@ export class Forcing {
    * @param scIdx    Zero-based subcatchment index.
    * @param value    Forced rainfall (in/hr or mm/hr).
    * @param mode     {@link ForcingMode.REPLACE} or {@link ForcingMode.ADD}.
+   * @param persist  `true` keeps the forcing until cleared; `false` (default) auto-clears after the step.
    */
   subcatchRainfall(
     scIdx: number,
     value: number,
     mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_subcatch_rainfall(this._engine, scIdx, value, mode),
+      this._mod.swmm_forcing_subcatch_rainfall(this._engine, scIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -175,14 +186,16 @@ export class Forcing {
    * @param gageIdx  Zero-based gage index.
    * @param value    Forced rainfall rate (in/hr or mm/hr).
    * @param mode     {@link ForcingMode.REPLACE} or {@link ForcingMode.ADD}.
+   * @param persist  `true` keeps the forcing until cleared; `false` (default) auto-clears after the step.
    */
   gageRainfall(
     gageIdx: number,
     value: number,
     mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_gage_rainfall(this._engine, gageIdx, value, mode),
+      this._mod.swmm_forcing_gage_rainfall(this._engine, gageIdx, value, mode, persist ? 1 : 0),
     );
   }
 

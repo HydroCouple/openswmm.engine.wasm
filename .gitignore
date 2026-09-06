@@ -1,5 +1,6 @@
 # Build artifacts
 build/
+tools/host_shim/out/
 dist/
 *.wasm
 *.js.map
