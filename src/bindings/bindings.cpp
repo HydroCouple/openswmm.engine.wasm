@@ -57,6 +57,14 @@ static inline int from_engine(SWMM_Engine e) {
     return static_cast<int>(reinterpret_cast<uintptr_t>(e));
 }
 
+// Embind cannot bind pointers to primitives (double*, int*); out-parameters
+// are passed from JS as heap offsets (see _malloc in the TS layer) and cast
+// back here.
+template <typename T>
+static inline T* to_ptr(int p) {
+    return reinterpret_cast<T*>(static_cast<uintptr_t>(p));
+}
+
 // ---------------------------------------------------------------------------
 // Lifecycle wrappers
 // ---------------------------------------------------------------------------
@@ -85,11 +93,17 @@ static int  js_swmm_engine_close(int h)                   { return swmm_engine_c
 static void js_swmm_engine_destroy(int h)                 { swmm_engine_destroy(to_engine(h)); }
 static void js_swmm_engine_set_lenient_open(int h, int on){ swmm_engine_set_lenient_open(to_engine(h), on); }
 
-static int  js_swmm_engine_get_state(int h, int* out)     { return swmm_engine_get_state(to_engine(h), out); }
+static int  js_swmm_engine_get_state(int h, int out_p) {
+    int* out = to_ptr<int>(out_p);
+    return swmm_engine_get_state(to_engine(h), out); }
 
 // step/stride: elapsed out-parameter is a double* on the WASM heap
-static int  js_swmm_engine_step(int h, double* elapsed)   { return swmm_engine_step(to_engine(h), elapsed); }
-static int  js_swmm_engine_stride(int h, int n, double* elapsed) {
+static int  js_swmm_engine_step(int h, int elapsed_p) {
+    double* elapsed = to_ptr<double>(elapsed_p);
+    return swmm_engine_step(to_engine(h), elapsed); }
+static int  js_swmm_engine_stride(int h, int n, int elapsed_p) {
+    double* elapsed = to_ptr<double>(elapsed_p);
+   
     return swmm_engine_stride(to_engine(h), n, elapsed);
 }
 
@@ -109,12 +123,24 @@ static std::string js_swmm_error_message(int code)      {
 static int js_swmm_get_error_count(int h)   { return swmm_get_error_count(to_engine(h)); }
 static int js_swmm_get_warning_count(int h) { return swmm_get_warning_count(to_engine(h)); }
 
-static int js_swmm_get_start_time  (int h, double* t) { return swmm_get_start_time  (to_engine(h), t); }
-static int js_swmm_get_end_time    (int h, double* t) { return swmm_get_end_time    (to_engine(h), t); }
-static int js_swmm_get_current_time(int h, double* t) { return swmm_get_current_time(to_engine(h), t); }
-static int js_swmm_get_routing_step(int h, double* t) { return swmm_get_routing_step(to_engine(h), t); }
-static int js_swmm_get_flow_units  (int h, int* u)    { return swmm_get_flow_units  (to_engine(h), u); }
-static int js_swmm_get_unit_system (int h, int* u)    { return swmm_get_unit_system (to_engine(h), u); }
+static int js_swmm_get_start_time  (int h, int t_p) {
+    double* t = to_ptr<double>(t_p);
+    return swmm_get_start_time  (to_engine(h), t); }
+static int js_swmm_get_end_time    (int h, int t_p) {
+    double* t = to_ptr<double>(t_p);
+    return swmm_get_end_time    (to_engine(h), t); }
+static int js_swmm_get_current_time(int h, int t_p) {
+    double* t = to_ptr<double>(t_p);
+    return swmm_get_current_time(to_engine(h), t); }
+static int js_swmm_get_routing_step(int h, int t_p) {
+    double* t = to_ptr<double>(t_p);
+    return swmm_get_routing_step(to_engine(h), t); }
+static int js_swmm_get_flow_units  (int h, int u_p) {
+    int* u = to_ptr<int>(u_p);
+    return swmm_get_flow_units  (to_engine(h), u); }
+static int js_swmm_get_unit_system (int h, int u_p) {
+    int* u = to_ptr<int>(u_p);
+    return swmm_get_unit_system (to_engine(h), u); }
 
 // ---------------------------------------------------------------------------
 // Nodes
@@ -129,27 +155,57 @@ static std::string js_swmm_node_id(int h, int idx) {
     return s ? std::string(s) : std::string();
 }
 
-static int js_swmm_node_get_type          (int h, int i, int*    v) { return swmm_node_get_type(to_engine(h), i, v); }
-static int js_swmm_node_get_depth         (int h, int i, double* v) { return swmm_node_get_depth(to_engine(h), i, v); }
+static int js_swmm_node_get_type          (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_node_get_type(to_engine(h), i, v); }
+static int js_swmm_node_get_depth         (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_depth(to_engine(h), i, v); }
 static int js_swmm_node_set_depth         (int h, int i, double  v) { return swmm_node_set_depth(to_engine(h), i, v); }
-static int js_swmm_node_get_head          (int h, int i, double* v) { return swmm_node_get_head(to_engine(h), i, v); }
-static int js_swmm_node_get_volume        (int h, int i, double* v) { return swmm_node_get_volume(to_engine(h), i, v); }
-static int js_swmm_node_get_lateral_inflow(int h, int i, double* v) { return swmm_node_get_lateral_inflow(to_engine(h), i, v); }
+static int js_swmm_node_get_head          (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_head(to_engine(h), i, v); }
+static int js_swmm_node_get_volume        (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_volume(to_engine(h), i, v); }
+static int js_swmm_node_get_lateral_inflow(int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_lateral_inflow(to_engine(h), i, v); }
 static int js_swmm_node_set_lateral_inflow(int h, int i, double  v) { return swmm_node_set_lateral_inflow(to_engine(h), i, v); }
-static int js_swmm_node_get_overflow      (int h, int i, double* v) { return swmm_node_get_overflow(to_engine(h), i, v); }
-static int js_swmm_node_get_inflow        (int h, int i, double* v) { return swmm_node_get_inflow(to_engine(h), i, v); }
-static int js_swmm_node_get_losses        (int h, int i, double* v) { return swmm_node_get_losses(to_engine(h), i, v); }
-static int js_swmm_node_get_outflow       (int h, int i, double* v) { return swmm_node_get_outflow(to_engine(h), i, v); }
-static int js_swmm_node_get_invert_elev   (int h, int i, double* v) { return swmm_node_get_invert_elev(to_engine(h), i, v); }
+static int js_swmm_node_get_overflow      (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_overflow(to_engine(h), i, v); }
+static int js_swmm_node_get_inflow        (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_inflow(to_engine(h), i, v); }
+static int js_swmm_node_get_losses        (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_losses(to_engine(h), i, v); }
+static int js_swmm_node_get_outflow       (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_outflow(to_engine(h), i, v); }
+static int js_swmm_node_get_invert_elev   (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_invert_elev(to_engine(h), i, v); }
 static int js_swmm_node_set_invert_elev   (int h, int i, double  v) { return swmm_node_set_invert_elev(to_engine(h), i, v); }
-static int js_swmm_node_get_max_depth     (int h, int i, double* v) { return swmm_node_get_max_depth(to_engine(h), i, v); }
+static int js_swmm_node_get_max_depth     (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_max_depth(to_engine(h), i, v); }
 static int js_swmm_node_set_max_depth     (int h, int i, double  v) { return swmm_node_set_max_depth(to_engine(h), i, v); }
 static int js_swmm_node_set_head_boundary (int h, int i, double  v) { return swmm_node_set_head_boundary(to_engine(h), i, v); }
 
-static int js_swmm_node_get_stat_max_depth     (int h, int i, double* v) { return swmm_node_get_stat_max_depth(to_engine(h), i, v); }
-static int js_swmm_node_get_stat_max_overflow  (int h, int i, double* v) { return swmm_node_get_stat_max_overflow(to_engine(h), i, v); }
-static int js_swmm_node_get_stat_vol_flooded   (int h, int i, double* v) { return swmm_node_get_stat_vol_flooded(to_engine(h), i, v); }
-static int js_swmm_node_get_stat_time_flooded  (int h, int i, double* v) { return swmm_node_get_stat_time_flooded(to_engine(h), i, v); }
+static int js_swmm_node_get_stat_max_depth     (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_stat_max_depth(to_engine(h), i, v); }
+static int js_swmm_node_get_stat_max_overflow  (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_stat_max_overflow(to_engine(h), i, v); }
+static int js_swmm_node_get_stat_vol_flooded   (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_stat_vol_flooded(to_engine(h), i, v); }
+static int js_swmm_node_get_stat_time_flooded  (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_node_get_stat_time_flooded(to_engine(h), i, v); }
 
 // ---------------------------------------------------------------------------
 // Links
@@ -164,21 +220,43 @@ static std::string js_swmm_link_id(int h, int idx) {
     return s ? std::string(s) : std::string();
 }
 
-static int js_swmm_link_get_type            (int h, int i, int*    v) { return swmm_link_get_type(to_engine(h), i, v); }
-static int js_swmm_link_get_flow            (int h, int i, double* v) { return swmm_link_get_flow(to_engine(h), i, v); }
+static int js_swmm_link_get_type            (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_link_get_type(to_engine(h), i, v); }
+static int js_swmm_link_get_flow            (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_link_get_flow(to_engine(h), i, v); }
 static int js_swmm_link_set_flow            (int h, int i, double  v) { return swmm_link_set_flow(to_engine(h), i, v); }
-static int js_swmm_link_get_depth           (int h, int i, double* v) { return swmm_link_get_depth(to_engine(h), i, v); }
-static int js_swmm_link_get_velocity        (int h, int i, double* v) { return swmm_link_get_velocity(to_engine(h), i, v); }
-static int js_swmm_link_get_capacity        (int h, int i, double* v) { return swmm_link_get_capacity(to_engine(h), i, v); }
-static int js_swmm_link_get_volume          (int h, int i, double* v) { return swmm_link_get_volume(to_engine(h), i, v); }
-static int js_swmm_link_get_control_setting (int h, int i, double* v) { return swmm_link_get_control_setting(to_engine(h), i, v); }
+static int js_swmm_link_get_depth           (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_link_get_depth(to_engine(h), i, v); }
+static int js_swmm_link_get_velocity        (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_link_get_velocity(to_engine(h), i, v); }
+static int js_swmm_link_get_capacity        (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_link_get_capacity(to_engine(h), i, v); }
+static int js_swmm_link_get_volume          (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_link_get_volume(to_engine(h), i, v); }
+static int js_swmm_link_get_control_setting (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_link_get_control_setting(to_engine(h), i, v); }
 static int js_swmm_link_set_control_setting (int h, int i, double  v) { return swmm_link_set_control_setting(to_engine(h), i, v); }
-static int js_swmm_link_get_target_setting  (int h, int i, double* v) { return swmm_link_get_target_setting(to_engine(h), i, v); }
+static int js_swmm_link_get_target_setting  (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_link_get_target_setting(to_engine(h), i, v); }
 static int js_swmm_link_set_target_setting  (int h, int i, double  v) { return swmm_link_set_target_setting(to_engine(h), i, v); }
-static int js_swmm_link_get_closed          (int h, int i, int*    v) { return swmm_link_get_closed(to_engine(h), i, v); }
+static int js_swmm_link_get_closed          (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_link_get_closed(to_engine(h), i, v); }
 static int js_swmm_link_set_closed          (int h, int i, int     v) { return swmm_link_set_closed(to_engine(h), i, v); }
-static int js_swmm_link_get_from_node       (int h, int i, int*    v) { return swmm_link_get_from_node(to_engine(h), i, v); }
-static int js_swmm_link_get_to_node         (int h, int i, int*    v) { return swmm_link_get_to_node(to_engine(h), i, v); }
+static int js_swmm_link_get_from_node       (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_link_get_from_node(to_engine(h), i, v); }
+static int js_swmm_link_get_to_node         (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_link_get_to_node(to_engine(h), i, v); }
 
 // ---------------------------------------------------------------------------
 // Subcatchments
@@ -193,13 +271,27 @@ static std::string js_swmm_subcatch_id(int h, int idx) {
     return s ? std::string(s) : std::string();
 }
 
-static int js_swmm_subcatch_get_runoff      (int h, int i, double* v) { return swmm_subcatch_get_runoff(to_engine(h), i, v); }
-static int js_swmm_subcatch_get_area        (int h, int i, double* v) { return swmm_subcatch_get_area(to_engine(h), i, v); }
-static int js_swmm_subcatch_get_imperv_pct  (int h, int i, double* v) { return swmm_subcatch_get_imperv_pct(to_engine(h), i, v); }
-static int js_swmm_subcatch_get_width       (int h, int i, double* v) { return swmm_subcatch_get_width(to_engine(h), i, v); }
-static int js_swmm_subcatch_get_slope       (int h, int i, double* v) { return swmm_subcatch_get_slope(to_engine(h), i, v); }
-static int js_swmm_subcatch_get_outlet      (int h, int i, int*    v) { return swmm_subcatch_get_outlet(to_engine(h), i, v); }
-static int js_swmm_subcatch_get_gage        (int h, int i, int*    v) { return swmm_subcatch_get_gage(to_engine(h), i, v); }
+static int js_swmm_subcatch_get_runoff      (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_subcatch_get_runoff(to_engine(h), i, v); }
+static int js_swmm_subcatch_get_area        (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_subcatch_get_area(to_engine(h), i, v); }
+static int js_swmm_subcatch_get_imperv_pct  (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_subcatch_get_imperv_pct(to_engine(h), i, v); }
+static int js_swmm_subcatch_get_width       (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_subcatch_get_width(to_engine(h), i, v); }
+static int js_swmm_subcatch_get_slope       (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_subcatch_get_slope(to_engine(h), i, v); }
+static int js_swmm_subcatch_get_outlet      (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_subcatch_get_outlet(to_engine(h), i, v); }
+static int js_swmm_subcatch_get_gage        (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_subcatch_get_gage(to_engine(h), i, v); }
 
 // ---------------------------------------------------------------------------
 // Rain gages
@@ -214,14 +306,26 @@ static std::string js_swmm_gage_id(int h, int idx) {
     return s ? std::string(s) : std::string();
 }
 
-static int js_swmm_gage_get_rainfall      (int h, int i, double* v) { return swmm_gage_get_rainfall(to_engine(h), i, v); }
+static int js_swmm_gage_get_rainfall      (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_gage_get_rainfall(to_engine(h), i, v); }
 static int js_swmm_gage_set_rainfall      (int h, int i, double  v) { return swmm_gage_set_rainfall(to_engine(h), i, v); }
-static int js_swmm_gage_get_rain_type     (int h, int i, int*    v) { return swmm_gage_get_rain_type(to_engine(h), i, v); }
-static int js_swmm_gage_get_data_source   (int h, int i, int*    v) { return swmm_gage_get_data_source(to_engine(h), i, v); }
-static int js_swmm_gage_get_scale_factor  (int h, int i, double* v) { return swmm_gage_get_scale_factor(to_engine(h), i, v); }
+static int js_swmm_gage_get_rain_type     (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_gage_get_rain_type(to_engine(h), i, v); }
+static int js_swmm_gage_get_data_source   (int h, int i, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_gage_get_data_source(to_engine(h), i, v); }
+static int js_swmm_gage_get_scale_factor  (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_gage_get_scale_factor(to_engine(h), i, v); }
 static int js_swmm_gage_set_scale_factor  (int h, int i, double  v) { return swmm_gage_set_scale_factor(to_engine(h), i, v); }
-static int js_swmm_gage_get_rain_interval (int h, int i, double* v) { return swmm_gage_get_rain_interval(to_engine(h), i, v); }
-static int js_swmm_gage_get_snow_factor   (int h, int i, double* v) { return swmm_gage_get_snow_factor(to_engine(h), i, v); }
+static int js_swmm_gage_get_rain_interval (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_gage_get_rain_interval(to_engine(h), i, v); }
+static int js_swmm_gage_get_snow_factor   (int h, int i, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_gage_get_snow_factor(to_engine(h), i, v); }
 
 // ---------------------------------------------------------------------------
 // Controls
@@ -324,7 +428,9 @@ static int js_swmm_link_set_xsect   (int h, int i, int shape,
 // Model builder — [TITLE] section
 // ---------------------------------------------------------------------------
 
-static int         js_swmm_title_get_count(int h, int* count)             { return swmm_title_get_count(to_engine(h), count); }
+static int         js_swmm_title_get_count(int h, int count_p) {
+    int* count = to_ptr<int>(count_p);
+    return swmm_title_get_count(to_engine(h), count); }
 static std::string js_swmm_title_get_line (int h, int index) {
     char buf[4096];
     if (swmm_title_get_line(to_engine(h), index, buf, (int)sizeof(buf)) != 0)
@@ -368,25 +474,39 @@ static std::string js_swmm_get_crs        (int h) {
 // Model builder — typed date/time options
 // ---------------------------------------------------------------------------
 
-static int js_swmm_options_get_start_date  (int h, double* t) { return swmm_options_get_start_date  (to_engine(h), t); }
+static int js_swmm_options_get_start_date  (int h, int t_p) {
+    double* t = to_ptr<double>(t_p);
+    return swmm_options_get_start_date  (to_engine(h), t); }
 static int js_swmm_options_set_start_date  (int h, double  t) { return swmm_options_set_start_date  (to_engine(h), t); }
-static int js_swmm_options_get_end_date    (int h, double* t) { return swmm_options_get_end_date    (to_engine(h), t); }
+static int js_swmm_options_get_end_date    (int h, int t_p) {
+    double* t = to_ptr<double>(t_p);
+    return swmm_options_get_end_date    (to_engine(h), t); }
 static int js_swmm_options_set_end_date    (int h, double  t) { return swmm_options_set_end_date    (to_engine(h), t); }
-static int js_swmm_options_get_report_start(int h, double* t) { return swmm_options_get_report_start(to_engine(h), t); }
+static int js_swmm_options_get_report_start(int h, int t_p) {
+    double* t = to_ptr<double>(t_p);
+    return swmm_options_get_report_start(to_engine(h), t); }
 static int js_swmm_options_set_report_start(int h, double  t) { return swmm_options_set_report_start(to_engine(h), t); }
 
 // ---------------------------------------------------------------------------
 // Model builder — user flags (schema-level)
 // ---------------------------------------------------------------------------
 
-static int js_swmm_userflag_get_bool(int h, const std::string& n, int*    v) { return swmm_userflag_get_bool(to_engine(h), n.c_str(), v); }
-static int js_swmm_userflag_get_int (int h, const std::string& n, int*    v) { return swmm_userflag_get_int (to_engine(h), n.c_str(), v); }
-static int js_swmm_userflag_get_real(int h, const std::string& n, double* v) { return swmm_userflag_get_real(to_engine(h), n.c_str(), v); }
+static int js_swmm_userflag_get_bool(int h, const std::string& n, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_userflag_get_bool(to_engine(h), n.c_str(), v); }
+static int js_swmm_userflag_get_int (int h, const std::string& n, int v_p) {
+    int* v = to_ptr<int>(v_p);
+    return swmm_userflag_get_int (to_engine(h), n.c_str(), v); }
+static int js_swmm_userflag_get_real(int h, const std::string& n, int v_p) {
+    double* v = to_ptr<double>(v_p);
+    return swmm_userflag_get_real(to_engine(h), n.c_str(), v); }
 static int js_swmm_userflag_set_bool(int h, const std::string& n, int    v)  { return swmm_userflag_set_bool(to_engine(h), n.c_str(), v); }
 static int js_swmm_userflag_set_int (int h, const std::string& n, int    v)  { return swmm_userflag_set_int (to_engine(h), n.c_str(), v); }
 static int js_swmm_userflag_set_real(int h, const std::string& n, double v)  { return swmm_userflag_set_real(to_engine(h), n.c_str(), v); }
 
-static int js_swmm_userflag_def_count(int h, int* count) { return swmm_userflag_def_count(to_engine(h), count); }
+static int js_swmm_userflag_def_count(int h, int count_p) {
+    int* count = to_ptr<int>(count_p);
+    return swmm_userflag_def_count(to_engine(h), count); }
 
 // swmm_userflag_def_get: name_buf, type, desc_buf as WASM raw ptrs
 static int js_swmm_userflag_def_get(int h, int index,
@@ -440,7 +560,9 @@ static int js_swmm_userflag_value_clear(int h,
 // Model builder — [PLUGINS] section
 // ---------------------------------------------------------------------------
 
-static int js_swmm_plugins_count(int h, int* count) { return swmm_plugins_count(to_engine(h), count); }
+static int js_swmm_plugins_count(int h, int count_p) {
+    int* count = to_ptr<int>(count_p);
+    return swmm_plugins_count(to_engine(h), count); }
 
 // swmm_plugin_get: path_buf/args_buf as WASM raw ptrs
 static int js_swmm_plugin_get(int h, int idx,
@@ -507,17 +629,14 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     function("swmm_engine_open",             &js_swmm_engine_open);
     function("swmm_engine_initialize",       &js_swmm_engine_initialize);
     function("swmm_engine_start",            &js_swmm_engine_start);
-    function("swmm_engine_step",             &js_swmm_engine_step,
-             allow_raw_pointers());
-    function("swmm_engine_stride",           &js_swmm_engine_stride,
-             allow_raw_pointers());
+    function("swmm_engine_step",             &js_swmm_engine_step);
+    function("swmm_engine_stride",           &js_swmm_engine_stride);
     function("swmm_engine_end",              &js_swmm_engine_end);
     function("swmm_engine_report",           &js_swmm_engine_report);
     function("swmm_engine_close",            &js_swmm_engine_close);
     function("swmm_engine_destroy",          &js_swmm_engine_destroy);
     function("swmm_engine_set_lenient_open", &js_swmm_engine_set_lenient_open);
-    function("swmm_engine_get_state",        &js_swmm_engine_get_state,
-             allow_raw_pointers());
+    function("swmm_engine_get_state",        &js_swmm_engine_get_state);
 
     // -----------------------------------------------------------------------
     // Error / timing
@@ -528,12 +647,12 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     function("swmm_get_error_count",    &js_swmm_get_error_count);
     function("swmm_get_warning_count",  &js_swmm_get_warning_count);
 
-    function("swmm_get_start_time",   &js_swmm_get_start_time,   allow_raw_pointers());
-    function("swmm_get_end_time",     &js_swmm_get_end_time,     allow_raw_pointers());
-    function("swmm_get_current_time", &js_swmm_get_current_time, allow_raw_pointers());
-    function("swmm_get_routing_step", &js_swmm_get_routing_step, allow_raw_pointers());
-    function("swmm_get_flow_units",   &js_swmm_get_flow_units,   allow_raw_pointers());
-    function("swmm_get_unit_system",  &js_swmm_get_unit_system,  allow_raw_pointers());
+    function("swmm_get_start_time",   &js_swmm_get_start_time);
+    function("swmm_get_end_time",     &js_swmm_get_end_time);
+    function("swmm_get_current_time", &js_swmm_get_current_time);
+    function("swmm_get_routing_step", &js_swmm_get_routing_step);
+    function("swmm_get_flow_units",   &js_swmm_get_flow_units);
+    function("swmm_get_unit_system",  &js_swmm_get_unit_system);
 
     // -----------------------------------------------------------------------
     // Nodes
@@ -542,27 +661,27 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     function("swmm_node_index", &js_swmm_node_index);
     function("swmm_node_id",    &js_swmm_node_id);
 
-    function("swmm_node_get_type",           &js_swmm_node_get_type,           allow_raw_pointers());
-    function("swmm_node_get_depth",          &js_swmm_node_get_depth,          allow_raw_pointers());
+    function("swmm_node_get_type",           &js_swmm_node_get_type);
+    function("swmm_node_get_depth",          &js_swmm_node_get_depth);
     function("swmm_node_set_depth",          &js_swmm_node_set_depth);
-    function("swmm_node_get_head",           &js_swmm_node_get_head,           allow_raw_pointers());
-    function("swmm_node_get_volume",         &js_swmm_node_get_volume,         allow_raw_pointers());
-    function("swmm_node_get_lateral_inflow", &js_swmm_node_get_lateral_inflow, allow_raw_pointers());
+    function("swmm_node_get_head",           &js_swmm_node_get_head);
+    function("swmm_node_get_volume",         &js_swmm_node_get_volume);
+    function("swmm_node_get_lateral_inflow", &js_swmm_node_get_lateral_inflow);
     function("swmm_node_set_lateral_inflow", &js_swmm_node_set_lateral_inflow);
-    function("swmm_node_get_overflow",       &js_swmm_node_get_overflow,       allow_raw_pointers());
-    function("swmm_node_get_inflow",         &js_swmm_node_get_inflow,         allow_raw_pointers());
-    function("swmm_node_get_losses",         &js_swmm_node_get_losses,         allow_raw_pointers());
-    function("swmm_node_get_outflow",        &js_swmm_node_get_outflow,        allow_raw_pointers());
-    function("swmm_node_get_invert_elev",    &js_swmm_node_get_invert_elev,    allow_raw_pointers());
+    function("swmm_node_get_overflow",       &js_swmm_node_get_overflow);
+    function("swmm_node_get_inflow",         &js_swmm_node_get_inflow);
+    function("swmm_node_get_losses",         &js_swmm_node_get_losses);
+    function("swmm_node_get_outflow",        &js_swmm_node_get_outflow);
+    function("swmm_node_get_invert_elev",    &js_swmm_node_get_invert_elev);
     function("swmm_node_set_invert_elev",    &js_swmm_node_set_invert_elev);
-    function("swmm_node_get_max_depth",      &js_swmm_node_get_max_depth,      allow_raw_pointers());
+    function("swmm_node_get_max_depth",      &js_swmm_node_get_max_depth);
     function("swmm_node_set_max_depth",      &js_swmm_node_set_max_depth);
     function("swmm_node_set_head_boundary",  &js_swmm_node_set_head_boundary);
 
-    function("swmm_node_get_stat_max_depth",    &js_swmm_node_get_stat_max_depth,    allow_raw_pointers());
-    function("swmm_node_get_stat_max_overflow", &js_swmm_node_get_stat_max_overflow, allow_raw_pointers());
-    function("swmm_node_get_stat_vol_flooded",  &js_swmm_node_get_stat_vol_flooded,  allow_raw_pointers());
-    function("swmm_node_get_stat_time_flooded", &js_swmm_node_get_stat_time_flooded, allow_raw_pointers());
+    function("swmm_node_get_stat_max_depth",    &js_swmm_node_get_stat_max_depth);
+    function("swmm_node_get_stat_max_overflow", &js_swmm_node_get_stat_max_overflow);
+    function("swmm_node_get_stat_vol_flooded",  &js_swmm_node_get_stat_vol_flooded);
+    function("swmm_node_get_stat_time_flooded", &js_swmm_node_get_stat_time_flooded);
 
     // -----------------------------------------------------------------------
     // Links
@@ -571,21 +690,21 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     function("swmm_link_index", &js_swmm_link_index);
     function("swmm_link_id",    &js_swmm_link_id);
 
-    function("swmm_link_get_type",            &js_swmm_link_get_type,            allow_raw_pointers());
-    function("swmm_link_get_flow",            &js_swmm_link_get_flow,            allow_raw_pointers());
+    function("swmm_link_get_type",            &js_swmm_link_get_type);
+    function("swmm_link_get_flow",            &js_swmm_link_get_flow);
     function("swmm_link_set_flow",            &js_swmm_link_set_flow);
-    function("swmm_link_get_depth",           &js_swmm_link_get_depth,           allow_raw_pointers());
-    function("swmm_link_get_velocity",        &js_swmm_link_get_velocity,        allow_raw_pointers());
-    function("swmm_link_get_capacity",        &js_swmm_link_get_capacity,        allow_raw_pointers());
-    function("swmm_link_get_volume",          &js_swmm_link_get_volume,          allow_raw_pointers());
-    function("swmm_link_get_control_setting", &js_swmm_link_get_control_setting, allow_raw_pointers());
+    function("swmm_link_get_depth",           &js_swmm_link_get_depth);
+    function("swmm_link_get_velocity",        &js_swmm_link_get_velocity);
+    function("swmm_link_get_capacity",        &js_swmm_link_get_capacity);
+    function("swmm_link_get_volume",          &js_swmm_link_get_volume);
+    function("swmm_link_get_control_setting", &js_swmm_link_get_control_setting);
     function("swmm_link_set_control_setting", &js_swmm_link_set_control_setting);
-    function("swmm_link_get_target_setting",  &js_swmm_link_get_target_setting,  allow_raw_pointers());
+    function("swmm_link_get_target_setting",  &js_swmm_link_get_target_setting);
     function("swmm_link_set_target_setting",  &js_swmm_link_set_target_setting);
-    function("swmm_link_get_closed",          &js_swmm_link_get_closed,          allow_raw_pointers());
+    function("swmm_link_get_closed",          &js_swmm_link_get_closed);
     function("swmm_link_set_closed",          &js_swmm_link_set_closed);
-    function("swmm_link_get_from_node",       &js_swmm_link_get_from_node,       allow_raw_pointers());
-    function("swmm_link_get_to_node",         &js_swmm_link_get_to_node,         allow_raw_pointers());
+    function("swmm_link_get_from_node",       &js_swmm_link_get_from_node);
+    function("swmm_link_get_to_node",         &js_swmm_link_get_to_node);
 
     // -----------------------------------------------------------------------
     // Subcatchments
@@ -594,13 +713,13 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     function("swmm_subcatch_index", &js_swmm_subcatch_index);
     function("swmm_subcatch_id",    &js_swmm_subcatch_id);
 
-    function("swmm_subcatch_get_runoff",     &js_swmm_subcatch_get_runoff,     allow_raw_pointers());
-    function("swmm_subcatch_get_area",       &js_swmm_subcatch_get_area,       allow_raw_pointers());
-    function("swmm_subcatch_get_imperv_pct", &js_swmm_subcatch_get_imperv_pct, allow_raw_pointers());
-    function("swmm_subcatch_get_width",      &js_swmm_subcatch_get_width,      allow_raw_pointers());
-    function("swmm_subcatch_get_slope",      &js_swmm_subcatch_get_slope,      allow_raw_pointers());
-    function("swmm_subcatch_get_outlet",     &js_swmm_subcatch_get_outlet,     allow_raw_pointers());
-    function("swmm_subcatch_get_gage",       &js_swmm_subcatch_get_gage,       allow_raw_pointers());
+    function("swmm_subcatch_get_runoff",     &js_swmm_subcatch_get_runoff);
+    function("swmm_subcatch_get_area",       &js_swmm_subcatch_get_area);
+    function("swmm_subcatch_get_imperv_pct", &js_swmm_subcatch_get_imperv_pct);
+    function("swmm_subcatch_get_width",      &js_swmm_subcatch_get_width);
+    function("swmm_subcatch_get_slope",      &js_swmm_subcatch_get_slope);
+    function("swmm_subcatch_get_outlet",     &js_swmm_subcatch_get_outlet);
+    function("swmm_subcatch_get_gage",       &js_swmm_subcatch_get_gage);
 
     // -----------------------------------------------------------------------
     // Gages
@@ -609,14 +728,14 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     function("swmm_gage_index", &js_swmm_gage_index);
     function("swmm_gage_id",    &js_swmm_gage_id);
 
-    function("swmm_gage_get_rainfall",      &js_swmm_gage_get_rainfall,      allow_raw_pointers());
+    function("swmm_gage_get_rainfall",      &js_swmm_gage_get_rainfall);
     function("swmm_gage_set_rainfall",      &js_swmm_gage_set_rainfall);
-    function("swmm_gage_get_rain_type",     &js_swmm_gage_get_rain_type,     allow_raw_pointers());
-    function("swmm_gage_get_data_source",   &js_swmm_gage_get_data_source,   allow_raw_pointers());
-    function("swmm_gage_get_scale_factor",  &js_swmm_gage_get_scale_factor,  allow_raw_pointers());
+    function("swmm_gage_get_rain_type",     &js_swmm_gage_get_rain_type);
+    function("swmm_gage_get_data_source",   &js_swmm_gage_get_data_source);
+    function("swmm_gage_get_scale_factor",  &js_swmm_gage_get_scale_factor);
     function("swmm_gage_set_scale_factor",  &js_swmm_gage_set_scale_factor);
-    function("swmm_gage_get_rain_interval", &js_swmm_gage_get_rain_interval, allow_raw_pointers());
-    function("swmm_gage_get_snow_factor",   &js_swmm_gage_get_snow_factor,   allow_raw_pointers());
+    function("swmm_gage_get_rain_interval", &js_swmm_gage_get_rain_interval);
+    function("swmm_gage_get_snow_factor",   &js_swmm_gage_get_snow_factor);
 
     // -----------------------------------------------------------------------
     // Controls
@@ -674,7 +793,7 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     // -----------------------------------------------------------------------
     // Model builder — [TITLE]
     // -----------------------------------------------------------------------
-    function("swmm_title_get_count", &js_swmm_title_get_count, allow_raw_pointers());
+    function("swmm_title_get_count", &js_swmm_title_get_count);
     function("swmm_title_get_line",  &js_swmm_title_get_line);
     function("swmm_title_add_line",  &js_swmm_title_add_line);
     function("swmm_title_set",       &js_swmm_title_set);
@@ -692,23 +811,23 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     // -----------------------------------------------------------------------
     // Model builder — typed date/time options
     // -----------------------------------------------------------------------
-    function("swmm_options_get_start_date",   &js_swmm_options_get_start_date,   allow_raw_pointers());
+    function("swmm_options_get_start_date",   &js_swmm_options_get_start_date);
     function("swmm_options_set_start_date",   &js_swmm_options_set_start_date);
-    function("swmm_options_get_end_date",     &js_swmm_options_get_end_date,     allow_raw_pointers());
+    function("swmm_options_get_end_date",     &js_swmm_options_get_end_date);
     function("swmm_options_set_end_date",     &js_swmm_options_set_end_date);
-    function("swmm_options_get_report_start", &js_swmm_options_get_report_start, allow_raw_pointers());
+    function("swmm_options_get_report_start", &js_swmm_options_get_report_start);
     function("swmm_options_set_report_start", &js_swmm_options_set_report_start);
 
     // -----------------------------------------------------------------------
     // Model builder — user flags (schema-level)
     // -----------------------------------------------------------------------
-    function("swmm_userflag_get_bool",  &js_swmm_userflag_get_bool,  allow_raw_pointers());
-    function("swmm_userflag_get_int",   &js_swmm_userflag_get_int,   allow_raw_pointers());
-    function("swmm_userflag_get_real",  &js_swmm_userflag_get_real,  allow_raw_pointers());
+    function("swmm_userflag_get_bool",  &js_swmm_userflag_get_bool);
+    function("swmm_userflag_get_int",   &js_swmm_userflag_get_int);
+    function("swmm_userflag_get_real",  &js_swmm_userflag_get_real);
     function("swmm_userflag_set_bool",  &js_swmm_userflag_set_bool);
     function("swmm_userflag_set_int",   &js_swmm_userflag_set_int);
     function("swmm_userflag_set_real",  &js_swmm_userflag_set_real);
-    function("swmm_userflag_def_count", &js_swmm_userflag_def_count, allow_raw_pointers());
+    function("swmm_userflag_def_count", &js_swmm_userflag_def_count);
     function("swmm_userflag_def_get",   &js_swmm_userflag_def_get);
     function("swmm_userflag_define",    &js_swmm_userflag_define);
     function("swmm_userflag_undefine",  &js_swmm_userflag_undefine);
@@ -723,7 +842,7 @@ EMSCRIPTEN_BINDINGS(openswmm_engine) {
     // -----------------------------------------------------------------------
     // Model builder — [PLUGINS]
     // -----------------------------------------------------------------------
-    function("swmm_plugins_count",  &js_swmm_plugins_count, allow_raw_pointers());
+    function("swmm_plugins_count",  &js_swmm_plugins_count);
     function("swmm_plugin_get",     &js_swmm_plugin_get);
     function("swmm_plugin_set",     &js_swmm_plugin_set);
     function("swmm_plugin_remove",  &js_swmm_plugin_remove);
