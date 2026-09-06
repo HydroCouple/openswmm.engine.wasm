@@ -38,10 +38,12 @@
     "LICENSE"
   ],
   "scripts": {
-    "build:wasm": "cmake --build build --config Release",
+    "configure:wasm": "emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release",
+    "build:wasm": "cmake --build build --parallel",
     "build:ts": "tsc --project tsconfig.json",
     "build": "npm run build:ts",
     "test": "vitest run",
+    "smoke": "node tests/smoke/smoke.mjs",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
