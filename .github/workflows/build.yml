@@ -50,8 +50,8 @@ jobs:
     permissions:
       contents: read
     container:
-      # TODO: pin to the exact tag of the first green build (e.g. emscripten/emsdk:X.Y.Z)
-      image: emscripten/emsdk:latest
+      # Pinned to the version of the first successful local build (2026-09-06).
+      image: emscripten/emsdk:6.0.9
 
     steps:
       - uses: actions/checkout@v4
