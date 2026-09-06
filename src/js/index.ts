@@ -89,6 +89,8 @@ export {
   OutNodeVar,
   OutLinkVar,
   ForcingMode,
+  ForcingType,
+  ForcingPersist,
   ForcingTarget,
   PatternType,
   RunoffTotal,

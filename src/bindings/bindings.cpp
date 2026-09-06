@@ -254,23 +254,23 @@ static int js_swmm_control_set_link_status(int h, int li, int s) {
 // Forcing
 // ---------------------------------------------------------------------------
 
-static int js_swmm_forcing_node_lat_inflow(int h, int ni, double v, int m) {
-    return swmm_forcing_node_lat_inflow(to_engine(h), ni, v, m);
+static int js_swmm_forcing_node_lat_inflow(int h, int ni, double v, int m, int p) {
+    return swmm_forcing_node_lat_inflow(to_engine(h), ni, v, m, p);
 }
-static int js_swmm_forcing_node_head_boundary(int h, int ni, double v, int m) {
-    return swmm_forcing_node_head_boundary(to_engine(h), ni, v, m);
+static int js_swmm_forcing_node_head_boundary(int h, int ni, double v, int m, int p) {
+    return swmm_forcing_node_head_boundary(to_engine(h), ni, v, m, p);
 }
-static int js_swmm_forcing_link_flow(int h, int li, double v, int m) {
-    return swmm_forcing_link_flow(to_engine(h), li, v, m);
+static int js_swmm_forcing_link_flow(int h, int li, double v, int m, int p) {
+    return swmm_forcing_link_flow(to_engine(h), li, v, m, p);
 }
-static int js_swmm_forcing_link_setting(int h, int li, double v, int m) {
-    return swmm_forcing_link_setting(to_engine(h), li, v, m);
+static int js_swmm_forcing_link_setting(int h, int li, double v, int m, int p) {
+    return swmm_forcing_link_setting(to_engine(h), li, v, m, p);
 }
-static int js_swmm_forcing_subcatch_rainfall(int h, int si, double v, int m) {
-    return swmm_forcing_subcatch_rainfall(to_engine(h), si, v, m);
+static int js_swmm_forcing_subcatch_rainfall(int h, int si, double v, int m, int p) {
+    return swmm_forcing_subcatch_rainfall(to_engine(h), si, v, m, p);
 }
-static int js_swmm_forcing_gage_rainfall(int h, int gi, double v, int m) {
-    return swmm_forcing_gage_rainfall(to_engine(h), gi, v, m);
+static int js_swmm_forcing_gage_rainfall(int h, int gi, double v, int m, int p) {
+    return swmm_forcing_gage_rainfall(to_engine(h), gi, v, m, p);
 }
 static int js_swmm_forcing_clear    (int h, int type, int idx) { return swmm_forcing_clear(to_engine(h), type, idx); }
 static int js_swmm_forcing_clear_all(int h)                    { return swmm_forcing_clear_all(to_engine(h)); }

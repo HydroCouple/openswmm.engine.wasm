@@ -1,7 +1,7 @@
 {
   "name": "@hydrocouple/openswmm-engine-wasm",
   "version": "6.0.0-dev.0",
-  "description": "WebAssembly bindings for the OpenSWMM Engine C++ API — mirrors the openswmm.engine Python bindings surface.",
+  "description": "WebAssembly bindings for the OpenSWMM Engine C++ API \u2014 mirrors the openswmm.engine Python bindings surface.",
   "license": "MIT",
   "author": "Caleb Buahin <caleb.buahin@gmail.com>",
   "homepage": "https://github.com/HydroCouple/openswmm.engine.wasm",
@@ -45,7 +45,8 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "check:bindings": "bash tools/host_shim/check.sh"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",

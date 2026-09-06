@@ -186,6 +186,8 @@ export enum RouteModel {
   KINWAVE = 1,
   /** Dynamic wave (full Saint-Venant) routing. */
   DYNWAVE = 2,
+  /** Explicit conservative finite-volume (Godunov) routing; requires `FV_CELL_LENGTH`. */
+  FV = 3,
 }
 
 /**
@@ -494,6 +496,37 @@ export enum ForcingMode {
   REPLACE = 1,
   /** Add the forced value to the computed value. */
   ADD = 2,
+}
+
+/**
+ * Forcing channel selected when injecting a runtime override.
+ * Mirrors `SWMM_ForcingType` in `openswmm_forcing.h`.
+ */
+export enum ForcingType {
+  NODE_LAT_INFLOW = 0,
+  NODE_HEAD_BOUNDARY = 1,
+  NODE_QUALITY = 2,
+  LINK_FLOW = 3,
+  LINK_SETTING = 4,
+  SUBCATCH_RAINFALL = 5,
+  SUBCATCH_EVAP = 6,
+  GAGE_RAINFALL = 7,
+  CLIMATE_TEMPERATURE = 8,
+  CLIMATE_WIND = 9,
+  SUBCATCH_SNOWFALL = 10,
+  CLIMATE_EVAP = 11,
+  LINK_QUALITY = 12,
+}
+
+/**
+ * Lifetime of a runtime forcing override.
+ * Mirrors `SWMM_ForcingPersist` in `openswmm_forcing.h`.
+ */
+export enum ForcingPersist {
+  /** Auto-clear the forcing after each routing step. */
+  RESET = 0,
+  /** Keep the forcing until it is explicitly cleared. */
+  PERSIST = 1,
 }
 
 /**
