@@ -38,6 +38,7 @@
     "LICENSE"
   ],
   "scripts": {
+    "gen": "python3 tools/gen_bindings.py",
     "configure:wasm": "emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release",
     "build:wasm": "cmake --build build --parallel",
     "build:ts": "tsc --project tsconfig.json",
