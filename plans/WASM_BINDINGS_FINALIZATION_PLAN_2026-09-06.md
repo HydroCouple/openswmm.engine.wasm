@@ -67,6 +67,8 @@ Each phase ends with a commit; verification criteria are the gate.
 3. `openswmm.engine.wasm/CMakeLists.txt`: `-DOPENSWMM_BUILD_2D=OFF -DOPENSWMM_BUILD_GPU_PLUGIN=OFF -DOPENSWMM_WITH_GEOPACKAGE=ON`, sqlite amalgamation via FetchContent, `-fwasm-exceptions` (engine throws internally), `-sEXPORTED_FUNCTIONS`, `-sALLOW_TABLE_GROWTH`, `-sFORCE_FILESYSTEM`, `-sEXPORT_ES6=1`, `-sSTACK_SIZE=1MB`, `-sINITIAL_MEMORY=64MB`.
 4. CI `build.yml`: emsdk container; wasm job must produce `dist/openswmm_engine.{js,wasm}` and run `npm run smoke` (`tests/fixtures/smoke.inp` → outfall peak within 2 % of the native reference `tests/fixtures/smoke.native.rpt`, routing continuity error < 1 %).
 - **Verify:** CI wasm job green; smoke test passes; `.wasm` size reported in job summary.
+- **Result (2026-09-06, local, Emscripten 6.0.9 via Homebrew, Node 24):** PASS — `openswmm_engine.wasm` 3.76 MB; smoke report identical to native (728 steps, O1 peak 5.59 cfs, routing CE −0.002 %). Fixes needed along the way: `PluginFactory` Emscripten stubs (engine `0e3155a`), Embind cannot bind `double*`/`int*` → out-params passed as heap offsets (wasm `7e9f697`). Smoke test needs Node ≥ 18 (wasm exceptions). CI pinned to `emscripten/emsdk:6.0.9`; CI itself not yet observed green (repos not pushed).
+- **Engine issue found (not WASM-specific, not fixed here):** `swmm_node_get_inflow` returns `lat_flow` only (`src/engine/core/openswmm_nodes_impl.cpp:362`) while its header documents "lateral + upstream links"; Python bindings inherit the same behaviour.
 
 ### Phase 1 — Generated raw layer + host-shim check
 1. `tools/gen_bindings.py` (+ `npm run gen`); commit generated `raw.ts`/manifest (reviewable diffs).
