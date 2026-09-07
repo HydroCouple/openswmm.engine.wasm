@@ -20,6 +20,8 @@
 import { ForcingMode, ForcingTarget } from "./enums.js";
 import { raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import type { RawApi } from "./raw.js";
+import { rawOf } from "./mem.js";
 
 // Re-export for convenience when consumers import from "./Forcing.js"
 export { ForcingMode, ForcingTarget };
@@ -60,12 +62,14 @@ export { ForcingMode, ForcingTarget };
 export class Forcing {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
 
   /** @internal */
   constructor(mod: OpenSwmmWasmModule, engine: number) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
   }
 
@@ -88,7 +92,7 @@ export class Forcing {
     persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_node_lat_inflow(this._engine, nodeIdx, value, mode, persist ? 1 : 0),
+      this._raw.swmm_forcing_node_lat_inflow(this._engine, nodeIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -107,7 +111,7 @@ export class Forcing {
     persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_node_head_boundary(this._engine, nodeIdx, value, mode, persist ? 1 : 0),
+      this._raw.swmm_forcing_node_head_boundary(this._engine, nodeIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -130,7 +134,7 @@ export class Forcing {
     persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_link_flow(this._engine, linkIdx, value, mode, persist ? 1 : 0),
+      this._raw.swmm_forcing_link_flow(this._engine, linkIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -149,7 +153,7 @@ export class Forcing {
     persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_link_setting(this._engine, linkIdx, value, mode, persist ? 1 : 0),
+      this._raw.swmm_forcing_link_setting(this._engine, linkIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -172,7 +176,7 @@ export class Forcing {
     persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_subcatch_rainfall(this._engine, scIdx, value, mode, persist ? 1 : 0),
+      this._raw.swmm_forcing_subcatch_rainfall(this._engine, scIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -195,7 +199,7 @@ export class Forcing {
     persist = false,
   ): void {
     raiseForCode(
-      this._mod.swmm_forcing_gage_rainfall(this._engine, gageIdx, value, mode, persist ? 1 : 0),
+      this._raw.swmm_forcing_gage_rainfall(this._engine, gageIdx, value, mode, persist ? 1 : 0),
     );
   }
 
@@ -210,13 +214,13 @@ export class Forcing {
    * @param idx   Zero-based object index.
    */
   clear(type: ForcingTarget, idx: number): void {
-    raiseForCode(this._mod.swmm_forcing_clear(this._engine, type, idx));
+    raiseForCode(this._raw.swmm_forcing_clear(this._engine, type, idx));
   }
 
   /**
    * Clear all active forcing across all object types.
    */
   clearAll(): void {
-    raiseForCode(this._mod.swmm_forcing_clear_all(this._engine));
+    raiseForCode(this._raw.swmm_forcing_clear_all(this._engine));
   }
 }

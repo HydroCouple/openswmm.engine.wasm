@@ -125,3 +125,10 @@ export {
 // ---------------------------------------------------------------------------
 export type { OpenSwmmWasmModule, EmscriptenFS } from "./types.js";
 export { oadateToDate, dateToOadate } from "./types.js";
+
+// ---------------------------------------------------------------------------
+// Raw layer (generated) — for advanced users; also published as "./raw"
+// ---------------------------------------------------------------------------
+export { bindRaw, STRUCTS, RAW_FUNCTION_COUNT } from "./raw.js";
+export type { RawApi, RawModule } from "./raw.js";
+export { rawOf, withCString, withDouble, withInt, withDoubleArray, withDoubleInput } from "./mem.js";

@@ -27,7 +27,15 @@
     ".": {
       "import": "./dist/index.js",
       "types": "./dist/index.d.ts"
-    }
+    },
+    "./raw": {
+      "import": "./dist/raw.js",
+      "types": "./dist/raw.d.ts"
+    },
+    "./wasm": {
+      "import": "./dist/openswmm_engine.js"
+    },
+    "./openswmm_engine.wasm": "./dist/openswmm_engine.wasm"
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -62,5 +70,6 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "sideEffects": false
 }

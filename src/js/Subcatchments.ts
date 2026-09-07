@@ -11,6 +11,8 @@
 
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import type { RawApi } from "./raw.js";
+import { rawOf } from "./mem.js";
 
 // =============================================================================
 // Subcatchment
@@ -24,6 +26,7 @@ import type { OpenSwmmWasmModule } from "./types.js";
 export class Subcatchment {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
   /** @internal */
@@ -43,6 +46,7 @@ export class Subcatchment {
     index: number,
   ) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
     this._collection = collection;
     this._generation = generation;
@@ -63,7 +67,7 @@ export class Subcatchment {
   /** String identifier of this subcatchment. */
   get id(): string {
     this._checkStale();
-    return this._mod.swmm_subcatch_id(this._engine, this.index);
+    return this._raw.swmm_subcatch_id(this._engine, this.index);
   }
 
   // -------------------------------------------------------------------------
@@ -75,7 +79,7 @@ export class Subcatchment {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_subcatch_get_runoff(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_subcatch_get_runoff(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -91,7 +95,7 @@ export class Subcatchment {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_subcatch_get_area(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_subcatch_get_area(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -103,7 +107,7 @@ export class Subcatchment {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_subcatch_get_imperv_pct(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_subcatch_get_imperv_pct(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -115,7 +119,7 @@ export class Subcatchment {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_subcatch_get_width(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_subcatch_get_width(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -127,7 +131,7 @@ export class Subcatchment {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_subcatch_get_slope(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_subcatch_get_slope(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -143,7 +147,7 @@ export class Subcatchment {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_subcatch_get_outlet(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_subcatch_get_outlet(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
     } finally {
       this._mod._free(ptr);
@@ -155,7 +159,7 @@ export class Subcatchment {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_subcatch_get_gage(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_subcatch_get_gage(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
     } finally {
       this._mod._free(ptr);
@@ -182,6 +186,7 @@ export class Subcatchment {
 export class Subcatchments implements Iterable<Subcatchment> {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
 
@@ -191,6 +196,7 @@ export class Subcatchments implements Iterable<Subcatchment> {
   /** @internal */
   constructor(mod: OpenSwmmWasmModule, engine: number) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
   }
 
@@ -200,7 +206,7 @@ export class Subcatchments implements Iterable<Subcatchment> {
 
   /** Number of subcatchments in the model. */
   get length(): number {
-    return this._mod.swmm_subcatch_count(this._engine);
+    return this._raw.swmm_subcatch_count(this._engine);
   }
 
   /**
@@ -210,7 +216,7 @@ export class Subcatchments implements Iterable<Subcatchment> {
    */
   get(indexOrId: number | string): Subcatchment {
     if (typeof indexOrId === "string") {
-      const idx = this._mod.swmm_subcatch_index(this._engine, indexOrId);
+      const idx = this._raw.swmm_subcatch_index(this._engine, indexOrId);
       if (idx < 0) throw new ElementNotFoundError(indexOrId);
       return new Subcatchment(this._mod, this._engine, this, this.generation, idx);
     }
@@ -226,12 +232,12 @@ export class Subcatchments implements Iterable<Subcatchment> {
 
   /** Return the zero-based index for a string subcatchment ID, or -1. */
   getIndex(id: string): number {
-    return this._mod.swmm_subcatch_index(this._engine, id);
+    return this._raw.swmm_subcatch_index(this._engine, id);
   }
 
   /** Return the string ID for a zero-based subcatchment index. */
   getId(idx: number): string {
-    const id = this._mod.swmm_subcatch_id(this._engine, idx);
+    const id = this._raw.swmm_subcatch_id(this._engine, idx);
     if (!id) throw new ElementNotFoundError(idx, `Subcatchment index ${idx} out of range`);
     return id;
   }
@@ -247,7 +253,7 @@ export class Subcatchments implements Iterable<Subcatchment> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_subcatch_get_runoff(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_subcatch_get_runoff(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {

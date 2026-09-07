@@ -12,6 +12,8 @@
 import { GageDataSource, GageRainType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import type { RawApi } from "./raw.js";
+import { rawOf } from "./mem.js";
 
 // =============================================================================
 // Gage
@@ -25,6 +27,7 @@ import type { OpenSwmmWasmModule } from "./types.js";
 export class Gage {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
   /** @internal */
@@ -44,6 +47,7 @@ export class Gage {
     index: number,
   ) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
     this._collection = collection;
     this._generation = generation;
@@ -64,7 +68,7 @@ export class Gage {
   /** String identifier of this gage. */
   get id(): string {
     this._checkStale();
-    return this._mod.swmm_gage_id(this._engine, this.index);
+    return this._raw.swmm_gage_id(this._engine, this.index);
   }
 
   // -------------------------------------------------------------------------
@@ -76,7 +80,7 @@ export class Gage {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_gage_get_rain_type(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_gage_get_rain_type(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as GageRainType;
     } finally {
       this._mod._free(ptr);
@@ -88,7 +92,7 @@ export class Gage {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_gage_get_data_source(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_gage_get_data_source(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as GageDataSource;
     } finally {
       this._mod._free(ptr);
@@ -100,7 +104,7 @@ export class Gage {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_gage_get_scale_factor(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_gage_get_scale_factor(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -110,7 +114,7 @@ export class Gage {
   /** Set the scale factor. */
   set scaleFactor(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_gage_set_scale_factor(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_gage_set_scale_factor(this._engine, this.index, value));
   }
 
   /** Recording interval (seconds). */
@@ -118,7 +122,7 @@ export class Gage {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_gage_get_rain_interval(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_gage_get_rain_interval(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -130,7 +134,7 @@ export class Gage {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_gage_get_snow_factor(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_gage_get_snow_factor(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -146,7 +150,7 @@ export class Gage {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_gage_get_rainfall(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_gage_get_rainfall(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -156,7 +160,7 @@ export class Gage {
   /** Set the current rainfall rate (used for direct forcing). */
   set rainfall(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_gage_set_rainfall(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_gage_set_rainfall(this._engine, this.index, value));
   }
 }
 
@@ -179,6 +183,7 @@ export class Gage {
 export class Gages implements Iterable<Gage> {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
 
@@ -188,6 +193,7 @@ export class Gages implements Iterable<Gage> {
   /** @internal */
   constructor(mod: OpenSwmmWasmModule, engine: number) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
   }
 
@@ -197,7 +203,7 @@ export class Gages implements Iterable<Gage> {
 
   /** Number of rain gages in the model. */
   get length(): number {
-    return this._mod.swmm_gage_count(this._engine);
+    return this._raw.swmm_gage_count(this._engine);
   }
 
   /**
@@ -207,7 +213,7 @@ export class Gages implements Iterable<Gage> {
    */
   get(indexOrId: number | string): Gage {
     if (typeof indexOrId === "string") {
-      const idx = this._mod.swmm_gage_index(this._engine, indexOrId);
+      const idx = this._raw.swmm_gage_index(this._engine, indexOrId);
       if (idx < 0) throw new ElementNotFoundError(indexOrId);
       return new Gage(this._mod, this._engine, this, this.generation, idx);
     }
@@ -223,12 +229,12 @@ export class Gages implements Iterable<Gage> {
 
   /** Return the zero-based index for a string gage ID, or -1. */
   getIndex(id: string): number {
-    return this._mod.swmm_gage_index(this._engine, id);
+    return this._raw.swmm_gage_index(this._engine, id);
   }
 
   /** Return the string ID for a zero-based gage index. */
   getId(idx: number): string {
-    const id = this._mod.swmm_gage_id(this._engine, idx);
+    const id = this._raw.swmm_gage_id(this._engine, idx);
     if (!id) throw new ElementNotFoundError(idx, `Gage index ${idx} out of range`);
     return id;
   }
@@ -244,7 +250,7 @@ export class Gages implements Iterable<Gage> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_gage_get_rainfall(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_gage_get_rainfall(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {

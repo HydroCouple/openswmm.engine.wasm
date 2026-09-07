@@ -42,7 +42,7 @@
  * @license  MIT
  */
 
-import { EngineError, raiseForCode } from "./errors.js";
+import { EngineError, raiseForCode, CRSError } from "./errors.js";
 import { Nodes } from "./Nodes.js";
 import { Links } from "./Links.js";
 import { Subcatchments } from "./Subcatchments.js";
@@ -51,6 +51,8 @@ import { Controls } from "./Controls.js";
 import { Forcing } from "./Forcing.js";
 import { Solver } from "./Solver.js";
 import { type OpenSwmmWasmModule, oadateToDate, dateToOadate } from "./types.js";
+import type { RawApi } from "./raw.js";
+import { rawOf, withCString } from "./mem.js";
 
 // Buffer sizes used when reading variable-length strings from the engine.
 const BUF_SMALL  = 256;
@@ -112,6 +114,7 @@ export interface PluginEntry {
 export class ModelBuilder {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
 
   /**
    * Opaque engine handle (integer pointer into the WASM heap).
@@ -140,7 +143,8 @@ export class ModelBuilder {
    */
   constructor(mod: OpenSwmmWasmModule) {
     this._mod = mod;
-    const h = mod.swmm_engine_new();
+    this._raw = rawOf(mod);
+    const h = this._raw.swmm_engine_new();
     if (!h) throw new EngineError(7, "swmm_engine_new() returned NULL");
     this._handle = h;
   }
@@ -224,9 +228,9 @@ export class ModelBuilder {
    */
   addNode(nodeId: string, nodeType: number): number {
     this._assertValid();
-    raiseForCode(this._mod.swmm_node_add(this._handle, nodeId, nodeType));
+    raiseForCode(this._raw.swmm_node_add(this._handle, nodeId, nodeType));
     this._generation++;
-    return this._mod.swmm_node_count(this._handle) - 1;
+    return this._raw.swmm_node_count(this._handle) - 1;
   }
 
   /**
@@ -241,7 +245,7 @@ export class ModelBuilder {
    */
   popLastNode(nodeId: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_node_pop_last(this._handle, nodeId));
+    raiseForCode(this._raw.swmm_node_pop_last(this._handle, nodeId));
     this._generation++;
   }
 
@@ -261,9 +265,9 @@ export class ModelBuilder {
    */
   addLink(linkId: string, linkType: number): number {
     this._assertValid();
-    raiseForCode(this._mod.swmm_link_add(this._handle, linkId, linkType));
+    raiseForCode(this._raw.swmm_link_add(this._handle, linkId, linkType));
     this._generation++;
-    return this._mod.swmm_link_count(this._handle) - 1;
+    return this._raw.swmm_link_count(this._handle) - 1;
   }
 
   /**
@@ -274,7 +278,7 @@ export class ModelBuilder {
    */
   popLastLink(linkId: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_link_pop_last(this._handle, linkId));
+    raiseForCode(this._raw.swmm_link_pop_last(this._handle, linkId));
     this._generation++;
   }
 
@@ -291,9 +295,9 @@ export class ModelBuilder {
    */
   addSubcatchment(scId: string): number {
     this._assertValid();
-    raiseForCode(this._mod.swmm_subcatch_add(this._handle, scId));
+    raiseForCode(this._raw.swmm_subcatch_add(this._handle, scId));
     this._generation++;
-    return this._mod.swmm_subcatch_count(this._handle) - 1;
+    return this._raw.swmm_subcatch_count(this._handle) - 1;
   }
 
   /**
@@ -305,9 +309,9 @@ export class ModelBuilder {
    */
   addGage(gageId: string): number {
     this._assertValid();
-    raiseForCode(this._mod.swmm_gage_add(this._handle, gageId));
+    raiseForCode(this._raw.swmm_gage_add(this._handle, gageId));
     this._generation++;
-    return this._mod.swmm_gage_count(this._handle) - 1;
+    return this._raw.swmm_gage_count(this._handle) - 1;
   }
 
   // -------------------------------------------------------------------------
@@ -323,7 +327,7 @@ export class ModelBuilder {
    */
   setNodeInvert(idx: number, elev: number): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_node_set_invert_elev(this._handle, idx, elev));
+    raiseForCode(this._raw.swmm_node_set_invert_elev(this._handle, idx, elev));
   }
 
   /**
@@ -335,7 +339,7 @@ export class ModelBuilder {
    */
   setNodeMaxDepth(idx: number, depth: number): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_node_set_max_depth(this._handle, idx, depth));
+    raiseForCode(this._raw.swmm_node_set_max_depth(this._handle, idx, depth));
   }
 
   // -------------------------------------------------------------------------
@@ -352,7 +356,7 @@ export class ModelBuilder {
    */
   setLinkNodes(idx: number, fromNode: number, toNode: number): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_link_set_nodes(this._handle, idx, fromNode, toNode));
+    raiseForCode(this._raw.swmm_link_set_nodes(this._handle, idx, fromNode, toNode));
   }
 
   /**
@@ -364,7 +368,7 @@ export class ModelBuilder {
    */
   setLinkLength(idx: number, length: number): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_link_set_length(this._handle, idx, length));
+    raiseForCode(this._raw.swmm_link_set_length(this._handle, idx, length));
   }
 
   /**
@@ -376,7 +380,7 @@ export class ModelBuilder {
    */
   setLinkRoughness(idx: number, n: number): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_link_set_roughness(this._handle, idx, n));
+    raiseForCode(this._raw.swmm_link_set_roughness(this._handle, idx, n));
   }
 
   /**
@@ -400,7 +404,7 @@ export class ModelBuilder {
   ): void {
     this._assertValid();
     raiseForCode(
-      this._mod.swmm_link_set_xsect(this._handle, idx, shape, geom1, geom2, geom3, geom4),
+      this._raw.swmm_link_set_xsect(this._handle, idx, shape, geom1, geom2, geom3, geom4),
     );
   }
 
@@ -418,7 +422,7 @@ export class ModelBuilder {
    */
   validate(): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_validate_model(this._handle));
+    raiseForCode(this._raw.swmm_validate_model(this._handle));
   }
 
   /**
@@ -430,7 +434,7 @@ export class ModelBuilder {
    */
   finalize(): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_finalize_model(this._handle));
+    raiseForCode(this._raw.swmm_finalize_model(this._handle));
   }
 
   /**
@@ -441,7 +445,7 @@ export class ModelBuilder {
    */
   write(path: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_model_write(this._handle, path));
+    raiseForCode(this._raw.swmm_model_write(this._handle, path));
   }
 
   /**
@@ -453,7 +457,7 @@ export class ModelBuilder {
    */
   writeWithPlugin(path: string, outputPluginId = ""): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_model_write_with_plugin(this._handle, path, outputPluginId));
+    raiseForCode(this._raw.swmm_model_write_with_plugin(this._handle, path, outputPluginId));
   }
 
   // -------------------------------------------------------------------------
@@ -469,7 +473,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_title_get_count(this._handle, ptr));
+      raiseForCode(this._raw.swmm_title_get_count(this._handle, ptr));
       return this._mod.getValue(ptr, "i32");
     } finally {
       this._mod._free(ptr);
@@ -483,7 +487,9 @@ export class ModelBuilder {
    */
   getTitleLine(index: number): string {
     this._assertValid();
-    return this._mod.swmm_title_get_line(this._handle, index);
+    return withCString(this._mod, 1024, (buf, len) =>
+      this._raw.swmm_title_get_line(this._handle, index, buf, len),
+    );
   }
 
   /**
@@ -493,7 +499,7 @@ export class ModelBuilder {
    */
   addTitleLine(line: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_title_add_line(this._handle, line));
+    raiseForCode(this._raw.swmm_title_add_line(this._handle, line));
   }
 
   /**
@@ -503,7 +509,7 @@ export class ModelBuilder {
    */
   setTitle(text: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_title_set(this._handle, text));
+    raiseForCode(this._raw.swmm_title_set(this._handle, text));
   }
 
   /**
@@ -513,7 +519,7 @@ export class ModelBuilder {
    */
   clearTitle(): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_title_clear(this._handle));
+    raiseForCode(this._raw.swmm_title_clear(this._handle));
   }
 
   // -------------------------------------------------------------------------
@@ -528,9 +534,9 @@ export class ModelBuilder {
    */
   getOption(key: string): string {
     this._assertValid();
-    const rc = this._mod.swmm_options_get(this._handle, key);
-    // The C++ wrapper returns "" on error; rely on error state check
-    return rc;
+    return withCString(this._mod, 512, (buf, len) =>
+      this._raw.swmm_options_get(this._handle, key, buf, len),
+    );
   }
 
   /**
@@ -542,7 +548,7 @@ export class ModelBuilder {
    */
   setOption(key: string, value: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_options_set(this._handle, key, value));
+    raiseForCode(this._raw.swmm_options_set(this._handle, key, value));
   }
 
   /**
@@ -552,7 +558,9 @@ export class ModelBuilder {
    */
   getOptionExt(key: string): string {
     this._assertValid();
-    return this._mod.swmm_options_get_ext(this._handle, key);
+    return withCString(this._mod, 512, (buf, len) =>
+      this._raw.swmm_options_get_ext(this._handle, key, buf, len),
+    );
   }
 
   /**
@@ -562,7 +570,7 @@ export class ModelBuilder {
    */
   setOptionExt(key: string, value: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_options_set_ext(this._handle, key, value));
+    raiseForCode(this._raw.swmm_options_set_ext(this._handle, key, value));
   }
 
   /**
@@ -573,7 +581,16 @@ export class ModelBuilder {
    */
   getCrs(): string {
     this._assertValid();
-    return this._mod.swmm_get_crs(this._handle);
+    // The engine reports SWMM_ERR_CRS when no CRS is set; keep the documented
+    // "" contract for that case.
+    try {
+      return withCString(this._mod, 512, (buf, len) =>
+        this._raw.swmm_get_crs(this._handle, buf, len),
+      );
+    } catch (e) {
+      if (e instanceof CRSError) return "";
+      throw e;
+    }
   }
 
   // -------------------------------------------------------------------------
@@ -587,7 +604,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_options_get_start_date(this._handle, ptr));
+      raiseForCode(this._raw.swmm_options_get_start_date(this._handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
     } finally {
       this._mod._free(ptr);
@@ -596,7 +613,7 @@ export class ModelBuilder {
 
   set startDatetime(date: Date) {
     this._assertValid();
-    raiseForCode(this._mod.swmm_options_set_start_date(this._handle, dateToOadate(date)));
+    raiseForCode(this._raw.swmm_options_set_start_date(this._handle, dateToOadate(date)));
   }
 
   /**
@@ -606,7 +623,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_options_get_end_date(this._handle, ptr));
+      raiseForCode(this._raw.swmm_options_get_end_date(this._handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
     } finally {
       this._mod._free(ptr);
@@ -615,7 +632,7 @@ export class ModelBuilder {
 
   set endDatetime(date: Date) {
     this._assertValid();
-    raiseForCode(this._mod.swmm_options_set_end_date(this._handle, dateToOadate(date)));
+    raiseForCode(this._raw.swmm_options_set_end_date(this._handle, dateToOadate(date)));
   }
 
   /**
@@ -625,7 +642,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_options_get_report_start(this._handle, ptr));
+      raiseForCode(this._raw.swmm_options_get_report_start(this._handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
     } finally {
       this._mod._free(ptr);
@@ -634,7 +651,7 @@ export class ModelBuilder {
 
   set reportStartDatetime(date: Date) {
     this._assertValid();
-    raiseForCode(this._mod.swmm_options_set_report_start(this._handle, dateToOadate(date)));
+    raiseForCode(this._raw.swmm_options_set_report_start(this._handle, dateToOadate(date)));
   }
 
   // -------------------------------------------------------------------------
@@ -651,7 +668,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_userflag_get_bool(this._handle, name, ptr));
+      raiseForCode(this._raw.swmm_userflag_get_bool(this._handle, name, ptr));
       return this._mod.getValue(ptr, "i32") !== 0;
     } finally {
       this._mod._free(ptr);
@@ -667,7 +684,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_userflag_get_int(this._handle, name, ptr));
+      raiseForCode(this._raw.swmm_userflag_get_int(this._handle, name, ptr));
       return this._mod.getValue(ptr, "i32");
     } finally {
       this._mod._free(ptr);
@@ -683,7 +700,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_userflag_get_real(this._handle, name, ptr));
+      raiseForCode(this._raw.swmm_userflag_get_real(this._handle, name, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -697,7 +714,7 @@ export class ModelBuilder {
    */
   setUserflagBool(name: string, value: boolean): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_userflag_set_bool(this._handle, name, value ? 1 : 0));
+    raiseForCode(this._raw.swmm_userflag_set_bool(this._handle, name, value ? 1 : 0));
   }
 
   /**
@@ -707,7 +724,7 @@ export class ModelBuilder {
    */
   setUserflagInt(name: string, value: number): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_userflag_set_int(this._handle, name, value));
+    raiseForCode(this._raw.swmm_userflag_set_int(this._handle, name, value));
   }
 
   /**
@@ -717,7 +734,7 @@ export class ModelBuilder {
    */
   setUserflagReal(name: string, value: number): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_userflag_set_real(this._handle, name, value));
+    raiseForCode(this._raw.swmm_userflag_set_real(this._handle, name, value));
   }
 
   // -------------------------------------------------------------------------
@@ -731,7 +748,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_userflag_def_count(this._handle, ptr));
+      raiseForCode(this._raw.swmm_userflag_def_count(this._handle, ptr));
       return this._mod.getValue(ptr, "i32");
     } finally {
       this._mod._free(ptr);
@@ -750,7 +767,7 @@ export class ModelBuilder {
     const descBuf = this._mod._malloc(BUF_MEDIUM);
     try {
       raiseForCode(
-        this._mod.swmm_userflag_def_get(
+        this._raw.swmm_userflag_def_get(
           this._handle, index,
           nameBuf, BUF_SMALL,
           typePtr,
@@ -779,7 +796,7 @@ export class ModelBuilder {
    */
   defineUserflag(name: string, type: number, description = ""): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_userflag_define(this._handle, name, type, description));
+    raiseForCode(this._raw.swmm_userflag_define(this._handle, name, type, description));
   }
 
   /**
@@ -789,7 +806,7 @@ export class ModelBuilder {
    */
   undefineUserflag(name: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_userflag_undefine(this._handle, name));
+    raiseForCode(this._raw.swmm_userflag_undefine(this._handle, name));
   }
 
   // -------------------------------------------------------------------------
@@ -814,7 +831,7 @@ export class ModelBuilder {
     const foundPtr = this._mod._malloc(4);
     try {
       raiseForCode(
-        this._mod.swmm_userflag_value_get(
+        this._raw.swmm_userflag_value_get(
           this._handle, objType, objName, flagName, buf, BUF_MEDIUM, foundPtr,
         ),
       );
@@ -839,7 +856,7 @@ export class ModelBuilder {
   ): void {
     this._assertValid();
     raiseForCode(
-      this._mod.swmm_userflag_value_set(this._handle, objType, objName, flagName, value),
+      this._raw.swmm_userflag_value_set(this._handle, objType, objName, flagName, value),
     );
   }
 
@@ -851,7 +868,7 @@ export class ModelBuilder {
   clearUserflagValue(objType: string, objName: string, flagName: string): void {
     this._assertValid();
     raiseForCode(
-      this._mod.swmm_userflag_value_clear(this._handle, objType, objName, flagName),
+      this._raw.swmm_userflag_value_clear(this._handle, objType, objName, flagName),
     );
   }
 
@@ -866,7 +883,7 @@ export class ModelBuilder {
     this._assertValid();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_plugins_count(this._handle, ptr));
+      raiseForCode(this._raw.swmm_plugins_count(this._handle, ptr));
       return this._mod.getValue(ptr, "i32");
     } finally {
       this._mod._free(ptr);
@@ -885,7 +902,7 @@ export class ModelBuilder {
     const argsBuf = this._mod._malloc(BUF_MEDIUM);
     try {
       raiseForCode(
-        this._mod.swmm_plugin_get(
+        this._raw.swmm_plugin_get(
           this._handle, idx,
           pathBuf, BUF_MEDIUM,
           argsBuf, BUF_MEDIUM,
@@ -910,7 +927,7 @@ export class ModelBuilder {
    */
   pluginSet(pathOrId: string, args = ""): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_plugin_set(this._handle, pathOrId, args));
+    raiseForCode(this._raw.swmm_plugin_set(this._handle, pathOrId, args));
   }
 
   /**
@@ -920,7 +937,7 @@ export class ModelBuilder {
    */
   pluginRemove(pathOrId: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_plugin_remove(this._handle, pathOrId));
+    raiseForCode(this._raw.swmm_plugin_remove(this._handle, pathOrId));
   }
 
   // -------------------------------------------------------------------------
@@ -935,7 +952,9 @@ export class ModelBuilder {
    */
   filesGet(key: string): string {
     this._assertValid();
-    return this._mod.swmm_files_get(this._handle, key);
+    return withCString(this._mod, 1024, (buf, len) =>
+      this._raw.swmm_files_get(this._handle, key, buf, len),
+    );
   }
 
   /**
@@ -947,7 +966,7 @@ export class ModelBuilder {
    */
   filesSet(key: string, value: string): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_files_set(this._handle, key, value));
+    raiseForCode(this._raw.swmm_files_set(this._handle, key, value));
   }
 
   // -------------------------------------------------------------------------
@@ -967,7 +986,7 @@ export class ModelBuilder {
     const origBuf = this._mod._malloc(BUF_LARGE);
     try {
       raiseForCode(
-        this._mod.swmm_file_path_get(
+        this._raw.swmm_file_path_get(
           this._handle, role, owner,
           absBuf, BUF_LARGE,
           origBuf, BUF_LARGE,
@@ -994,7 +1013,7 @@ export class ModelBuilder {
    */
   filePathSet(role: number, newPath: string, owner = ""): void {
     this._assertValid();
-    raiseForCode(this._mod.swmm_file_path_set(this._handle, role, owner, newPath));
+    raiseForCode(this._raw.swmm_file_path_set(this._handle, role, owner, newPath));
   }
 
   // -------------------------------------------------------------------------
@@ -1071,7 +1090,7 @@ export class ModelBuilder {
    */
   [Symbol.dispose](): void {
     if (this._handle) {
-      this._mod.swmm_engine_destroy(this._handle);
+      this._raw.swmm_engine_destroy(this._handle);
       this._handle = 0;
     }
   }

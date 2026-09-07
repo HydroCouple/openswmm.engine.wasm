@@ -85,10 +85,14 @@ def js_kind(ctype: str, *, is_return: bool) -> str | None:
 
 def parse_headers(header_dir: Path):
     funcs = []
+    excluded = []
     for h in sorted(header_dir.glob("*.h")):
-        if h.name in SKIP_HEADERS or h.name in EXCLUDED_HEADERS:
+        if h.name in SKIP_HEADERS:
             continue
         text = strip_comments(h.read_text())
+        if h.name in EXCLUDED_HEADERS:
+            excluded += [m.group("name") for m in PROTO_RE.finditer(text)]
+            continue
         for m in PROTO_RE.finditer(text):
             ret = norm(m.group("ret"))
             name = m.group("name")
@@ -105,7 +109,7 @@ def parse_headers(header_dir: Path):
     dupes = {n for n in names if names.count(n) > 1}
     if dupes:
         raise SystemExit(f"duplicate prototypes: {sorted(dupes)}")
-    return funcs
+    return funcs, sorted(excluded)
 
 
 def parse_structs(header_dir: Path):
@@ -195,8 +199,9 @@ def emit_raw_ts(funcs, structs) -> str:
                "  const bind = (name: string, ret: string | null, args: string[]): void => {\n"
                "    if (ret !== \"string\" && !args.includes(\"string\")) {\n"
                "      const fn = mod[`_${name}`];\n"
-               "      if (typeof fn !== \"function\") throw new Error(`openswmm wasm: missing export _${name}`);\n"
-               "      api[name] = fn;\n"
+               "      api[name] = typeof fn === \"function\" ? fn : () => {\n"
+               "        throw new Error(`openswmm wasm: export _${name} is not available in this module`);\n"
+               "      };\n"
                "    } else {\n"
                "      api[name] = mod.cwrap(name, ret, args);\n"
                "    }\n"
@@ -216,11 +221,13 @@ def emit_raw_ts(funcs, structs) -> str:
     return "".join(out)
 
 
-def emit_manifest(funcs, structs) -> str:
+def emit_manifest(funcs, structs, excluded) -> str:
     return json.dumps({"functions": {f["name"]: {"header": f["header"], "ret": f["ret"],
                                                   "params": [[p["type"], p["name"]] for p in f["params"]]}
                                      for f in funcs},
-                       "structs": structs}, indent=1) + "\n"
+                       "structs": structs,
+                       "excludedHeaders": sorted(EXCLUDED_HEADERS),
+                       "excludedFunctions": excluded}, indent=1) + "\n"
 
 
 def emit_raw_check(funcs, structs) -> str:
@@ -257,12 +264,12 @@ def main() -> int:
         print(f"gen_bindings: headers not found at {header_dir}", file=sys.stderr)
         return 2
 
-    funcs = parse_headers(header_dir)
+    funcs, excluded = parse_headers(header_dir)
     structs = parse_structs(header_dir)
     outputs = {
         ROOT / "src/bindings/exported_functions.json": emit_exported(funcs),
         ROOT / "src/js/raw.ts": emit_raw_ts(funcs, structs),
-        ROOT / "src/js/raw.manifest.json": emit_manifest(funcs, structs),
+        ROOT / "src/js/raw.manifest.json": emit_manifest(funcs, structs, excluded),
         ROOT / "tools/host_shim/raw_check.cpp": emit_raw_check(funcs, structs),
     }
     stale = []

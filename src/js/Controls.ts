@@ -13,6 +13,8 @@
 
 import { raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import type { RawApi } from "./raw.js";
+import { rawOf } from "./mem.js";
 
 // Maximum buffer size for reading rule text from the engine.
 const RULE_BUF_SIZE = 4096;
@@ -65,12 +67,14 @@ export interface ControlRule {
 export class Controls implements Iterable<ControlRule> {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
 
   /** @internal */
   constructor(mod: OpenSwmmWasmModule, engine: number) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
   }
 
@@ -80,7 +84,7 @@ export class Controls implements Iterable<ControlRule> {
 
   /** Number of control rules defined in the model. */
   get length(): number {
-    return this._mod.swmm_control_count(this._engine);
+    return this._raw.swmm_control_count(this._engine);
   }
 
   /**
@@ -93,10 +97,10 @@ export class Controls implements Iterable<ControlRule> {
     const idBuf = this._mod._malloc(256);
     try {
       raiseForCode(
-        this._mod.swmm_control_get_rule(this._engine, index, textBuf, RULE_BUF_SIZE),
+        this._raw.swmm_control_get_rule(this._engine, index, textBuf, RULE_BUF_SIZE),
       );
       raiseForCode(
-        this._mod.swmm_control_get_id(this._engine, index, idBuf, 256),
+        this._raw.swmm_control_get_id(this._engine, index, idBuf, 256),
       );
       return {
         id: this._mod.UTF8ToString(idBuf),
@@ -119,7 +123,7 @@ export class Controls implements Iterable<ControlRule> {
    * @throws {@link LifecycleError} if the engine is in an incompatible state.
    */
   addRule(ruleText: string): void {
-    raiseForCode(this._mod.swmm_control_add_rule(this._engine, ruleText));
+    raiseForCode(this._raw.swmm_control_add_rule(this._engine, ruleText));
   }
 
   /**
@@ -128,14 +132,14 @@ export class Controls implements Iterable<ControlRule> {
    * @throws {@link BadIndexError} if `index` is out of range.
    */
   removeRule(index: number): void {
-    raiseForCode(this._mod.swmm_control_remove_rule(this._engine, index));
+    raiseForCode(this._raw.swmm_control_remove_rule(this._engine, index));
   }
 
   /**
    * Remove all control rules from the model.
    */
   clearRules(): void {
-    raiseForCode(this._mod.swmm_control_clear_rules(this._engine));
+    raiseForCode(this._raw.swmm_control_clear_rules(this._engine));
   }
 
   // -------------------------------------------------------------------------
@@ -149,7 +153,7 @@ export class Controls implements Iterable<ControlRule> {
    * @param setting  Opening fraction in [0, 1].
    */
   setLinkSetting(linkIdx: number, setting: number): void {
-    raiseForCode(this._mod.swmm_control_set_link_setting(this._engine, linkIdx, setting));
+    raiseForCode(this._raw.swmm_control_set_link_setting(this._engine, linkIdx, setting));
   }
 
   /**
@@ -159,7 +163,7 @@ export class Controls implements Iterable<ControlRule> {
    * @param status   1 = on / open, 0 = off / closed.
    */
   setLinkStatus(linkIdx: number, status: number): void {
-    raiseForCode(this._mod.swmm_control_set_link_status(this._engine, linkIdx, status));
+    raiseForCode(this._raw.swmm_control_set_link_status(this._engine, linkIdx, status));
   }
 
   // -------------------------------------------------------------------------

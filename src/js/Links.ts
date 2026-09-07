@@ -14,6 +14,8 @@
 import { LinkType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import type { RawApi } from "./raw.js";
+import { rawOf } from "./mem.js";
 
 // =============================================================================
 // Link
@@ -28,6 +30,7 @@ import type { OpenSwmmWasmModule } from "./types.js";
 export class Link {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
   /** @internal */
@@ -47,6 +50,7 @@ export class Link {
     index: number,
   ) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
     this._collection = collection;
     this._generation = generation;
@@ -67,7 +71,7 @@ export class Link {
   /** String identifier of this link. */
   get id(): string {
     this._checkStale();
-    return this._mod.swmm_link_id(this._engine, this.index);
+    return this._raw.swmm_link_id(this._engine, this.index);
   }
 
   /** Link classification. */
@@ -75,7 +79,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_link_get_type(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_type(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as LinkType;
     } finally {
       this._mod._free(ptr);
@@ -91,7 +95,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_link_get_flow(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_flow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -101,7 +105,7 @@ export class Link {
   /** Set the current flow (available in RUNNING state for conduits). */
   set flow(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_link_set_flow(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_link_set_flow(this._engine, this.index, value));
   }
 
   /** Water depth at the upstream end (m or ft). */
@@ -109,7 +113,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_link_get_depth(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_depth(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -121,7 +125,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_link_get_velocity(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_velocity(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -136,7 +140,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_link_get_capacity(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_capacity(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -148,7 +152,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_link_get_volume(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_volume(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -167,7 +171,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_link_get_control_setting(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_control_setting(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -177,7 +181,7 @@ export class Link {
   /** Set the control setting (0–1 for throttled links). */
   set controlSetting(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_link_set_control_setting(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_link_set_control_setting(this._engine, this.index, value));
   }
 
   /** Target control setting (value the real-time controller is converging to). */
@@ -185,7 +189,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_link_get_target_setting(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_target_setting(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -195,7 +199,7 @@ export class Link {
   /** Set the target control setting. */
   set targetSetting(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_link_set_target_setting(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_link_set_target_setting(this._engine, this.index, value));
   }
 
   /** Whether this link is currently closed (1) or open (0). */
@@ -203,7 +207,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_link_get_closed(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_closed(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") !== 0;
     } finally {
       this._mod._free(ptr);
@@ -213,7 +217,7 @@ export class Link {
   /** Close or open this link. */
   set isClosed(value: boolean) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_link_set_closed(this._engine, this.index, value ? 1 : 0));
+    raiseForCode(this._raw.swmm_link_set_closed(this._engine, this.index, value ? 1 : 0));
   }
 
   // -------------------------------------------------------------------------
@@ -225,7 +229,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_link_get_from_node(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_from_node(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
     } finally {
       this._mod._free(ptr);
@@ -237,7 +241,7 @@ export class Link {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_link_get_to_node(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_link_get_to_node(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
     } finally {
       this._mod._free(ptr);
@@ -270,6 +274,7 @@ export class Link {
 export class Links implements Iterable<Link> {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
 
@@ -282,6 +287,7 @@ export class Links implements Iterable<Link> {
   /** @internal */
   constructor(mod: OpenSwmmWasmModule, engine: number) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
   }
 
@@ -291,7 +297,7 @@ export class Links implements Iterable<Link> {
 
   /** Number of links in the model. */
   get length(): number {
-    return this._mod.swmm_link_count(this._engine);
+    return this._raw.swmm_link_count(this._engine);
   }
 
   /**
@@ -301,7 +307,7 @@ export class Links implements Iterable<Link> {
    */
   get(indexOrId: number | string): Link {
     if (typeof indexOrId === "string") {
-      const idx = this._mod.swmm_link_index(this._engine, indexOrId);
+      const idx = this._raw.swmm_link_index(this._engine, indexOrId);
       if (idx < 0) throw new ElementNotFoundError(indexOrId);
       return new Link(this._mod, this._engine, this, this.generation, idx);
     }
@@ -314,12 +320,12 @@ export class Links implements Iterable<Link> {
 
   /** Return the zero-based index for a string link ID, or -1 if not found. */
   getIndex(id: string): number {
-    return this._mod.swmm_link_index(this._engine, id);
+    return this._raw.swmm_link_index(this._engine, id);
   }
 
   /** Return the string ID for a zero-based link index. */
   getId(idx: number): string {
-    const id = this._mod.swmm_link_id(this._engine, idx);
+    const id = this._raw.swmm_link_id(this._engine, idx);
     if (!id) throw new ElementNotFoundError(idx, `Link index ${idx} out of range`);
     return id;
   }
@@ -335,7 +341,7 @@ export class Links implements Iterable<Link> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_link_get_flow(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_link_get_flow(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
@@ -351,7 +357,7 @@ export class Links implements Iterable<Link> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_link_get_depth(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_link_get_depth(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
@@ -367,7 +373,7 @@ export class Links implements Iterable<Link> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_link_get_velocity(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_link_get_velocity(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
@@ -383,7 +389,7 @@ export class Links implements Iterable<Link> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_link_get_capacity(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_link_get_capacity(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
