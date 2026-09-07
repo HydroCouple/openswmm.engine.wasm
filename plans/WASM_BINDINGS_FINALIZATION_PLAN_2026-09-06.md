@@ -62,8 +62,8 @@ Each phase ends with a commit; verification criteria are the gate.
 2. Engine (`openswmm.engine`, surgical):
    - `src/engine/CMakeLists.txt`: `if(EMSCRIPTEN)` → `STATIC` library type + `OPENSWMM_ENGINE_STATIC`, skip `dl`, skip OpenMP/Threads link, skip `--whole-archive` (link options on a static lib are inert; the wasm consumer retains `swmm_gpkg_*` via `-sEXPORTED_FUNCTIONS`). SIMD flags already don't fire (`CMAKE_SYSTEM_PROCESSOR` is `x86` under emcc).
    - `output/IOThread`: synchronous execution under `__EMSCRIPTEN__` (no `std::thread`).
-   - `plugins/PluginFactory`, `core/ThreadInfo`: **no change needed** — Emscripten's libc provides `dlopen` (returns NULL → existing error path) and `std::thread::hardware_concurrency`.
-   - Done: engine commit `d204ea78` on `swmm6_rel`.
+   - `plugins/PluginFactory`: `__EMSCRIPTEN__` branch stubbing `platform_load/unload/sym/error` and `get_library_directory` (the `<dlfcn.h>` include was gated on `__linux__ || __APPLE__` and hit `#error`). `core/ThreadInfo`: no change needed.
+   - Done: engine commits `d204ea78`, `0e3155a` on `swmm6_rel`.
 3. `openswmm.engine.wasm/CMakeLists.txt`: `-DOPENSWMM_BUILD_2D=OFF -DOPENSWMM_BUILD_GPU_PLUGIN=OFF -DOPENSWMM_WITH_GEOPACKAGE=ON`, sqlite amalgamation via FetchContent, `-fwasm-exceptions` (engine throws internally), `-sEXPORTED_FUNCTIONS`, `-sALLOW_TABLE_GROWTH`, `-sFORCE_FILESYSTEM`, `-sEXPORT_ES6=1`, `-sSTACK_SIZE=1MB`, `-sINITIAL_MEMORY=64MB`.
 4. CI `build.yml`: emsdk container; wasm job must produce `dist/openswmm_engine.{js,wasm}` and run `npm run smoke` (`tests/fixtures/smoke.inp` → outfall peak within 2 % of the native reference `tests/fixtures/smoke.native.rpt`, routing continuity error < 1 %).
 - **Verify:** CI wasm job green; smoke test passes; `.wasm` size reported in job summary.
