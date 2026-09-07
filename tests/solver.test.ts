@@ -310,7 +310,7 @@ function makeMockModule(): OpenSwmmWasmModule {
   const heap: Record<number, number> = {};
   let nextPtr = 1000;
 
-  return {
+  const mod = {
     FS: {
       mkdir: () => {},
       writeFile: () => {},
@@ -322,130 +322,130 @@ function makeMockModule(): OpenSwmmWasmModule {
     },
 
     // Engine lifecycle
-    swmm_engine_create: () => 42,
-    swmm_engine_open: () => 0,
-    swmm_engine_initialize: () => 0,
-    swmm_engine_start: () => 0,
-    swmm_engine_step: (h: number, ptr: number) => {
+    _swmm_engine_create: () => 42,
+    _swmm_engine_open: () => 0,
+    _swmm_engine_initialize: () => 0,
+    _swmm_engine_start: () => 0,
+    _swmm_engine_step: (h: number, ptr: number) => {
       heap[ptr] = 0; // elapsed = 0 → simulation ended
       return 0;
     },
-    swmm_engine_stride: (h: number, n: number, ptr: number) => {
+    _swmm_engine_stride: (h: number, n: number, ptr: number) => {
       heap[ptr] = 0;
       return 0;
     },
-    swmm_engine_end: () => 0,
-    swmm_engine_report: () => 0,
-    swmm_engine_close: () => 0,
-    swmm_engine_destroy: () => {},
-    swmm_engine_set_lenient_open: () => {},
-    swmm_engine_get_state: (h: number, ptr: number) => {
+    _swmm_engine_end: () => 0,
+    _swmm_engine_report: () => 0,
+    _swmm_engine_close: () => 0,
+    _swmm_engine_destroy: () => {},
+    _swmm_engine_set_lenient_open: () => {},
+    _swmm_engine_get_state: (h: number, ptr: number) => {
       heap[ptr] = EngineState.RUNNING;
       return 0;
     },
 
     // Error / timing
-    swmm_get_last_error: () => 0,
-    swmm_get_last_error_msg: () => "",
-    swmm_error_message: (code: number) => `Error ${code}`,
-    swmm_get_error_count: () => 0,
-    swmm_get_warning_count: () => 0,
-    swmm_get_start_time: (h: number, ptr: number) => { heap[ptr] = 45296.0; return 0; },
-    swmm_get_end_time: (h: number, ptr: number) => { heap[ptr] = 45297.0; return 0; },
-    swmm_get_current_time: (h: number, ptr: number) => { heap[ptr] = 45296.5; return 0; },
-    swmm_get_routing_step: (h: number, ptr: number) => { heap[ptr] = 300; return 0; },
-    swmm_get_flow_units: (h: number, ptr: number) => { heap[ptr] = FlowUnits.CMS; return 0; },
-    swmm_get_unit_system: (h: number, ptr: number) => { heap[ptr] = 1; return 0; },
+    _swmm_get_last_error: () => 0,
+    _swmm_get_last_error_msg: () => "",
+    _swmm_error_message: (code: number) => `Error ${code}`,
+    _swmm_get_error_count: () => 0,
+    _swmm_get_warning_count: () => 0,
+    _swmm_get_start_time: (h: number, ptr: number) => { heap[ptr] = 45296.0; return 0; },
+    _swmm_get_end_time: (h: number, ptr: number) => { heap[ptr] = 45297.0; return 0; },
+    _swmm_get_current_time: (h: number, ptr: number) => { heap[ptr] = 45296.5; return 0; },
+    _swmm_get_routing_step: (h: number, ptr: number) => { heap[ptr] = 300; return 0; },
+    _swmm_get_flow_units: (h: number, ptr: number) => { heap[ptr] = FlowUnits.CMS; return 0; },
+    _swmm_get_unit_system: (h: number, ptr: number) => { heap[ptr] = 1; return 0; },
 
     // Nodes
-    swmm_node_count: () => 3,
-    swmm_node_index: (h: number, id: string) => id === "J1" ? 0 : id === "J2" ? 1 : -1,
-    swmm_node_id: (h: number, idx: number) => ["J1", "J2", "OUT"][idx] ?? "",
-    swmm_node_get_type: (h: number, i: number, ptr: number) => { heap[ptr] = NodeType.JUNCTION; return 0; },
-    swmm_node_get_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 1.5; return 0; },
-    swmm_node_set_depth: () => 0,
-    swmm_node_get_head: (h: number, i: number, ptr: number) => { heap[ptr] = 10.5; return 0; },
-    swmm_node_get_volume: (h: number, i: number, ptr: number) => { heap[ptr] = 5.0; return 0; },
-    swmm_node_get_lateral_inflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.1; return 0; },
-    swmm_node_set_lateral_inflow: () => 0,
-    swmm_node_get_overflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.0; return 0; },
-    swmm_node_get_inflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.2; return 0; },
-    swmm_node_get_losses: (h: number, i: number, ptr: number) => { heap[ptr] = 0.0; return 0; },
-    swmm_node_get_outflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.2; return 0; },
-    swmm_node_get_invert_elev: (h: number, i: number, ptr: number) => { heap[ptr] = 9.0; return 0; },
-    swmm_node_set_invert_elev: () => 0,
-    swmm_node_get_max_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 3.0; return 0; },
-    swmm_node_set_max_depth: () => 0,
-    swmm_node_set_head_boundary: () => 0,
-    swmm_node_get_stat_max_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 2.0; return 0; },
-    swmm_node_get_stat_max_overflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.5; return 0; },
-    swmm_node_get_stat_vol_flooded: (h: number, i: number, ptr: number) => { heap[ptr] = 100.0; return 0; },
-    swmm_node_get_stat_time_flooded: (h: number, i: number, ptr: number) => { heap[ptr] = 3600.0; return 0; },
+    _swmm_node_count: () => 3,
+    _swmm_node_index: (h: number, id: string) => id === "J1" ? 0 : id === "J2" ? 1 : -1,
+    _swmm_node_id: (h: number, idx: number) => ["J1", "J2", "OUT"][idx] ?? "",
+    _swmm_node_get_type: (h: number, i: number, ptr: number) => { heap[ptr] = NodeType.JUNCTION; return 0; },
+    _swmm_node_get_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 1.5; return 0; },
+    _swmm_node_set_depth: () => 0,
+    _swmm_node_get_head: (h: number, i: number, ptr: number) => { heap[ptr] = 10.5; return 0; },
+    _swmm_node_get_volume: (h: number, i: number, ptr: number) => { heap[ptr] = 5.0; return 0; },
+    _swmm_node_get_lateral_inflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.1; return 0; },
+    _swmm_node_set_lateral_inflow: () => 0,
+    _swmm_node_get_overflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.0; return 0; },
+    _swmm_node_get_inflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.2; return 0; },
+    _swmm_node_get_losses: (h: number, i: number, ptr: number) => { heap[ptr] = 0.0; return 0; },
+    _swmm_node_get_outflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.2; return 0; },
+    _swmm_node_get_invert_elev: (h: number, i: number, ptr: number) => { heap[ptr] = 9.0; return 0; },
+    _swmm_node_set_invert_elev: () => 0,
+    _swmm_node_get_max_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 3.0; return 0; },
+    _swmm_node_set_max_depth: () => 0,
+    _swmm_node_set_head_boundary: () => 0,
+    _swmm_node_get_stat_max_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 2.0; return 0; },
+    _swmm_node_get_stat_max_overflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.5; return 0; },
+    _swmm_node_get_stat_vol_flooded: (h: number, i: number, ptr: number) => { heap[ptr] = 100.0; return 0; },
+    _swmm_node_get_stat_time_flooded: (h: number, i: number, ptr: number) => { heap[ptr] = 3600.0; return 0; },
 
     // Links
-    swmm_link_count: () => 2,
-    swmm_link_index: (h: number, id: string) => id === "C1" ? 0 : id === "C2" ? 1 : -1,
-    swmm_link_id: (h: number, idx: number) => ["C1", "C2"][idx] ?? "",
-    swmm_link_get_type: (h: number, i: number, ptr: number) => { heap[ptr] = LinkType.CONDUIT; return 0; },
-    swmm_link_get_flow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.3; return 0; },
-    swmm_link_set_flow: () => 0,
-    swmm_link_get_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 0.5; return 0; },
-    swmm_link_get_velocity: (h: number, i: number, ptr: number) => { heap[ptr] = 1.2; return 0; },
-    swmm_link_get_capacity: (h: number, i: number, ptr: number) => { heap[ptr] = 0.6; return 0; },
-    swmm_link_get_volume: (h: number, i: number, ptr: number) => { heap[ptr] = 10.0; return 0; },
-    swmm_link_get_control_setting: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
-    swmm_link_set_control_setting: () => 0,
-    swmm_link_get_target_setting: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
-    swmm_link_set_target_setting: () => 0,
-    swmm_link_get_closed: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    swmm_link_set_closed: () => 0,
-    swmm_link_get_from_node: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    swmm_link_get_to_node: (h: number, i: number, ptr: number) => { heap[ptr] = 1; return 0; },
+    _swmm_link_count: () => 2,
+    _swmm_link_index: (h: number, id: string) => id === "C1" ? 0 : id === "C2" ? 1 : -1,
+    _swmm_link_id: (h: number, idx: number) => ["C1", "C2"][idx] ?? "",
+    _swmm_link_get_type: (h: number, i: number, ptr: number) => { heap[ptr] = LinkType.CONDUIT; return 0; },
+    _swmm_link_get_flow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.3; return 0; },
+    _swmm_link_set_flow: () => 0,
+    _swmm_link_get_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 0.5; return 0; },
+    _swmm_link_get_velocity: (h: number, i: number, ptr: number) => { heap[ptr] = 1.2; return 0; },
+    _swmm_link_get_capacity: (h: number, i: number, ptr: number) => { heap[ptr] = 0.6; return 0; },
+    _swmm_link_get_volume: (h: number, i: number, ptr: number) => { heap[ptr] = 10.0; return 0; },
+    _swmm_link_get_control_setting: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_link_set_control_setting: () => 0,
+    _swmm_link_get_target_setting: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_link_set_target_setting: () => 0,
+    _swmm_link_get_closed: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
+    _swmm_link_set_closed: () => 0,
+    _swmm_link_get_from_node: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
+    _swmm_link_get_to_node: (h: number, i: number, ptr: number) => { heap[ptr] = 1; return 0; },
 
     // Subcatchments
-    swmm_subcatch_count: () => 1,
-    swmm_subcatch_index: (h: number, id: string) => id === "S1" ? 0 : -1,
-    swmm_subcatch_id: (h: number, idx: number) => idx === 0 ? "S1" : "",
-    swmm_subcatch_get_runoff: (h: number, i: number, ptr: number) => { heap[ptr] = 0.05; return 0; },
-    swmm_subcatch_get_area: (h: number, i: number, ptr: number) => { heap[ptr] = 10.0; return 0; },
-    swmm_subcatch_get_imperv_pct: (h: number, i: number, ptr: number) => { heap[ptr] = 50.0; return 0; },
-    swmm_subcatch_get_width: (h: number, i: number, ptr: number) => { heap[ptr] = 100.0; return 0; },
-    swmm_subcatch_get_slope: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
-    swmm_subcatch_get_outlet: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    swmm_subcatch_get_gage: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
+    _swmm_subcatch_count: () => 1,
+    _swmm_subcatch_index: (h: number, id: string) => id === "S1" ? 0 : -1,
+    _swmm_subcatch_id: (h: number, idx: number) => idx === 0 ? "S1" : "",
+    _swmm_subcatch_get_runoff: (h: number, i: number, ptr: number) => { heap[ptr] = 0.05; return 0; },
+    _swmm_subcatch_get_area: (h: number, i: number, ptr: number) => { heap[ptr] = 10.0; return 0; },
+    _swmm_subcatch_get_imperv_pct: (h: number, i: number, ptr: number) => { heap[ptr] = 50.0; return 0; },
+    _swmm_subcatch_get_width: (h: number, i: number, ptr: number) => { heap[ptr] = 100.0; return 0; },
+    _swmm_subcatch_get_slope: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_subcatch_get_outlet: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
+    _swmm_subcatch_get_gage: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
 
     // Gages
-    swmm_gage_count: () => 1,
-    swmm_gage_index: (h: number, id: string) => id === "G1" ? 0 : -1,
-    swmm_gage_id: (h: number, idx: number) => idx === 0 ? "G1" : "",
-    swmm_gage_get_rainfall: (h: number, i: number, ptr: number) => { heap[ptr] = 5.0; return 0; },
-    swmm_gage_set_rainfall: () => 0,
-    swmm_gage_get_rain_type: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    swmm_gage_get_data_source: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    swmm_gage_get_scale_factor: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
-    swmm_gage_set_scale_factor: () => 0,
-    swmm_gage_get_rain_interval: (h: number, i: number, ptr: number) => { heap[ptr] = 900; return 0; },
-    swmm_gage_get_snow_factor: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_gage_count: () => 1,
+    _swmm_gage_index: (h: number, id: string) => id === "G1" ? 0 : -1,
+    _swmm_gage_id: (h: number, idx: number) => idx === 0 ? "G1" : "",
+    _swmm_gage_get_rainfall: (h: number, i: number, ptr: number) => { heap[ptr] = 5.0; return 0; },
+    _swmm_gage_set_rainfall: () => 0,
+    _swmm_gage_get_rain_type: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
+    _swmm_gage_get_data_source: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
+    _swmm_gage_get_scale_factor: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_gage_set_scale_factor: () => 0,
+    _swmm_gage_get_rain_interval: (h: number, i: number, ptr: number) => { heap[ptr] = 900; return 0; },
+    _swmm_gage_get_snow_factor: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
 
     // Controls
-    swmm_control_count: () => 0,
-    swmm_control_get_rule: () => 0,
-    swmm_control_get_id: () => 0,
-    swmm_control_add_rule: () => 0,
-    swmm_control_remove_rule: () => 0,
-    swmm_control_clear_rules: () => 0,
-    swmm_control_set_link_setting: () => 0,
-    swmm_control_set_link_status: () => 0,
+    _swmm_control_count: () => 0,
+    _swmm_control_get_rule: () => 0,
+    _swmm_control_get_id: () => 0,
+    _swmm_control_add_rule: () => 0,
+    _swmm_control_remove_rule: () => 0,
+    _swmm_control_clear_rules: () => 0,
+    _swmm_control_set_link_setting: () => 0,
+    _swmm_control_set_link_status: () => 0,
 
     // Forcing
-    swmm_forcing_node_lat_inflow: () => 0,
-    swmm_forcing_node_head_boundary: () => 0,
-    swmm_forcing_link_flow: () => 0,
-    swmm_forcing_link_setting: () => 0,
-    swmm_forcing_subcatch_rainfall: () => 0,
-    swmm_forcing_gage_rainfall: () => 0,
-    swmm_forcing_clear: () => 0,
-    swmm_forcing_clear_all: () => 0,
+    _swmm_forcing_node_lat_inflow: () => 0,
+    _swmm_forcing_node_head_boundary: () => 0,
+    _swmm_forcing_link_flow: () => 0,
+    _swmm_forcing_link_setting: () => 0,
+    _swmm_forcing_subcatch_rainfall: () => 0,
+    _swmm_forcing_gage_rainfall: () => 0,
+    _swmm_forcing_clear: () => 0,
+    _swmm_forcing_clear_all: () => 0,
 
     // WASM heap helpers
     _malloc: (size: number) => { const p = nextPtr; nextPtr += size + 8; return p; },
@@ -454,7 +454,20 @@ function makeMockModule(): OpenSwmmWasmModule {
     setValue: (ptr: number, value: number) => { heap[ptr] = value; },
     UTF8ToString: (ptr: number) => "",
     stringToUTF8: () => {},
+    lengthBytesUTF8: (s: string) => s.length,
+    HEAP8: new Int8Array(0),
+    HEAPU8: new Uint8Array(0),
+    HEAP32: new Int32Array(0),
+    HEAPU32: new Uint32Array(0),
+    HEAPF32: new Float32Array(0),
+    HEAPF64: new Float64Array(0),
+    // The raw layer uses cwrap only for string-carrying functions; the mock
+    // takes/returns JS strings directly, so cwrap just resolves the export.
+    cwrap: (name: string) => (mod as Record<string, unknown>)[`_${name}`] as (...a: unknown[]) => unknown,
+    addFunction: () => 1,
+    removeFunction: () => {},
   } satisfies OpenSwmmWasmModule;
+  return mod;
 }
 
 // =============================================================================
@@ -470,7 +483,7 @@ describe("Solver", () => {
 
   it("throws EngineError if create returns 0", () => {
     const mod = makeMockModule();
-    (mod as unknown as { swmm_engine_create: () => number }).swmm_engine_create = () => 0;
+    mod._swmm_engine_create = () => 0;
     expect(() => new Solver(mod)).toThrow(EngineError);
   });
 
@@ -488,7 +501,7 @@ describe("Solver", () => {
   it("forcing passes mode and persist flag through to the C API", () => {
     const mod = makeMockModule();
     const calls: number[][] = [];
-    mod.swmm_forcing_node_lat_inflow = (...args: number[]) => {
+    mod._swmm_forcing_node_lat_inflow = (...args: number[]) => {
       calls.push(args);
       return 0;
     };
@@ -538,7 +551,7 @@ describe("Solver", () => {
   it("[Symbol.dispose] calls destroy", () => {
     const mod = makeMockModule();
     let destroyed = false;
-    (mod as unknown as { swmm_engine_destroy: () => void }).swmm_engine_destroy = () => {
+    mod._swmm_engine_destroy = () => {
       destroyed = true;
     };
     const solver = new Solver(mod);

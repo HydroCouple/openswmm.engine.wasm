@@ -1978,8 +1978,9 @@ export function bindRaw(mod: RawModule): RawApi {
   const bind = (name: string, ret: string | null, args: string[]): void => {
     if (ret !== "string" && !args.includes("string")) {
       const fn = mod[`_${name}`];
-      if (typeof fn !== "function") throw new Error(`openswmm wasm: missing export _${name}`);
-      api[name] = fn;
+      api[name] = typeof fn === "function" ? fn : () => {
+        throw new Error(`openswmm wasm: export _${name} is not available in this module`);
+      };
     } else {
       api[name] = mod.cwrap(name, ret, args);
     }

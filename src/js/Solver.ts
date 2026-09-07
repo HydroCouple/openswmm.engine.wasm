@@ -59,6 +59,8 @@ import { Gages } from "./Gages.js";
 import { Controls } from "./Controls.js";
 import { Forcing } from "./Forcing.js";
 import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
+import type { RawApi } from "./raw.js";
+import { rawOf } from "./mem.js";
 
 // =============================================================================
 // Solver
@@ -75,6 +77,7 @@ import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
 export class Solver {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
 
   /**
    * Opaque engine handle (integer pointer into WASM heap).
@@ -146,11 +149,12 @@ export class Solver {
    */
   constructor(mod: OpenSwmmWasmModule, existingHandle?: number) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     let h: number;
     if (existingHandle !== undefined && existingHandle !== 0) {
       h = existingHandle;
     } else {
-      h = mod.swmm_engine_create();
+      h = rawOf(mod).swmm_engine_create();
       if (!h) throw new EngineError(7, "swmm_engine_create() returned NULL");
     }
     this.handle = h;
@@ -208,7 +212,7 @@ export class Solver {
    * @param on  `true` to enable lenient mode.
    */
   setLenientOpen(on: boolean): void {
-    this._mod.swmm_engine_set_lenient_open(this.handle, on ? 1 : 0);
+    this._raw.swmm_engine_set_lenient_open(this.handle, on ? 1 : 0);
   }
 
   // -------------------------------------------------------------------------
@@ -229,9 +233,9 @@ export class Solver {
    * @throws {@link LifecycleError} if the engine is not in `CREATED` state.
    */
   open(inp: string, rpt: string, out: string, pluginLib = ""): void {
-    const rc = this._mod.swmm_engine_open(this.handle, inp, rpt, out, pluginLib);
+    const rc = this._raw.swmm_engine_open(this.handle, inp, rpt, out, pluginLib || null);
     if (rc !== 0) {
-      const msg = this._mod.swmm_get_last_error_msg(this.handle);
+      const msg = this._raw.swmm_get_last_error_msg(this.handle);
       raiseForCode(rc, msg);
     }
     // Bump generation so any stale Node/Link/… wrappers from a previous open
@@ -248,9 +252,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `OPENED` state.
    */
   initialize(): void {
-    const rc = this._mod.swmm_engine_initialize(this.handle);
+    const rc = this._raw.swmm_engine_initialize(this.handle);
     if (rc !== 0) {
-      raiseForCode(rc, this._mod.swmm_get_last_error_msg(this.handle));
+      raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
   }
 
@@ -261,9 +265,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `INITIALIZED` state.
    */
   start(saveResults = true): void {
-    const rc = this._mod.swmm_engine_start(this.handle, saveResults ? 1 : 0);
+    const rc = this._raw.swmm_engine_start(this.handle, saveResults ? 1 : 0);
     if (rc !== 0) {
-      raiseForCode(rc, this._mod.swmm_get_last_error_msg(this.handle));
+      raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
   }
 
@@ -279,9 +283,9 @@ export class Solver {
   step(): number {
     const ptr = this._mod._malloc(8);
     try {
-      const rc = this._mod.swmm_engine_step(this.handle, ptr);
+      const rc = this._raw.swmm_engine_step(this.handle, ptr);
       if (rc !== 0) {
-        raiseForCode(rc, this._mod.swmm_get_last_error_msg(this.handle));
+        raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
       }
       // Elapsed is in OA days; convert to seconds.
       return this._mod.getValue(ptr, "double") * 86400.0;
@@ -300,9 +304,9 @@ export class Solver {
   stride(nSteps: number): number {
     const ptr = this._mod._malloc(8);
     try {
-      const rc = this._mod.swmm_engine_stride(this.handle, nSteps, ptr);
+      const rc = this._raw.swmm_engine_stride(this.handle, nSteps, ptr);
       if (rc !== 0) {
-        raiseForCode(rc, this._mod.swmm_get_last_error_msg(this.handle));
+        raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
       }
       return this._mod.getValue(ptr, "double") * 86400.0;
     } finally {
@@ -316,9 +320,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `RUNNING` or `STARTED` state.
    */
   end(): void {
-    const rc = this._mod.swmm_engine_end(this.handle);
+    const rc = this._raw.swmm_engine_end(this.handle);
     if (rc !== 0) {
-      raiseForCode(rc, this._mod.swmm_get_last_error_msg(this.handle));
+      raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
   }
 
@@ -328,9 +332,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `ENDED` state.
    */
   report(): void {
-    const rc = this._mod.swmm_engine_report(this.handle);
+    const rc = this._raw.swmm_engine_report(this.handle);
     if (rc !== 0) {
-      raiseForCode(rc, this._mod.swmm_get_last_error_msg(this.handle));
+      raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
   }
 
@@ -340,9 +344,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `ENDED` state.
    */
   close(): void {
-    const rc = this._mod.swmm_engine_close(this.handle);
+    const rc = this._raw.swmm_engine_close(this.handle);
     if (rc !== 0) {
-      raiseForCode(rc, this._mod.swmm_get_last_error_msg(this.handle));
+      raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
   }
 
@@ -351,7 +355,7 @@ export class Solver {
    * must not be used.
    */
   destroy(): void {
-    this._mod.swmm_engine_destroy(this.handle);
+    this._raw.swmm_engine_destroy(this.handle);
   }
 
   /**
@@ -395,7 +399,7 @@ export class Solver {
   get state(): EngineState {
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_engine_get_state(this.handle, ptr));
+      raiseForCode(this._raw.swmm_engine_get_state(this.handle, ptr));
       return this._mod.getValue(ptr, "i32") as EngineState;
     } finally {
       this._mod._free(ptr);
@@ -409,7 +413,7 @@ export class Solver {
   get startDatetime(): Date {
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_get_start_time(this.handle, ptr));
+      raiseForCode(this._raw.swmm_get_start_time(this.handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
     } finally {
       this._mod._free(ptr);
@@ -423,7 +427,7 @@ export class Solver {
   get endDatetime(): Date {
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_get_end_time(this.handle, ptr));
+      raiseForCode(this._raw.swmm_get_end_time(this.handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
     } finally {
       this._mod._free(ptr);
@@ -437,7 +441,7 @@ export class Solver {
   get currentDatetime(): Date {
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_get_current_time(this.handle, ptr));
+      raiseForCode(this._raw.swmm_get_current_time(this.handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
     } finally {
       this._mod._free(ptr);
@@ -451,7 +455,7 @@ export class Solver {
   get routingStep(): number {
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_get_routing_step(this.handle, ptr));
+      raiseForCode(this._raw.swmm_get_routing_step(this.handle, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -465,7 +469,7 @@ export class Solver {
   get flowUnits(): FlowUnits {
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_get_flow_units(this.handle, ptr));
+      raiseForCode(this._raw.swmm_get_flow_units(this.handle, ptr));
       return this._mod.getValue(ptr, "i32") as FlowUnits;
     } finally {
       this._mod._free(ptr);
@@ -480,21 +484,21 @@ export class Solver {
    * Return the last C API error code (0 = no error).
    */
   get lastErrorCode(): number {
-    return this._mod.swmm_get_last_error(this.handle);
+    return this._raw.swmm_get_last_error(this.handle);
   }
 
   /**
    * Return the last C API error message string (empty if no error).
    */
   get lastErrorMessage(): string {
-    return this._mod.swmm_get_last_error_msg(this.handle) ?? "";
+    return this._raw.swmm_get_last_error_msg(this.handle) ?? "";
   }
 
   /**
    * Translate a numeric error code to a human-readable message string.
    */
   errorMessage(code: number): string {
-    return this._mod.swmm_error_message(code) ?? "";
+    return this._raw.swmm_error_message(code) ?? "";
   }
 
   // -------------------------------------------------------------------------

@@ -16,6 +16,8 @@
 import { NodeType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import type { RawApi } from "./raw.js";
+import { rawOf } from "./mem.js";
 
 // =============================================================================
 // Node statistics snapshot
@@ -57,6 +59,7 @@ export interface NodeStats {
 export class Node {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
   /** @internal */
@@ -76,6 +79,7 @@ export class Node {
     index: number,
   ) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
     this._collection = collection;
     this._generation = generation;
@@ -96,7 +100,7 @@ export class Node {
   /** String identifier of this node. */
   get id(): string {
     this._checkStale();
-    return this._mod.swmm_node_id(this._engine, this.index);
+    return this._raw.swmm_node_id(this._engine, this.index);
   }
 
   /** Node classification. */
@@ -104,7 +108,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(4);
     try {
-      raiseForCode(this._mod.swmm_node_get_type(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_type(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as NodeType;
     } finally {
       this._mod._free(ptr);
@@ -120,7 +124,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_depth(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_depth(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -130,7 +134,7 @@ export class Node {
   /** Set the water depth (available in BUILDING/OPENED state). */
   set depth(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_node_set_depth(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_node_set_depth(this._engine, this.index, value));
   }
 
   /** Hydraulic head (invert elevation + depth, m or ft). */
@@ -138,7 +142,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_head(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_head(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -150,7 +154,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_volume(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_volume(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -162,7 +166,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_lateral_inflow(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_lateral_inflow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -172,7 +176,7 @@ export class Node {
   /** Inject a lateral inflow (flow units). Calls `swmm_node_set_lateral_inflow`. */
   set lateralInflow(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_node_set_lateral_inflow(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_node_set_lateral_inflow(this._engine, this.index, value));
   }
 
   /** Total overflow / flooding rate leaving this node (flow units). */
@@ -180,7 +184,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_overflow(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_overflow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -192,7 +196,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_inflow(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_inflow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -204,7 +208,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_losses(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_losses(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -216,7 +220,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_outflow(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_outflow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -232,7 +236,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_invert_elev(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_invert_elev(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -242,7 +246,7 @@ export class Node {
   /** Set invert elevation (BUILDING or OPENED state). */
   set invertElev(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_node_set_invert_elev(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_node_set_invert_elev(this._engine, this.index, value));
   }
 
   /** Maximum design depth (m or ft). */
@@ -250,7 +254,7 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_max_depth(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_max_depth(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
@@ -260,7 +264,7 @@ export class Node {
   /** Set maximum design depth (BUILDING or OPENED state). */
   set maxDepth(value: number) {
     this._checkStale();
-    raiseForCode(this._mod.swmm_node_set_max_depth(this._engine, this.index, value));
+    raiseForCode(this._raw.swmm_node_set_max_depth(this._engine, this.index, value));
   }
 
   // -------------------------------------------------------------------------
@@ -274,7 +278,7 @@ export class Node {
    */
   setHeadBoundary(head: number): void {
     this._checkStale();
-    raiseForCode(this._mod.swmm_node_set_head_boundary(this._engine, this.index, head));
+    raiseForCode(this._raw.swmm_node_set_head_boundary(this._engine, this.index, head));
   }
 
   // -------------------------------------------------------------------------
@@ -289,13 +293,13 @@ export class Node {
     this._checkStale();
     const ptr = this._mod._malloc(8);
     try {
-      raiseForCode(this._mod.swmm_node_get_stat_max_depth(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_stat_max_depth(this._engine, this.index, ptr));
       const maxDepth = this._mod.getValue(ptr, "double");
-      raiseForCode(this._mod.swmm_node_get_stat_max_overflow(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_stat_max_overflow(this._engine, this.index, ptr));
       const maxOverflow = this._mod.getValue(ptr, "double");
-      raiseForCode(this._mod.swmm_node_get_stat_vol_flooded(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_stat_vol_flooded(this._engine, this.index, ptr));
       const volFlooded = this._mod.getValue(ptr, "double");
-      raiseForCode(this._mod.swmm_node_get_stat_time_flooded(this._engine, this.index, ptr));
+      raiseForCode(this._raw.swmm_node_get_stat_time_flooded(this._engine, this.index, ptr));
       const timeFlooded = this._mod.getValue(ptr, "double");
       return { maxDepth, maxOverflow, volFlooded, timeFlooded };
     } finally {
@@ -330,6 +334,7 @@ export class Node {
 export class Nodes implements Iterable<Node> {
   /** @internal */
   private readonly _mod: OpenSwmmWasmModule;
+  private readonly _raw: RawApi;
   /** @internal */
   private readonly _engine: number;
 
@@ -343,6 +348,7 @@ export class Nodes implements Iterable<Node> {
   /** @internal */
   constructor(mod: OpenSwmmWasmModule, engine: number) {
     this._mod = mod;
+    this._raw = rawOf(mod);
     this._engine = engine;
   }
 
@@ -352,7 +358,7 @@ export class Nodes implements Iterable<Node> {
 
   /** Number of nodes in the model. */
   get length(): number {
-    return this._mod.swmm_node_count(this._engine);
+    return this._raw.swmm_node_count(this._engine);
   }
 
   /**
@@ -363,7 +369,7 @@ export class Nodes implements Iterable<Node> {
    */
   get(indexOrId: number | string): Node {
     if (typeof indexOrId === "string") {
-      const idx = this._mod.swmm_node_index(this._engine, indexOrId);
+      const idx = this._raw.swmm_node_index(this._engine, indexOrId);
       if (idx < 0) throw new ElementNotFoundError(indexOrId);
       return new Node(this._mod, this._engine, this, this.generation, idx);
     }
@@ -378,7 +384,7 @@ export class Nodes implements Iterable<Node> {
    * Return the zero-based index for a string node ID, or -1 if not found.
    */
   getIndex(id: string): number {
-    return this._mod.swmm_node_index(this._engine, id);
+    return this._raw.swmm_node_index(this._engine, id);
   }
 
   /**
@@ -387,7 +393,7 @@ export class Nodes implements Iterable<Node> {
    * @throws {@link BadIndexError} if `idx` is out of range.
    */
   getId(idx: number): string {
-    const id = this._mod.swmm_node_id(this._engine, idx);
+    const id = this._raw.swmm_node_id(this._engine, idx);
     if (!id) throw new ElementNotFoundError(idx, `Node index ${idx} out of range`);
     return id;
   }
@@ -406,7 +412,7 @@ export class Nodes implements Iterable<Node> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_node_get_depth(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_node_get_depth(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
@@ -424,7 +430,7 @@ export class Nodes implements Iterable<Node> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_node_get_head(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_node_get_head(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
@@ -442,7 +448,7 @@ export class Nodes implements Iterable<Node> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_node_get_volume(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_node_get_volume(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
@@ -460,7 +466,7 @@ export class Nodes implements Iterable<Node> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_node_get_lateral_inflow(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_node_get_lateral_inflow(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
@@ -478,7 +484,7 @@ export class Nodes implements Iterable<Node> {
     const ptr = this._mod._malloc(8);
     try {
       for (let i = 0; i < n; i++) {
-        raiseForCode(this._mod.swmm_node_get_overflow(this._engine, i, ptr));
+        raiseForCode(this._raw.swmm_node_get_overflow(this._engine, i, ptr));
         result[i] = this._mod.getValue(ptr, "double");
       }
     } finally {
