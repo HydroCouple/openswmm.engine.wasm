@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
-# Host-compile check: type-checks src/bindings/bindings.cpp against the real
-# engine C headers with a native compiler and stub Emscripten headers.
-# Catches C-API signature drift without needing emsdk.
+# Host-compile check (no emsdk needed): regenerates the raw layer, then
+# compiles the generated static_asserts and src/bindings/module.cpp natively
+# against the real engine headers. Catches C-API signature drift.
 #
 #   npm run check:bindings
 #   ENGINE_ROOT=/path/to/openswmm.engine tools/host_shim/check.sh
@@ -22,12 +22,17 @@ if [[ ! -f "$ENGINE_ROOT/include/openswmm/engine/openswmm_engine.h" ]]; then
 fi
 
 mkdir -p "$OUT"
-"$CXX" -std=c++20 -Wall -Wextra -Werror=return-type \
-    -D__EMSCRIPTEN__ -DOPENSWMM_ENGINE_STATIC \
-    -I"$HERE" \
-    -I"$ENGINE_ROOT/include" \
-    -I"$ENGINE_ROOT/include/openswmm/engine" \
-    -I"$ENGINE_ROOT/include/openswmm/plugin_sdk" \
-    -c "$ROOT/src/bindings/bindings.cpp" -o "$OUT/bindings.host.o"
+INC=(-I"$HERE" -I"$ENGINE_ROOT/include" -I"$ENGINE_ROOT/include/openswmm/engine"
+     -I"$ENGINE_ROOT/include/openswmm/plugin_sdk")
+FLAGS=(-std=c++20 -Wall -Wextra -Werror=return-type -D__EMSCRIPTEN__ -DOPENSWMM_ENGINE_STATIC)
+
+# 1. Generated outputs are current for these headers.
+python3 "$ROOT/tools/gen_bindings.py" --engine-root "$ENGINE_ROOT" --check
+
+# 2. Every parsed prototype matches the real header (static_asserts).
+"$CXX" "${FLAGS[@]}" "${INC[@]}" -c "$HERE/raw_check.cpp" -o "$OUT/raw_check.host.o"
+
+# 3. The module TU.
+"$CXX" "${FLAGS[@]}" "${INC[@]}" -c "$ROOT/src/bindings/module.cpp" -o "$OUT/module.host.o"
 
 echo "check:bindings: OK ($ENGINE_ROOT)"

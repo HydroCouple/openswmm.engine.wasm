@@ -102,14 +102,17 @@ add_subdirectory("${ENGINE_ROOT}" engine EXCLUDE_FROM_ALL)
 # ---------------------------------------------------------------------------
 # WASM module
 # ---------------------------------------------------------------------------
-add_executable(openswmm_wasm src/bindings/bindings.cpp)
+# No hand-written C++: the whole C API is exported by name (list generated
+# from the engine headers by tools/gen_bindings.py) and called from the
+# TypeScript raw layer via cwrap / direct exports. Callbacks are JS functions
+# turned into C function pointers with addFunction().
+add_executable(openswmm_wasm src/bindings/module.cpp)
 
 target_include_directories(openswmm_wasm PRIVATE "${ENGINE_ROOT}/include")
 target_link_libraries(openswmm_wasm PRIVATE openswmm_engine)
 
-# Symbols reachable from JS beyond Embind: memory helpers now, the generated
-# C-API export list (Phase 1 of the plan) later.
-set(OPENSWMM_WASM_EXPORTED_FUNCTIONS "_malloc,_free")
+set(OPENSWMM_WASM_EXPORTS_FILE "${CMAKE_CURRENT_SOURCE_DIR}/src/bindings/exported_functions.json")
+set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${OPENSWMM_WASM_EXPORTS_FILE}")
 
 set(OPENSWMM_WASM_RUNTIME_METHODS
     "ccall,cwrap,stringToUTF8,UTF8ToString,lengthBytesUTF8,getValue,setValue,"
@@ -118,22 +121,23 @@ set(OPENSWMM_WASM_RUNTIME_METHODS
 string(REPLACE ";" "" OPENSWMM_WASM_RUNTIME_METHODS "${OPENSWMM_WASM_RUNTIME_METHODS}")
 
 target_link_options(openswmm_wasm PRIVATE
-    "--bind"                                    # Embind (callbacks, shims)
     "-sWASM=1"
     "-sMODULARIZE=1"
     "-sEXPORT_ES6=1"                            # package.json "type": "module"
     "-sEXPORT_NAME=createOpenSwmmModule"
     "-sENVIRONMENT=web,worker,node"
-    "-sEXPORTED_FUNCTIONS=${OPENSWMM_WASM_EXPORTED_FUNCTIONS}"
+    "-sEXPORTED_FUNCTIONS=@${OPENSWMM_WASM_EXPORTS_FILE}"
     "-sEXPORTED_RUNTIME_METHODS=${OPENSWMM_WASM_RUNTIME_METHODS}"
     "-sALLOW_MEMORY_GROWTH=1"
     "-sINITIAL_MEMORY=64MB"
     "-sMAXIMUM_MEMORY=4GB"
     "-sSTACK_SIZE=1MB"
     "-sALLOW_TABLE_GROWTH=1"                    # addFunction() for callbacks
+    "-sERROR_ON_UNDEFINED_SYMBOLS=1"            # every exported name must exist
     "-sFORCE_FILESYSTEM=1"                      # .inp/.rpt/.out via MEMFS
     "-lnodefs.js"                               # FS.mount(NODEFS) under Node
     "-sASSERTIONS=0"
+    "--no-entry"                                # library module: no main()
 )
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
