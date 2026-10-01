@@ -293,6 +293,12 @@ export interface RawApi {
   /** `openswmm_engine.h` */
   swmm_get_effective_threads(engine: number, threads_option: number, global_threads: number, dw_threads: number, twod_threads: number): number;
   /** `openswmm_engine.h` */
+  swmm_get_transport_matrix(engine: number, out: number): number;
+  /** `openswmm_engine.h` */
+  swmm_transport_domain_name(domain: number): string;
+  /** `openswmm_engine.h` */
+  swmm_transport_class_name(species_class: number): string;
+  /** `openswmm_engine.h` */
   swmm_get_start_time(engine: number, start: number): number;
   /** `openswmm_engine.h` */
   swmm_get_end_time(engine: number, end: number): number;
@@ -341,9 +347,15 @@ export interface RawApi {
   /** `openswmm_forcing.h` */
   swmm_forcing_node_quality(engine: number, node_idx: number, pollutant_idx: number, mass_rate: number, mode: number, persist: number): number;
   /** `openswmm_forcing.h` */
+  swmm_forcing_node_temperature(engine: number, node_idx: number, value: number, mode: number, persist: number): number;
+  /** `openswmm_forcing.h` */
+  swmm_forcing_node_age(engine: number, node_idx: number, value: number, mode: number, persist: number): number;
+  /** `openswmm_forcing.h` */
   swmm_forcing_link_flow(engine: number, idx: number, value: number, mode: number, persist: number): number;
   /** `openswmm_forcing.h` */
   swmm_forcing_link_setting(engine: number, idx: number, value: number, mode: number, persist: number): number;
+  /** `openswmm_forcing.h` */
+  swmm_forcing_link_seepage(engine: number, idx: number, value: number, mode: number, persist: number): number;
   /** `openswmm_forcing.h` */
   swmm_forcing_link_quality(engine: number, link_idx: number, pollutant_idx: number, value: number, mode: number, persist: number): number;
   /** `openswmm_forcing.h` */
@@ -814,6 +826,12 @@ export interface RawApi {
   swmm_init_quality_set(engine: number, is_link: number, elem_idx: number, constituent: string | null, value: number): number;
   /** `openswmm_initial_quality.h` */
   swmm_init_quality_remove(engine: number, entry_idx: number): number;
+  /** `openswmm_initial_quality.h` */
+  swmm_init_quality_file_get(engine: number, buf: number, buflen: number): number;
+  /** `openswmm_initial_quality.h` */
+  swmm_init_quality_file_set(engine: number, path: string | null): number;
+  /** `openswmm_initial_quality.h` */
+  swmm_init_quality_is_file(engine: number, entry_idx: number): number;
   /** `openswmm_links.h` */
   swmm_link_count(engine: number): number;
   /** `openswmm_links.h` */
@@ -1038,6 +1056,8 @@ export interface RawApi {
   swmm_finalize_model(engine: number): number;
   /** `openswmm_model.h` */
   swmm_model_write(engine: number, new_inp_path: string | null): number;
+  /** `openswmm_model.h` */
+  swmm_model_write_staged(engine: number, final_inp_path: string | null, mapper: number, user_data: number): number;
   /** `openswmm_model.h` */
   swmm_model_write_compat(engine: number, new_inp_path: string | null, profile: number): number;
   /** `openswmm_model.h` */
@@ -1422,6 +1442,10 @@ export interface RawApi {
   swmm_process_component_register(engine: number, id: string | null, config_path: string | null): number;
   /** `openswmm_process_components.h` */
   swmm_process_component_remove(engine: number, idx: number): number;
+  /** `openswmm_process_components.h` */
+  swmm_process_component_known_count(): number;
+  /** `openswmm_process_components.h` */
+  swmm_process_component_known_get(idx: number, id_buf: number, id_len: number, desc_buf: number, desc_len: number, implemented: number): number;
   /** `openswmm_quality.h` */
   swmm_landuse_count(engine: number): number;
   /** `openswmm_quality.h` */
@@ -2124,6 +2148,9 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_get_warning_at", "string", ["number", "number"]);
   bind("swmm_get_thread_info", "number", ["number"]);
   bind("swmm_get_effective_threads", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_get_transport_matrix", "number", ["number", "number"]);
+  bind("swmm_transport_domain_name", "string", ["number"]);
+  bind("swmm_transport_class_name", "string", ["number"]);
   bind("swmm_get_start_time", "number", ["number", "number"]);
   bind("swmm_get_end_time", "number", ["number", "number"]);
   bind("swmm_get_current_time", "number", ["number", "number"]);
@@ -2148,8 +2175,11 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_forcing_node_lat_inflow", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_forcing_node_head_boundary", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_forcing_node_quality", "number", ["number", "number", "number", "number", "number", "number"]);
+  bind("swmm_forcing_node_temperature", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_forcing_node_age", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_forcing_link_flow", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_forcing_link_setting", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_forcing_link_seepage", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_forcing_link_quality", "number", ["number", "number", "number", "number", "number", "number"]);
   bind("swmm_forcing_subcatch_rainfall", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_forcing_subcatch_evap", "number", ["number", "number", "number", "number", "number"]);
@@ -2385,6 +2415,9 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_init_quality_get", "number", ["number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_init_quality_set", "number", ["number", "number", "number", "string", "number"]);
   bind("swmm_init_quality_remove", "number", ["number", "number"]);
+  bind("swmm_init_quality_file_get", "number", ["number", "number", "number"]);
+  bind("swmm_init_quality_file_set", "number", ["number", "string"]);
+  bind("swmm_init_quality_is_file", "number", ["number", "number"]);
   bind("swmm_link_count", "number", ["number"]);
   bind("swmm_link_index", "number", ["number", "string"]);
   bind("swmm_link_id", "string", ["number", "number"]);
@@ -2497,6 +2530,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_validate_model", "number", ["number"]);
   bind("swmm_finalize_model", "number", ["number"]);
   bind("swmm_model_write", "number", ["number", "string"]);
+  bind("swmm_model_write_staged", "number", ["number", "string", "number", "number"]);
   bind("swmm_model_write_compat", "number", ["number", "string", "number"]);
   bind("swmm_model_write_with_plugin", "number", ["number", "string", "string"]);
   bind("swmm_plugins_count", "number", ["number", "number"]);
@@ -2689,6 +2723,8 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_process_component_find", "number", ["number", "string"]);
   bind("swmm_process_component_register", "number", ["number", "string", "string"]);
   bind("swmm_process_component_remove", "number", ["number", "number"]);
+  bind("swmm_process_component_known_count", "number", []);
+  bind("swmm_process_component_known_get", "number", ["number", "number", "number", "number", "number", "number"]);
   bind("swmm_landuse_count", "number", ["number"]);
   bind("swmm_landuse_index", "number", ["number", "string"]);
   bind("swmm_landuse_id", "string", ["number", "number"]);
@@ -3157,4 +3193,4 @@ export const STRUCTS = {
 } as const;
 
 /** Number of C functions in this layer. */
-export const RAW_FUNCTION_COUNT = 978;
+export const RAW_FUNCTION_COUNT = 990;

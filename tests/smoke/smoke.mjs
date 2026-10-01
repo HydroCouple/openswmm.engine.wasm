@@ -51,7 +51,7 @@ await main();
 
 async function main() {
   const { default: createOpenSwmmModule } = await import(resolve(dist, "openswmm_engine.js"));
-  const { Solver } = await import(resolve(dist, "index.js"));
+  const { Solver, TransportDispersionMode } = await import(resolve(dist, "index.js"));
 
   const mod = await createOpenSwmmModule();
   const solver = new Solver(mod);
@@ -60,6 +60,16 @@ async function main() {
   solver.writeFile("/smoke.inp", inp);
 
   solver.open("/smoke.inp", "/smoke.rpt", "/smoke.out");
+  // New high-level configuration wrappers exercise real native out-pointers.
+  solver.transport.dispersionMode = TransportDispersionMode.VALUE;
+  assert(solver.transport.dispersionMode === TransportDispersionMode.VALUE, "dispersion mode round trip");
+  solver.transport.dispersionValue = 0.25;
+  solver.transport.targetDx = 2;
+  assert(solver.transport.configured, "transport was not marked configured");
+  assert(Math.abs(solver.transport.dispersionValue - 0.25) < 1e-12, "dispersion round trip");
+  assert(Math.abs(solver.transport.targetDx - 2) < 1e-12, "target spacing round trip");
+  assert(solver.transport.boundaries.length === 0, "unexpected transport boundary rows");
+  assert(solver.transport.sources.length === 0, "unexpected transport source rows");
   solver.initialize();
   solver.start(true);
 

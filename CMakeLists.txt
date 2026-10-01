@@ -88,12 +88,17 @@ endif()
 
 set(OPENSWMM_WITH_GEOPACKAGE  ${OPENSWMM_WASM_GEOPACKAGE} CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_2D         OFF CACHE BOOL "" FORCE)
+set(OPENSWMM_WITH_HDF5        OFF CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_GPU_PLUGIN OFF CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_TESTS      OFF CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_PYTHON     OFF CACHE BOOL "" FORCE)
 set(OPENSWMM_INSTALL          OFF CACHE BOOL "" FORCE)
 set(BUILD_SHARED_LIBS         OFF CACHE BOOL "" FORCE)
+
+# Match the reference arithmetic unless a developer deliberately opts in.
+option(OPENSWMM_FAST_XSECT_LOOKUP "Experimental cross-section lookup kernel" OFF)
+option(OPENSWMM_FAST_MANNING_POW "Experimental Manning power kernel" OFF)
 
 # EXCLUDE_FROM_ALL: only targets we link (engine, geopackage, common) get
 # built — not the legacy engine, CLI, etc.

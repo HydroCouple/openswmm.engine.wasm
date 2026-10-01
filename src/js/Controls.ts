@@ -14,7 +14,7 @@
 import { raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { rawOf } from "./mem.js";
+import { guardedRaw } from "./mem.js";
 
 // Maximum buffer size for reading rule text from the engine.
 const RULE_BUF_SIZE = 4096;
@@ -72,9 +72,10 @@ export class Controls implements Iterable<ControlRule> {
   private readonly _engine: number;
 
   /** @internal */
-  constructor(mod: OpenSwmmWasmModule, engine: number) {
+  constructor(mod: OpenSwmmWasmModule, engine: number,
+    private readonly _checkOwner: () => void = () => {}) {
     this._mod = mod;
-    this._raw = rawOf(mod);
+    this._raw = guardedRaw(mod, this._checkOwner);
     this._engine = engine;
   }
 

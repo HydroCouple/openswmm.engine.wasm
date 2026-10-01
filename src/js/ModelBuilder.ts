@@ -42,13 +42,14 @@
  * @license  MIT
  */
 
-import { EngineError, raiseForCode, CRSError } from "./errors.js";
+import { StaleObjectError, EngineError, raiseForCode, CRSError } from "./errors.js";
 import { Nodes } from "./Nodes.js";
 import { Links } from "./Links.js";
 import { Subcatchments } from "./Subcatchments.js";
 import { Gages } from "./Gages.js";
 import { Controls } from "./Controls.js";
 import { Forcing } from "./Forcing.js";
+import { Transport } from "./Transport.js";
 import { Solver } from "./Solver.js";
 import { type OpenSwmmWasmModule, oadateToDate, dateToOadate } from "./types.js";
 import type { RawApi } from "./raw.js";
@@ -172,6 +173,14 @@ export class ModelBuilder {
   }
 
   /** @internal */
+  private _viewGuard(): () => void {
+    const generation = this._generation;
+    return () => {
+      this._assertValid();
+      if (generation !== this._generation) throw new StaleObjectError();
+    };
+  }
+
   private _assertValid(): void {
     if (!this._handle) {
       throw new EngineError(7, "ModelBuilder has been consumed by toSolver()");
@@ -1028,7 +1037,7 @@ export class ModelBuilder {
    */
   get nodes(): Nodes {
     this._assertValid();
-    return new Nodes(this._mod, this._handle);
+    return new Nodes(this._mod, this._handle, this._viewGuard());
   }
 
   /**
@@ -1036,7 +1045,7 @@ export class ModelBuilder {
    */
   get links(): Links {
     this._assertValid();
-    return new Links(this._mod, this._handle);
+    return new Links(this._mod, this._handle, this._viewGuard());
   }
 
   /**
@@ -1044,7 +1053,7 @@ export class ModelBuilder {
    */
   get subcatchments(): Subcatchments {
     this._assertValid();
-    return new Subcatchments(this._mod, this._handle);
+    return new Subcatchments(this._mod, this._handle, this._viewGuard());
   }
 
   /**
@@ -1052,12 +1061,18 @@ export class ModelBuilder {
    */
   get gages(): Gages {
     this._assertValid();
-    return new Gages(this._mod, this._handle);
+    return new Gages(this._mod, this._handle, this._viewGuard());
   }
 
   // -------------------------------------------------------------------------
   // Conversion to Solver
   // -------------------------------------------------------------------------
+
+  /** ARD configuration view bound to this builder’s lifetime. */
+  get transport(): Transport {
+    this._assertValid();
+    return new Transport(this._mod, this._handle, () => this._assertValid());
+  }
 
   /**
    * Transfer ownership of the engine handle to a {@link Solver}.

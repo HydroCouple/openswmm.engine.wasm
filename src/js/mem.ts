@@ -103,3 +103,10 @@ export function withDoubleInput(
     mod._free(ptr);
   }
 }
+
+/** Keep high-level views attached to their owner; raw C access stays explicit. */
+export function guardedRaw(mod: OpenSwmmWasmModule, check: () => void): RawApi {
+  return Object.fromEntries(Object.entries(rawOf(mod)).map(([name, fn]) => [
+    name, (...args: unknown[]) => { check(); return fn(...args); },
+  ])) as unknown as RawApi;
+}
