@@ -1,0 +1,90 @@
+name: Build & Test
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # TypeScript type-check, unit tests (mock module), and host-shim binding check
+  # (native compile of bindings.cpp against the engine headers — no emsdk).
+  # ---------------------------------------------------------------------------
+  typecheck:
+    name: TypeScript — type-check, unit tests, binding check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check
+        run: npm run typecheck
+
+      - name: Build TypeScript
+        run: npm run build
+
+      - name: Unit tests
+        run: npm test
+
+      - name: Binding signature check (host compile)
+        run: npm run check:bindings
+
+  # ---------------------------------------------------------------------------
+  # WASM build via Emscripten + Node smoke test against the native reference
+  # ---------------------------------------------------------------------------
+  wasm-build:
+    name: WASM — Emscripten build & smoke test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    container:
+      # Pinned to the version of the first successful local build (2026-09-06).
+      image: emscripten/emsdk:6.0.9
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Generated binding drift
+        run: python3 tools/gen_bindings.py --check
+
+      - name: Configure (emcmake)
+        run: emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Build WASM module
+        run: cmake --build build --parallel
+
+      - name: Verify outputs
+        run: |
+          test -f dist/openswmm_engine.js   || (echo "Missing JS glue"  && exit 1)
+          test -f dist/openswmm_engine.wasm || (echo "Missing WASM file" && exit 1)
+          echo "### WASM artefacts" >> "$GITHUB_STEP_SUMMARY"
+          ls -l dist/openswmm_engine.js dist/openswmm_engine.wasm | awk '{printf "- `%s` %.2f MB\n", $9, $5/1048576}' >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build TypeScript wrappers
+        run: npm ci && npm run build
+
+      - name: Smoke test (Node)
+        run: npm run smoke
+
+      - name: Upload WASM artefacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: openswmm-wasm
+          path: |
+            dist/
+            tests/_work/smoke.wasm.rpt
+          retention-days: 14
