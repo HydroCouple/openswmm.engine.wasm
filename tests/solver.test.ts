@@ -47,6 +47,7 @@ import {
   dateToOadate,
   // Classes (for type shape tests)
   Solver,
+  ModelBuilder,
   Nodes,
   Links,
   Subcatchments,
@@ -756,5 +757,95 @@ describe("Forcing", () => {
     const mod = makeMockModule();
     const solver = new Solver(mod);
     expect(() => solver.forcing.clear(ForcingTarget.NODE, 0)).not.toThrow();
+  });
+});
+
+
+describe("native owner lifetime", () => {
+  it("destroys once and rejects calls from retained views", () => {
+    const mod = makeMockModule();
+    let destroys = 0, reads = 0;
+    mod._swmm_engine_destroy = () => { destroys++; };
+    mod._swmm_node_count = () => { reads++; return 2; };
+    const s = new Solver(mod);
+    const node = s.nodes.get(0);
+    const before = reads;
+    s.destroy(); s.destroy(); s[Symbol.dispose]();
+    expect(destroys).toBe(1);
+    for (const access of [() => s.handle, () => s.step(), () => s.nodes.length,
+      () => node.depth, () => s.forcing.clearAll(), () => s.controls.length,
+      () => s.transport.targetDx]) expect(access).toThrow(EngineError);
+    expect(reads).toBe(before);
+  });
+  it("invalidates element views on close", () => {
+    const s = new Solver(makeMockModule());
+    const node = s.nodes.get(0);
+    s.close();
+    expect(() => node.depth).toThrow(StaleObjectError);
+  });
+  it("invalidates builder views on ownership transfer", () => {
+    const mod = makeMockModule();
+    mod._swmm_engine_new = () => 42;
+    const b = new ModelBuilder(mod);
+    const nodes = b.nodes, t = b.transport;
+    const s = b.toSolver();
+    expect(() => nodes.length).toThrow(EngineError);
+    expect(() => t.targetDx).toThrow(EngineError);
+    expect(s.nodes.length).toBeGreaterThan(0);
+    s.destroy();
+  });
+  it("forwards new temperature, age and seepage forcing arguments", () => {
+    const mod = makeMockModule();
+    const calls: number[][] = [];
+    for (const name of ["node_temperature", "node_age", "link_seepage"]) {
+      mod[`_swmm_forcing_${name}`] = (...args: number[]) => { calls.push(args); return 0; };
+    }
+    const s = new Solver(mod);
+    s.forcing.nodeTemperature(1, 18, ForcingMode.ADD, true);
+    s.forcing.nodeAge(2, 3600);
+    s.forcing.linkSeepage(3, 0.1);
+    expect(calls).toEqual([[42, 1, 18, 2, 1], [42, 2, 3600, 1, 0], [42, 3, 0.1, 1, 0]]);
+  });
+});
+
+
+describe("new binding regression cases", () => {
+  it("invalidates builder views after a structural edit", () => {
+    const mod = makeMockModule();
+    mod._swmm_engine_new = () => 42;
+    mod._swmm_node_add = () => 0;
+    const b = new ModelBuilder(mod);
+    const nodes = b.nodes;
+    b.addNode("J3", NodeType.JUNCTION);
+    expect(() => nodes.length).toThrow(StaleObjectError);
+    expect(b.nodes.length).toBeGreaterThan(0);
+    b[Symbol.dispose]();
+  });
+  it("copies transport row buffers and frees them on native failure", () => {
+    const mod = makeMockModule();
+    const numbers = new Map<number, number>();
+    const strings = new Map<number, string>();
+    let freed = 0, fail = false;
+    mod.getValue = (p: number) => numbers.get(p) ?? 0;
+    mod.UTF8ToString = (p: number) => strings.get(p) ?? "";
+    mod._free = () => { freed++; };
+    mod._swmm_transport_boundary_count = (_h: number, p: number) => { numbers.set(p, 2); return 0; };
+    mod._swmm_transport_get_boundary = (_h: number, i: number, elem: number, _el: number,
+      species: number, _sl: number, isTs: number, value: number, ts: number) => {
+      if (fail) return 9;
+      strings.set(elem, `J${i}`); strings.set(species, "TSS"); strings.set(ts, i ? "series" : "");
+      numbers.set(isTs, i); numbers.set(value, i ? 0 : 2.5);
+      return 0;
+    };
+    const s = new Solver(mod);
+    const rows = s.transport.boundaries;
+    expect(rows).toEqual([
+      {element: "J0", species: "TSS", isTimeseries: false, value: 2.5, timeseries: ""},
+      {element: "J1", species: "TSS", isTimeseries: true, value: 0, timeseries: "series"},
+    ]);
+    const before = freed; fail = true;
+    expect(() => s.transport.boundaries).toThrow(BadParamError);
+    expect(freed - before).toBe(2); // count out-pointer and row buffers
+    expect(rows[0].element).toBe("J0");
   });
 });

@@ -12,7 +12,7 @@
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { rawOf } from "./mem.js";
+import { guardedRaw } from "./mem.js";
 
 // =============================================================================
 // Subcatchment
@@ -46,7 +46,7 @@ export class Subcatchment {
     index: number,
   ) {
     this._mod = mod;
-    this._raw = rawOf(mod);
+    this._raw = guardedRaw(mod, () => collection.assertAlive());
     this._engine = engine;
     this._collection = collection;
     this._generation = generation;
@@ -194,9 +194,13 @@ export class Subcatchments implements Iterable<Subcatchment> {
   generation: number = 0;
 
   /** @internal */
-  constructor(mod: OpenSwmmWasmModule, engine: number) {
+  /** @internal Check the owner before touching native memory. */
+  assertAlive(): void { this._checkOwner(); }
+
+  constructor(mod: OpenSwmmWasmModule, engine: number,
+    private readonly _checkOwner: () => void = () => {}) {
     this._mod = mod;
-    this._raw = rawOf(mod);
+    this._raw = guardedRaw(mod, this._checkOwner);
     this._engine = engine;
   }
 

@@ -1,10 +1,9 @@
 # @hydrocouple/openswmm-engine-wasm
 
 WebAssembly bindings for the **OpenSWMM Engine** C++ API, compiled with
-[Emscripten](https://emscripten.org/) and wrapped in a fully typed TypeScript
-layer that mirrors the
-[`openswmm.engine`](https://github.com/HydroCouple/openswmm.engine) Python
-bindings specification.
+[Emscripten](https://emscripten.org/) and exposed through a generated raw C API and a typed TypeScript convenience
+layer. The raw layer covers the enabled native features; the convenience
+classes cover a subset of the Python API. See [Compatibility and gaps](#compatibility-and-gaps).
 
 [![Build & Type-Check](https://github.com/HydroCouple/openswmm.engine.wasm/actions/workflows/build.yml/badge.svg)](https://github.com/HydroCouple/openswmm.engine.wasm/actions/workflows/build.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
@@ -49,7 +48,7 @@ npm install @hydrocouple/openswmm-engine-wasm
 ```ts
 // 1. Load the Emscripten-generated WASM module
 import createOpenSwmmModule from
-  "@hydrocouple/openswmm-engine-wasm/dist/openswmm_engine.js";
+  "@hydrocouple/openswmm-engine-wasm/wasm";
 
 // 2. Import the TypeScript wrappers
 import { Solver, EngineState, ForcingMode } from
@@ -273,7 +272,9 @@ f.clearAll();                        // clear all forcing
 
 ### Enumerations
 
-All enums are integer-backed and mirror `openswmm.engine._enums.py` exactly.
+All 78 enum classes are generated from the pinned engine’s
+`openswmm.engine._enums.py`, without importing native Python modules. Enum
+constants for disabled features do not imply that those features are available.
 
 | Enum | Key values |
 |---|---|
@@ -345,11 +346,11 @@ npm ci
 npm run build
 npm test                      # unit tests (mock module, no WASM needed)
 npm run smoke                 # end-to-end run of tests/fixtures/smoke.inp against dist/
-npm run check:bindings        # native compile of bindings.cpp vs engine headers (no emsdk needed)
+npm run check:bindings        # native signature checks against engine headers (no emsdk needed)
 ```
 
 The engine is built 1D-only with GeoPackage support (`-DOPENSWMM_WASM_GEOPACKAGE=ON`,
-SQLite compiled from the pinned amalgamation). The 2D surface module (HDF5) and
+SQLite compiled from the pinned amalgamation). The 2D surface, groundwater-on-mesh and surface-quality modules, HDF5 and
 the GPU plugin are not part of the WASM build.
 
 The npm package then ships:
@@ -395,3 +396,60 @@ git submodule update --init --recursive
 
 MIT © 2026 Caleb Buahin.  
 See [LICENSE](LICENSE) for details.
+
+
+## Compatibility and gaps
+
+The engine submodule is the reproducible source of truth for generation and
+compilation. This update pins engine `a710e94a` (2026-09-30): **990 exported
+functions**, **183 disabled-feature exports**, and **78 enum classes**.
+The sibling engine working tree can contain newer uncommitted APIs; those are
+not automatically part of this package. Regenerate after deliberately advancing
+the submodule, and rebuild the binary as well as TypeScript.
+
+| Surface | Available | Remaining boundary |
+|---|---|---|
+| Raw C API | `bindRaw(mod)` / package `/raw`; signatures, export list and struct layouts generated from the engine headers | Heap allocation, pointer lifetimes, return codes and callback registration remain the caller’s responsibility. This is not the Python object API. |
+| Enums | All numeric Python enum classes, including transport and capability selectors | Disabled-feature selectors are constants only. |
+| Solver, builder and element views | Lifecycle, 1D collections, controls and forcing; destroyed owners and transferred builder owners reject view access | Mutations made through raw calls bypass wrapper invalidation. Reacquire views after such mutations. |
+| ARD transport | `solver.transport` and `builder.transport`: configuration, conduit overrides, boundary/source snapshots | Persistence needs a process-component registration and config-file path. Capability matrices and other process services remain raw APIs. |
+| Runtime forcing | Existing flow/rainfall controls plus `nodeTemperature`, `nodeAge`, `linkSeepage` | Use native field units: temperature REPLACE is °C, age REPLACE is hours; ADD uses °C·ft³/s or hours·ft³/s. Both require the corresponding model option. |
+| 2D / groundwater / surface quality | Explicitly excluded from this 1D build | Five excluded headers are recorded in `raw.manifest.json`. Python’s corresponding services do not become available through generation alone. |
+| Catalog, generic field paths, Gymnasium specs and MCP tools | Python ecosystem facilities | No TypeScript catalog dispatcher or Gymnasium/MCP runtime is supplied. |
+| Output, hot starts, metadata, batch edits and staged serialization | Available through raw exports for enabled features | Dedicated Python-style facade classes and automatic callback/error marshalling remain future work. |
+
+```ts
+import { TransportDispersionMode } from "@hydrocouple/openswmm-engine-wasm";
+
+const transport = solver.transport; // open the solver before authoring
+transport.dispersionMode = TransportDispersionMode.VALUE;
+transport.dispersionValue = 0.25; // ft²/s or m²/s, according to the model
+transport.targetDx = 2;          // ft or m
+console.log(transport.boundaries); // independent snapshots
+```
+
+`destroy()` is idempotent. Element views are invalidated on close/open;
+builder views are invalidated on structural edits or ownership transfer.
+Views obtained directly from numeric handles without an owner callback and all
+raw API handles remain caller-managed. This package is single-threaded WASM;
+the Python native-access lock is not a browser-worker sharing contract.
+
+### Checks when updating the engine
+
+```bash
+npm run gen
+python3 tools/gen_bindings.py --check
+python3 tools/check_python_parity.py
+npm run check:bindings
+npm run typecheck && npm test && npm run build
+npm run configure:wasm && npm run build:wasm
+npm run smoke
+```
+
+The parity check uses the engine’s Cython tokenizer: comments, strings and
+extern declarations do not count as calls, while executable `.pxd` helpers do.
+It fails when source files are missing. Raw API coverage, host signature checks,
+TypeScript unit tests and a real WASM smoke run are separate checks; none alone
+establishes numerical parity for every transport process. Browser execution,
+worker integration, heap-allocation failure handling and complete high-level
+Python API parity still require dedicated validation/work.

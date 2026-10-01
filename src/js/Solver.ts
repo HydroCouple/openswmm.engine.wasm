@@ -51,12 +51,13 @@
  */
 
 import { EngineState, FlowUnits } from "./enums.js";
-import { EngineError, raiseForCode } from "./errors.js";
+import { BadHandleError, EngineError, raiseForCode } from "./errors.js";
 import { Nodes } from "./Nodes.js";
 import { Links } from "./Links.js";
 import { Subcatchments } from "./Subcatchments.js";
 import { Gages } from "./Gages.js";
 import { Controls } from "./Controls.js";
+import { Transport } from "./Transport.js";
 import { Forcing } from "./Forcing.js";
 import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
 import type { RawApi } from "./raw.js";
@@ -86,7 +87,20 @@ export class Solver {
    * Reading `handle` from JavaScript is possible but manipulating it
    * directly is unsupported.
    */
-  readonly handle: number;
+  private _handle: number;
+
+  get handle(): number { this._assertAlive(); return this._handle; }
+
+  private _assertAlive(): void {
+    if (!this._handle) throw new BadHandleError("Solver has been destroyed");
+  }
+
+  private _invalidateViews(): void {
+    this.nodes.generation++;
+    this.links.generation++;
+    this.subcatchments.generation++;
+    this.gages.generation++;
+  }
 
   // -------------------------------------------------------------------------
   // Domain collection lazily-created views
@@ -134,6 +148,8 @@ export class Solver {
    */
   readonly forcing: Forcing;
 
+  readonly transport: Transport;
+
   // -------------------------------------------------------------------------
   // Constructor
   // -------------------------------------------------------------------------
@@ -157,13 +173,14 @@ export class Solver {
       h = rawOf(mod).swmm_engine_create();
       if (!h) throw new EngineError(7, "swmm_engine_create() returned NULL");
     }
-    this.handle = h;
-    this.nodes = new Nodes(mod, h);
-    this.links = new Links(mod, h);
-    this.subcatchments = new Subcatchments(mod, h);
-    this.gages = new Gages(mod, h);
-    this.controls = new Controls(mod, h);
-    this.forcing = new Forcing(mod, h);
+    this._handle = h;
+    this.nodes = new Nodes(mod, h, () => this._assertAlive());
+    this.links = new Links(mod, h, () => this._assertAlive());
+    this.subcatchments = new Subcatchments(mod, h, () => this._assertAlive());
+    this.gages = new Gages(mod, h, () => this._assertAlive());
+    this.controls = new Controls(mod, h, () => this._assertAlive());
+    this.transport = new Transport(mod, h, () => this._assertAlive());
+    this.forcing = new Forcing(mod, h, () => this._assertAlive());
   }
 
   // -------------------------------------------------------------------------
@@ -233,17 +250,13 @@ export class Solver {
    * @throws {@link LifecycleError} if the engine is not in `CREATED` state.
    */
   open(inp: string, rpt: string, out: string, pluginLib = ""): void {
+    this._invalidateViews();
     const rc = this._raw.swmm_engine_open(this.handle, inp, rpt, out, pluginLib || null);
     if (rc !== 0) {
       const msg = this._raw.swmm_get_last_error_msg(this.handle);
       raiseForCode(rc, msg);
     }
-    // Bump generation so any stale Node/Link/… wrappers from a previous open
-    // will throw StaleObjectError.
-    this.nodes.generation++;
-    this.links.generation++;
-    this.subcatchments.generation++;
-    this.gages.generation++;
+
   }
 
   /**
@@ -344,6 +357,7 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `ENDED` state.
    */
   close(): void {
+    this._invalidateViews();
     const rc = this._raw.swmm_engine_close(this.handle);
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -355,7 +369,10 @@ export class Solver {
    * must not be used.
    */
   destroy(): void {
-    this._raw.swmm_engine_destroy(this.handle);
+    if (!this._handle) return;
+    this._raw.swmm_engine_destroy(this._handle);
+    this._handle = 0;
+    this._invalidateViews();
   }
 
   /**

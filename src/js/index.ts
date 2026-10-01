@@ -23,7 +23,7 @@
  *
  * ```ts
  * import createOpenSwmmModule from
- *   "@hydrocouple/openswmm-engine-wasm/dist/openswmm_engine.js";
+ *   "@hydrocouple/openswmm-engine-wasm/wasm";
  * ```
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
@@ -62,42 +62,7 @@ export { Forcing } from "./Forcing.js";
 // ---------------------------------------------------------------------------
 // Enumerations
 // ---------------------------------------------------------------------------
-export {
-  ErrorCode,
-  EngineState,
-  WarnCode,
-  ObjectType,
-  FlowUnits,
-  RouteModel,
-  NodeType,
-  LinkType,
-  OrificeType,
-  WeirType,
-  OutletRatingType,
-  OutfallType,
-  StorageShape,
-  XSectShape,
-  InfilModel,
-  GageDataSource,
-  GageRainType,
-  ConcentrationUnits,
-  BuildupFunc,
-  WashoffFunc,
-  LidType,
-  DividerType,
-  OutSubcatchVar,
-  OutNodeVar,
-  OutLinkVar,
-  ForcingMode,
-  ForcingType,
-  ForcingPersist,
-  ForcingTarget,
-  PatternType,
-  RunoffTotal,
-  RoutingTotal,
-  FilePathRole,
-  UserFlagType,
-} from "./enums.js";
+export * from "./enums.js";
 
 // ---------------------------------------------------------------------------
 // Error hierarchy
@@ -132,3 +97,6 @@ export { oadateToDate, dateToOadate } from "./types.js";
 export { bindRaw, STRUCTS, RAW_FUNCTION_COUNT } from "./raw.js";
 export type { RawApi, RawModule } from "./raw.js";
 export { rawOf, withCString, withDouble, withInt, withDoubleArray, withDoubleInput } from "./mem.js";
+
+export { Transport } from "./Transport.js";
+export type { TransportRow, ConduitDispersion } from "./Transport.js";
