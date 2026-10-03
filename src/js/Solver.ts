@@ -47,7 +47,7 @@
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
- * @license  MIT
+ * @license  Apache-2.0
  */
 
 import { EngineState, FlowUnits } from "./enums.js";

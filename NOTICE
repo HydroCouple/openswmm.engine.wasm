@@ -1,0 +1,64 @@
+OpenSWMM Engine WebAssembly Bindings (@hydrocouple/openswmm-engine-wasm)
+Copyright 2026 HydroCouple Foundation
+
+This product includes software developed by the OpenSWMM authors
+(https://github.com/HydroCouple/openswmm.engine.wasm).
+
+Licensed under the Apache License, Version 2.0. See the LICENSE file for the
+full license text.
+
+--------------------------------------------------------------------------------
+COPYRIGHT HOLDER: HYDROCOUPLE FOUNDATION (NOT YET FORMED)
+--------------------------------------------------------------------------------
+
+The HydroCouple Foundation has not yet been formed. Until it is incorporated
+and the rights are formally assigned to it, the copyright and other
+intellectual property the Foundation will hold in this project are held by
+Caleb Buahin (GitHub: cbuahin), its Executive Director, who holds them on the
+Foundation's behalf. References to "HydroCouple Foundation" in this product
+should be read accordingly.
+
+Contributions from other contributors stay owned by their authors and are
+licensed to the project under the Contributor License Agreement(s) that govern
+the project; see CCLA.md for the corporate agreement.
+
+--------------------------------------------------------------------------------
+PUBLIC DOMAIN MATERIAL
+--------------------------------------------------------------------------------
+
+The compiled WebAssembly module built by this project includes the OpenSWMM
+Engine (https://github.com/HydroCouple/openswmm.engine), which is itself
+licensed under the Apache License, Version 2.0, and portions of which are
+derived from the Storm Water Management Model (SWMM) developed and released by
+the United States Environmental Protection Agency (USEPA). That material was
+prepared by or for the United States Government and resides in the public
+domain: domestic copyright protection is not available for it under
+17 USC § 105, and no copyright is claimed over it by the OpenSWMM authors.
+
+The Apache License, Version 2.0 applies to the original contributions of the
+OpenSWMM authors. It does not extend copyright to, and places no restriction
+on, the public domain material described above. Recipients retain all rights
+they already hold in that material independently of this License. See the
+NOTICE file of the OpenSWMM Engine for further attribution details.
+
+The USEPA does not endorse this product, and the names "EPA", "USEPA", and
+"SWMM" are used solely to describe the origin of the public domain material.
+
+--------------------------------------------------------------------------------
+THIRD-PARTY COMPONENTS
+--------------------------------------------------------------------------------
+
+The compiled WebAssembly module and its JavaScript loader include the
+following third-party components, each subject to its own license terms:
+
+  - SQLite amalgamation (when built with OPENSWMM_WASM_GEOPACKAGE=ON).
+    Public domain. https://www.sqlite.org/copyright.html
+
+  - Emscripten runtime and system libraries, including the generated
+    JavaScript loader, libc++/libc++abi (Apache License 2.0 with LLVM
+    Exceptions), and musl libc (MIT). Emscripten itself is available under
+    the MIT License or the University of Illinois/NCSA Open Source License.
+    https://github.com/emscripten-core/emscripten
+
+Development-only npm dependencies declared in package.json are not
+distributed with this product.
