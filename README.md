@@ -6,7 +6,7 @@ layer. The raw layer covers the enabled native features; the convenience
 classes cover a subset of the Python API. See [Compatibility and gaps](#compatibility-and-gaps).
 
 [![Build & Type-Check](https://github.com/HydroCouple/openswmm.engine.wasm/actions/workflows/build.yml/badge.svg)](https://github.com/HydroCouple/openswmm.engine.wasm/actions/workflows/build.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: Apache-2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
 
 ---
 
@@ -394,8 +394,14 @@ git submodule update --init --recursive
 
 ## License
 
-MIT © 2026 Caleb Buahin.  
-See [LICENSE](LICENSE) for details.
+Licensed under the Apache License, Version 2.0. See [LICENSE](LICENSE) for the
+full text and [NOTICE](NOTICE) for required attributions.
+
+Copyright © 2026 HydroCouple Foundation. The HydroCouple Foundation has not yet
+been formed; until it is, the copyright is held by Caleb Buahin (cbuahin), its
+Executive Director. See [NOTICE](NOTICE).
+
+See also: [CLA.md](CLA.md) · [CCLA.md](CCLA.md)
 
 
 ## Compatibility and gaps
