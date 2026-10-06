@@ -7,7 +7,7 @@
   "homepage": "https://github.com/HydroCouple/openswmm.engine.wasm",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HydroCouple/openswmm.engine.wasm.git"
+    "url": "git+https://github.com/HydroCouple/openswmm.engine.wasm.git"
   },
   "bugs": {
     "url": "https://github.com/HydroCouple/openswmm.engine.wasm/issues"
@@ -53,12 +53,16 @@
     "build:ts": "tsc --project tsconfig.json",
     "build": "npm run build:ts",
     "test": "vitest run",
-    "smoke": "node tests/smoke/smoke.mjs",
+    "smoke": "node tests/smoke/smoke.mjs && node tests/smoke/smoke2d.mjs",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
     "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
     "typecheck": "tsc --noEmit",
-    "check:bindings": "bash tools/host_shim/check.sh"
+    "check:bindings": "bash tools/host_shim/check.sh",
+    "prepublishOnly": "node -e \"for (const f of ['dist/openswmm_engine.wasm','dist/openswmm_engine.js','dist/index.js']) require('fs').accessSync(f)\""
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
