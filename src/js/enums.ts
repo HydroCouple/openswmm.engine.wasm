@@ -263,17 +263,19 @@ export enum OutSystemVar {
   TEMPERATURE = 0,
   RAINFALL = 1,
   SNOW_DEPTH = 2,
-  EVAP = 3,
-  INFIL = 4,
-  RUNOFF = 5,
-  DW_INFLOW = 6,
-  GW_INFLOW = 7,
-  LAT_INFLOW = 8,
-  FLOODING = 9,
-  OUTFLOW = 10,
-  STORAGE = 11,
-  EVAP_TOTAL = 12,
-  PET = 13,
+  INFIL = 3,
+  RUNOFF = 4,
+  DW_INFLOW = 5,
+  GW_INFLOW = 6,
+  RDII_INFLOW = 7,
+  EXT_INFLOW = 8,
+  TOTAL_INFLOW = 9,
+  FLOODING = 10,
+  OUTFLOW = 11,
+  STORAGE = 12,
+  EVAP = 13,
+  PET = 14,
+  LAT_INFLOW = 9,
 }
 
 export enum ForcingMode {
@@ -690,6 +692,8 @@ export enum GroundwaterLedger {
   INIT_STORAGE = 8,
   STORAGE = 9,
   LINK = 10,
+  SOURCE_IN = 11,
+  SOURCE_OUT = 12,
 }
 
 export enum GroundwaterZone {
@@ -711,10 +715,36 @@ export enum GroundwaterSpeciesLedger {
   ET_OUT = 10,
   REACTED = 11,
   RESIDUAL = 12,
+  SOURCE_IN = 13,
+  SOURCE_OUT = 14,
 }
 
 export enum GroundwaterTransportZone {
   SAT = 0,
   UNSAT = 1,
   LAYER = 2,
+}
+
+export enum TraceStatus {
+  OK = 0,
+  INVALID = -1,
+  IO = -2,
+  MISMATCH = -3,
+  CANCELLED = -4,
+  SOLVER = -5,
+  NO_HDF5 = -6,
+}
+
+export enum TraceDirection {
+  DOWNSTREAM = 0,
+  UPSTREAM = 1,
+}
+
+export enum TraceTerminal {
+  OUTFALL = 0,
+  LOSS = 1,
+  SOURCE = 2,
+  RETAINED = 3,
+  UNRESOLVED = 4,
+  CIRCULATION = 5,
 }

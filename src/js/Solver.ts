@@ -10,7 +10,7 @@
  * ```
  *
  * The class also exposes typed accessors for nodes, links, subcatchments,
- * gages, controls, and forcing.
+ * gages, controls, forcing, transport and the 2D surface ({@link Solver.surface2d}).
  *
  * ### Virtual filesystem
  * The WASM engine uses the Emscripten MEMFS virtual filesystem. Call
@@ -59,6 +59,7 @@ import { Gages } from "./Gages.js";
 import { Controls } from "./Controls.js";
 import { Transport } from "./Transport.js";
 import { Forcing } from "./Forcing.js";
+import { Surface2D } from "./Surface2D.js";
 import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
 import type { RawApi } from "./raw.js";
 import { rawOf } from "./mem.js";
@@ -150,6 +151,15 @@ export class Solver {
 
   readonly transport: Transport;
 
+  /**
+   * 2D surface routing (Python `solver.surface2d`).
+   *
+   * Active once the model has a 2D mesh and {@link Solver.initialize} has
+   * run; check {@link Surface2D.isActive}. Results are read here — the WASM
+   * build ignores `[2D_OPTIONS] OUTPUT_FILE`.
+   */
+  readonly surface2d: Surface2D;
+
   // -------------------------------------------------------------------------
   // Constructor
   // -------------------------------------------------------------------------
@@ -181,6 +191,7 @@ export class Solver {
     this.controls = new Controls(mod, h, () => this._assertAlive());
     this.transport = new Transport(mod, h, () => this._assertAlive());
     this.forcing = new Forcing(mod, h, () => this._assertAlive());
+    this.surface2d = new Surface2D(mod, h, () => this._assertAlive());
   }
 
   // -------------------------------------------------------------------------

@@ -100,3 +100,18 @@ export { rawOf, withCString, withDouble, withInt, withDoubleArray, withDoubleInp
 
 export { Transport } from "./Transport.js";
 export type { TransportRow, ConduitDispersion } from "./Transport.js";
+
+// ---------------------------------------------------------------------------
+// 2D surface routing (solver.surface2d)
+// ---------------------------------------------------------------------------
+export { Surface2D, Infiltration2D } from "./Surface2D.js";
+export type {
+  SurfaceForcingOptions,
+  TriangleCouplingRow,
+  RainfallWeights,
+  EdgeGeometry,
+  MassBalance2D,
+  RunStats2D,
+  Infil2DRow,
+  Infil2DCell,
+} from "./Surface2D.js";

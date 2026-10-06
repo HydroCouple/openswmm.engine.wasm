@@ -3,7 +3,9 @@
 Generate the raw WASM binding layer from the OpenSWMM Engine C API headers.
 
 Reads   extern/openswmm.engine/include/openswmm/engine/*.h
-Writes  src/bindings/exported_functions.json   -> -sEXPORTED_FUNCTIONS=@file
+Writes  src/bindings/exported_functions.json   -> -sEXPORTED_FUNCTIONS=@file (2D build)
+        src/bindings/exported_functions.no2d.json  the same without the 2D headers
+                                                (-DOPENSWMM_WASM_2D=OFF)
         src/js/raw.ts                           typed cwrap table (RawApi, bindRaw)
         src/js/raw.manifest.json                name -> signature (parity tests)
         tools/host_shim/raw_check.cpp           static_asserts: parsed == real prototypes
@@ -29,8 +31,13 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 HEADER_DIR_REL = Path("include/openswmm/engine")
 
-# Headers compiled out of the WASM build (-DOPENSWMM_BUILD_2D=OFF).
-EXCLUDED_HEADERS = {
+# Headers compiled out of the WASM build. None: 2D is built (without its HDF5
+# results writer). Kept so a future optional feature can be listed here.
+EXCLUDED_HEADERS: set[str] = set()
+# Headers of the 2D module. Bound in raw.ts either way; a build configured
+# with -DOPENSWMM_WASM_2D=OFF links exported_functions.no2d.json instead, and
+# calling one of these then throws "export ... is not available".
+OPTIONAL_2D_HEADERS = {
     "openswmm_2d.h", "openswmm_infil2d.h", "openswmm_gw2d.h",
     "openswmm_gw_transport.h", "openswmm_sq2d.h",
 }
@@ -42,6 +49,7 @@ SKIP_HEADERS = {"openswmm_engine_export.h", "openswmm_callbacks.h"}
 STRUCTS_OF_INTEREST = [
     "SWMM_ImpactEntry", "SWMM_ImpactReport", "SWMM_ConversionResult",
     "SWMM_ThreadInfo", "SWMM_InletDesign", "SWMM_InletUsage",
+    "SWMM_2DRunStats", "SWMM_Infil2DOptions", "SWMM_Infil2DRow",
 ]
 
 WASM32 = {"int": (4, 4), "double": (8, 8), "float": (4, 4), "long": (4, 4),
@@ -116,9 +124,33 @@ def parse_headers(header_dir: Path):
     return funcs, sorted(excluded)
 
 
+def parse_defines(header_dir: Path) -> dict[str, int]:
+    """Integer object-like macros (array bounds such as SWMM_INFIL2D_MAX_PARAMS)."""
+    defines = {}
+    for h in sorted(header_dir.glob("*.h")):
+        text = strip_comments(h.read_text(encoding="utf-8"))
+        for m in re.finditer(r"^\s*#\s*define\s+(\w+)\s+\(?\s*(\d+)\s*\)?\s*$", text, re.M):
+            defines[m.group(1)] = int(m.group(2))
+    return defines
+
+
+def parse_struct_field(decl: str, defines: dict[str, int]) -> tuple[str, str, int]:
+    """'double p[N]' -> ('double', 'p', N); scalars and pointers have count 1."""
+    m = re.match(r"^(.*?)(\w+)\s*\[\s*(\w+)\s*\]$", decl.strip())
+    if not m:
+        typ, fname = split_param(decl)
+        return typ, fname, 1
+    bound = m.group(3)
+    count = int(bound) if bound.isdigit() else defines.get(bound)
+    if count is None:
+        raise SystemExit(f"array bound {bound!r} is not an integer macro")
+    return norm(m.group(1)), m.group(2), count
+
+
 def parse_structs(header_dir: Path):
     """Compute wasm32 layouts for the structs of interest."""
     structs = {}
+    defines = parse_defines(header_dir)
     for h in sorted(header_dir.glob("*.h")):
         if h.name in EXCLUDED_HEADERS:
             continue
@@ -134,14 +166,18 @@ def parse_structs(header_dir: Path):
                 decl = decl.strip()
                 if not decl:
                     continue
-                typ, fname = split_param(decl)
+                typ, fname, count = parse_struct_field(decl, defines)
                 base = "ptr" if typ.endswith("*") else typ.replace("const ", "")
                 if base not in WASM32:
                     raise SystemExit(f"{sname}.{fname}: unsupported field type {typ!r}")
                 size, align = WASM32[base]
                 offset = (offset + align - 1) // align * align
-                fields.append({"name": fname, "type": typ, "offset": offset, "size": size})
-                offset += size
+                field = {"name": fname, "type": typ if count == 1 else f"{typ}[{count}]",
+                         "offset": offset, "size": size * count}
+                if count != 1:
+                    field["count"] = count
+                fields.append(field)
+                offset += size * count
                 max_align = max(max_align, align)
             total = (offset + max_align - 1) // max_align * max_align
             structs[sname] = {"header": h.name, "size": total, "align": max_align,
@@ -156,8 +192,9 @@ def parse_structs(header_dir: Path):
 # Emitters
 # ---------------------------------------------------------------------------
 
-def emit_exported(funcs) -> str:
-    names = ["_malloc", "_free"] + ["_" + f["name"] for f in funcs]
+def emit_exported(funcs, *, with_2d: bool = True) -> str:
+    names = ["_malloc", "_free"] + ["_" + f["name"] for f in funcs
+                                   if with_2d or f["header"] not in OPTIONAL_2D_HEADERS]
     return json.dumps(names, indent=0) + "\n"
 
 
@@ -185,7 +222,9 @@ def emit_raw_ts(funcs, structs) -> str:
     out.append("/**\n * @file raw.ts\n * @brief GENERATED by tools/gen_bindings.py — do not edit.\n *\n"
                " * Typed access to every exported OpenSWMM Engine C function. Pointers and\n"
                " * handles are heap offsets (numbers); `const char*` inputs are JS strings\n"
-               " * (copied to a temporary C string per call; `null` passes NULL).\n */\n\n")
+               " * (copied to a temporary C string per call; `null` passes NULL).\n"
+               " * Functions from the 2D headers throw when the module was built with\n"
+               " * -DOPENSWMM_WASM_2D=OFF.\n */\n\n")
     out.append("/** Emscripten module surface the raw layer needs. */\n"
                "export interface RawModule {\n"
                "  cwrap(name: string, ret: string | null, args: string[]): (...a: unknown[]) => unknown;\n"
@@ -217,8 +256,10 @@ def emit_raw_ts(funcs, structs) -> str:
     out.append("  return api as unknown as RawApi;\n}\n\n")
     out.append("/** wasm32 layouts of C structs passed through the API (byte offsets). */\n"
                "export const STRUCTS = ")
-    out.append(json.dumps({k: {"size": v["size"], "fields": {fl["name"]: {"offset": fl["offset"], "type": fl["type"]}
-                                                             for fl in v["fields"]}}
+    out.append(json.dumps({k: {"size": v["size"], "fields": {
+                               fl["name"]: {"offset": fl["offset"], "type": fl["type"],
+                                            **({"count": fl["count"]} if "count" in fl else {})}
+                               for fl in v["fields"]}}
                            for k, v in structs.items()}, indent=2))
     out.append(" as const;\n\n")
     out.append(f"/** Number of C functions in this layer. */\nexport const RAW_FUNCTION_COUNT = {len(funcs)};\n")
@@ -231,7 +272,8 @@ def emit_manifest(funcs, structs, excluded) -> str:
                                      for f in funcs},
                        "structs": structs,
                        "excludedHeaders": sorted(EXCLUDED_HEADERS),
-                       "excludedFunctions": excluded}, indent=1) + "\n"
+                       "excludedFunctions": excluded,
+                       "optionalHeaders": {"2d": sorted(OPTIONAL_2D_HEADERS)}}, indent=1) + "\n"
 
 
 def emit_raw_check(funcs, structs) -> str:
@@ -298,6 +340,7 @@ def main() -> int:
     structs = parse_structs(header_dir)
     outputs = {
         ROOT / "src/bindings/exported_functions.json": emit_exported(funcs),
+        ROOT / "src/bindings/exported_functions.no2d.json": emit_exported(funcs, with_2d=False),
         ROOT / "src/js/raw.ts": emit_raw_ts(funcs, structs),
         ROOT / "src/js/enums.ts": emit_enums(Path(a.engine_root)),
         ROOT / "src/js/raw.manifest.json": emit_manifest(funcs, structs, excluded),
