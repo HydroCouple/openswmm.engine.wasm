@@ -453,7 +453,7 @@ function makeMockModule(): OpenSwmmWasmModule {
     _free: () => {},
     getValue: (ptr: number) => heap[ptr] ?? 0,
     setValue: (ptr: number, value: number) => { heap[ptr] = value; },
-    UTF8ToString: (ptr: number) => "",
+    UTF8ToString: (_ptr: number) => "",
     stringToUTF8: () => {},
     lengthBytesUTF8: (s: string) => s.length,
     HEAP8: new Int8Array(0),
