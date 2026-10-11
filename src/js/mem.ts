@@ -42,10 +42,7 @@ export function withCString(
 }
 
 /** Call a C function with a `double*` out-parameter and return the value. */
-export function withDouble(
-  mod: OpenSwmmWasmModule,
-  call: (ptr: number) => number,
-): number {
+export function withDouble(mod: OpenSwmmWasmModule, call: (ptr: number) => number): number {
   const ptr = mod._malloc(8);
   try {
     raiseForCode(call(ptr));
@@ -56,10 +53,7 @@ export function withDouble(
 }
 
 /** Call a C function with an `int*` out-parameter and return the value. */
-export function withInt(
-  mod: OpenSwmmWasmModule,
-  call: (ptr: number) => number,
-): number {
+export function withInt(mod: OpenSwmmWasmModule, call: (ptr: number) => number): number {
   const ptr = mod._malloc(4);
   try {
     raiseForCode(call(ptr));
@@ -106,7 +100,13 @@ export function withDoubleInput(
 
 /** Keep high-level views attached to their owner; raw C access stays explicit. */
 export function guardedRaw(mod: OpenSwmmWasmModule, check: () => void): RawApi {
-  return Object.fromEntries(Object.entries(rawOf(mod)).map(([name, fn]) => [
-    name, (...args: unknown[]) => { check(); return fn(...args); },
-  ])) as unknown as RawApi;
+  return Object.fromEntries(
+    Object.entries(rawOf(mod)).map(([name, fn]) => [
+      name,
+      (...args: unknown[]) => {
+        check();
+        return fn(...args);
+      },
+    ]),
+  ) as unknown as RawApi;
 }

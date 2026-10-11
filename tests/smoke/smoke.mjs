@@ -28,7 +28,9 @@ const work = resolve(root, "tests", "_work");
 
 for (const f of ["openswmm_engine.js", "openswmm_engine.wasm", "index.js"]) {
   if (!existsSync(resolve(dist, f))) {
-    console.error(`smoke: missing dist/${f} — run the Emscripten build and 'npm run build:ts' first`);
+    console.error(
+      `smoke: missing dist/${f} — run the Emscripten build and 'npm run build:ts' first`,
+    );
     process.exit(2);
   }
 }
@@ -41,7 +43,10 @@ function fail(err) {
   const msg = err instanceof Error ? `${err.name}: ${err.message}` : String(err);
   console.error(`smoke: FAIL — ${msg}`);
   if (err instanceof Error && err.stack) {
-    const frames = err.stack.split("\n").slice(1).filter((l) => !/openswmm_engine\.js:1\b/.test(l) || l.length < 300);
+    const frames = err.stack
+      .split("\n")
+      .slice(1)
+      .filter((l) => !/openswmm_engine\.js:1\b/.test(l) || l.length < 300);
     console.error(frames.slice(0, 12).join("\n"));
   }
   process.exit(1);
@@ -62,7 +67,10 @@ async function main() {
   solver.open("/smoke.inp", "/smoke.rpt", "/smoke.out");
   // New high-level configuration wrappers exercise real native out-pointers.
   solver.transport.dispersionMode = TransportDispersionMode.VALUE;
-  assert(solver.transport.dispersionMode === TransportDispersionMode.VALUE, "dispersion mode round trip");
+  assert(
+    solver.transport.dispersionMode === TransportDispersionMode.VALUE,
+    "dispersion mode round trip",
+  );
   solver.transport.dispersionValue = 0.25;
   solver.transport.targetDx = 2;
   assert(solver.transport.configured, "transport was not marked configured");
@@ -100,14 +108,17 @@ async function main() {
   const wasmCE = routingContinuityError(rpt);
 
   console.log(`smoke: ${steps} routing steps`);
-  console.log(`smoke: O1 peak flow   native=${refPeak}  wasm=${wasmPeak}  (stepwise max inflow ${peakOutfall.toFixed(3)})`);
+  console.log(
+    `smoke: O1 peak flow   native=${refPeak}  wasm=${wasmPeak}  (stepwise max inflow ${peakOutfall.toFixed(3)})`,
+  );
   console.log(`smoke: routing CE (%) native=${refCE}  wasm=${wasmCE}`);
 
   assert(steps > 100, `too few steps: ${steps}`);
   assert(/Continuity Error/.test(rpt), "report lacks continuity section");
   assert(relDiff(refPeak, wasmPeak) < 0.02, `outfall peak differs >2%: ${refPeak} vs ${wasmPeak}`);
   assert(Math.abs(wasmCE) < 1.0, `routing continuity error too large: ${wasmCE}%`);
-  console.log("smoke: OK");}
+  console.log("smoke: OK");
+}
 
 // ---- helpers ----------------------------------------------------------------
 function assert(cond, msg) {

@@ -96,7 +96,14 @@ export { oadateToDate, dateToOadate } from "./types.js";
 // ---------------------------------------------------------------------------
 export { bindRaw, STRUCTS, RAW_FUNCTION_COUNT } from "./raw.js";
 export type { RawApi, RawModule } from "./raw.js";
-export { rawOf, withCString, withDouble, withInt, withDoubleArray, withDoubleInput } from "./mem.js";
+export {
+  rawOf,
+  withCString,
+  withDouble,
+  withInt,
+  withDoubleArray,
+  withDoubleInput,
+} from "./mem.js";
 
 export { Transport } from "./Transport.js";
 export type { TransportRow, ConduitDispersion } from "./Transport.js";

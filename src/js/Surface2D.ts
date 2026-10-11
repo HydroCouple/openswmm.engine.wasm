@@ -43,7 +43,14 @@ import {
 import { BadParamError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import { STRUCTS, type RawApi } from "./raw.js";
-import { guardedRaw, withCString, withDouble, withDoubleArray, withDoubleInput, withInt } from "./mem.js";
+import {
+  guardedRaw,
+  withCString,
+  withDouble,
+  withDoubleArray,
+  withDoubleInput,
+  withInt,
+} from "./mem.js";
 
 /** How a forced 2D value combines with the computed one, and how long it lasts. */
 export interface SurfaceForcingOptions {
@@ -179,7 +186,7 @@ export class Surface2D {
 
   /** Whether the 2D solver is active (a mesh is present and initialize ran). */
   get isActive(): boolean {
-    return withInt(this.mod, p => this.raw.swmm_2d_is_active(this.handle, p)) !== 0;
+    return withInt(this.mod, (p) => this.raw.swmm_2d_is_active(this.handle, p)) !== 0;
   }
 
   /** Re-open a mesh for editing between runs. */
@@ -189,37 +196,55 @@ export class Surface2D {
 
   // ---- mesh topology -------------------------------------------------------
 
-  get nVertices(): number { return withInt(this.mod, p => this.raw.swmm_2d_vertex_count(this.handle, p)); }
+  get nVertices(): number {
+    return withInt(this.mod, (p) => this.raw.swmm_2d_vertex_count(this.handle, p));
+  }
   /** Number of cells (triangles + quads); every per-cell array has this length. */
-  get nTriangles(): number { return withInt(this.mod, p => this.raw.swmm_2d_triangle_count(this.handle, p)); }
+  get nTriangles(): number {
+    return withInt(this.mod, (p) => this.raw.swmm_2d_triangle_count(this.handle, p));
+  }
   /** Same value as {@link nTriangles}. */
-  get nCells(): number { return withInt(this.mod, p => this.raw.swmm_2d_cell_count(this.handle, p)); }
-  get nQuads(): number { return withInt(this.mod, p => this.raw.swmm_2d_quad_count(this.handle, p)); }
+  get nCells(): number {
+    return withInt(this.mod, (p) => this.raw.swmm_2d_cell_count(this.handle, p));
+  }
+  get nQuads(): number {
+    return withInt(this.mod, (p) => this.raw.swmm_2d_quad_count(this.handle, p));
+  }
   /** Edge slots per cell in the bulk edge arrays: 3, or 4 once the mesh has a quad. */
-  get edgeStride(): number { return withInt(this.mod, p => this.raw.swmm_2d_edge_stride(this.handle, p)); }
+  get edgeStride(): number {
+    return withInt(this.mod, (p) => this.raw.swmm_2d_edge_stride(this.handle, p));
+  }
 
   getCellVertexCount(idx: number): number {
-    return withInt(this.mod, p => this.raw.swmm_2d_cell_vertex_count(this.handle, idx, p));
+    return withInt(this.mod, (p) => this.raw.swmm_2d_cell_vertex_count(this.handle, idx, p));
   }
 
   /** Vertex indices of a cell (3 for a triangle, 4 for a quad). */
   getCellVertices(idx: number): number[] {
-    return this.cellInts(idx, (v, nv) => this.raw.swmm_2d_cell_get_vertices(this.handle, idx, v, nv));
+    return this.cellInts(idx, (v, nv) =>
+      this.raw.swmm_2d_cell_get_vertices(this.handle, idx, v, nv),
+    );
   }
 
   /** Neighbour cell across each local edge (`-1` on the boundary). */
   getCellNeighbours(idx: number): number[] {
-    return this.cellInts(idx, (n, nv) => this.raw.swmm_2d_cell_get_neighbours(this.handle, idx, n, nv));
+    return this.cellInts(idx, (n, nv) =>
+      this.raw.swmm_2d_cell_get_neighbours(this.handle, idx, n, nv),
+    );
   }
 
   /** The three vertices of a triangle (refuses quads; use {@link getCellVertices}). */
   getTriangleVertices(idx: number): [number, number, number] {
-    return this.ints3(p => this.raw.swmm_2d_triangle_get_vertices(this.handle, idx, p, p + 4, p + 8));
+    return this.ints3((p) =>
+      this.raw.swmm_2d_triangle_get_vertices(this.handle, idx, p, p + 4, p + 8),
+    );
   }
 
   /** The three neighbours of a triangle (`-1` on the boundary). */
   getTriangleNeighbours(idx: number): [number, number, number] {
-    return this.ints3(p => this.raw.swmm_2d_triangle_get_neighbours(this.handle, idx, p, p + 4, p + 8));
+    return this.ints3((p) =>
+      this.raw.swmm_2d_triangle_get_neighbours(this.handle, idx, p, p + 4, p + 8),
+    );
   }
 
   // ---- mesh geometry -------------------------------------------------------
@@ -228,7 +253,7 @@ export class Surface2D {
   getVertexCoords(): { x: Float64Array; y: Float64Array; z: Float64Array } {
     const n = this.nVertices;
     if (n <= 0) return { x: new Float64Array(0), y: new Float64Array(0), z: new Float64Array(0) };
-    return scratch(this.mod, 24 * n, p => {
+    return scratch(this.mod, 24 * n, (p) => {
       raiseForCode(this.raw.swmm_2d_vertex_get_xyz_bulk(this.handle, p, p + 8 * n, p + 16 * n));
       const all = new Float64Array(this.mod.HEAPF64.buffer, p, 3 * n).slice();
       return { x: all.subarray(0, n), y: all.subarray(n, 2 * n), z: all.subarray(2 * n) };
@@ -236,7 +261,9 @@ export class Surface2D {
   }
 
   getVertexXyz(idx: number): [number, number, number] {
-    return this.doubles3(p => this.raw.swmm_2d_vertex_get_xyz(this.handle, idx, p, p + 8, p + 16));
+    return this.doubles3((p) =>
+      this.raw.swmm_2d_vertex_get_xyz(this.handle, idx, p, p + 8, p + 16),
+    );
   }
 
   /** Set a vertex's ground elevation; derived cell geometry follows. */
@@ -248,35 +275,43 @@ export class Surface2D {
   setVertexZBulk(z: ArrayLike<number>): void {
     const n = this.nVertices;
     if (z.length !== n) {
-      throw new BadParamError(`setVertexZBulk expects one Z per vertex: got ${z.length}, mesh has ${n}`);
+      throw new BadParamError(
+        `setVertexZBulk expects one Z per vertex: got ${z.length}, mesh has ${n}`,
+      );
     }
-    withDoubleInput(this.mod, z, (p, count) => this.raw.swmm_2d_set_vertex_z_bulk(this.handle, p, count));
+    withDoubleInput(this.mod, z, (p, count) =>
+      this.raw.swmm_2d_set_vertex_z_bulk(this.handle, p, count),
+    );
   }
 
   getTriangleArea(idx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_triangle_get_area(this.handle, idx, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_triangle_get_area(this.handle, idx, p));
   }
 
   getTriangleCentroid(idx: number): [number, number, number] {
-    return this.doubles3(p => this.raw.swmm_2d_triangle_get_centroid(this.handle, idx, p, p + 8, p + 16));
+    return this.doubles3((p) =>
+      this.raw.swmm_2d_triangle_get_centroid(this.handle, idx, p, p + 8, p + 16),
+    );
   }
 
   getTriangleMannings(idx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_triangle_get_mannings(this.handle, idx, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_triangle_get_mannings(this.handle, idx, p));
   }
   setTriangleMannings(idx: number, n: number): void {
     raiseForCode(this.raw.swmm_2d_set_triangle_mannings(this.handle, idx, n));
   }
 
   getTriangleInitDepth(idx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_triangle_get_init_depth(this.handle, idx, p));
+    return withDouble(this.mod, (p) =>
+      this.raw.swmm_2d_triangle_get_init_depth(this.handle, idx, p),
+    );
   }
   setTriangleInitDepth(idx: number, depth: number): void {
     raiseForCode(this.raw.swmm_2d_set_triangle_init_depth(this.handle, idx, depth));
   }
 
   getTriangleInitVelocity(idx: number): [number, number] {
-    return scratch(this.mod, 16, p => {
+    return scratch(this.mod, 16, (p) => {
       raiseForCode(this.raw.swmm_2d_triangle_get_init_velocity(this.handle, idx, p, p + 8));
       return [this.mod.getValue(p, "double"), this.mod.getValue(p + 8, "double")];
     });
@@ -286,14 +321,18 @@ export class Surface2D {
   }
 
   getTriangleTag(idx: number): string {
-    return withCString(this.mod, TAG_BYTES, (b, n) => this.raw.swmm_2d_get_triangle_tag(this.handle, idx, b, n));
+    return withCString(this.mod, TAG_BYTES, (b, n) =>
+      this.raw.swmm_2d_get_triangle_tag(this.handle, idx, b, n),
+    );
   }
   setTriangleTag(idx: number, tag: string): void {
     raiseForCode(this.raw.swmm_2d_set_triangle_tag(this.handle, idx, tag));
   }
 
   getVertexTag(idx: number): string {
-    return withCString(this.mod, TAG_BYTES, (b, n) => this.raw.swmm_2d_get_vertex_tag(this.handle, idx, b, n));
+    return withCString(this.mod, TAG_BYTES, (b, n) =>
+      this.raw.swmm_2d_get_vertex_tag(this.handle, idx, b, n),
+    );
   }
   setVertexTag(idx: number, tag: string): void {
     raiseForCode(this.raw.swmm_2d_set_vertex_tag(this.handle, idx, tag));
@@ -302,29 +341,35 @@ export class Surface2D {
   // ---- 1D coupling ---------------------------------------------------------
 
   get vertexCouplingCount(): number {
-    return withInt(this.mod, p => this.raw.swmm_2d_vertex_coupling_count(this.handle, p));
+    return withInt(this.mod, (p) => this.raw.swmm_2d_vertex_coupling_count(this.handle, p));
   }
   get triangleCouplingCount(): number {
-    return withInt(this.mod, p => this.raw.swmm_2d_triangle_coupling_count(this.handle, p));
+    return withInt(this.mod, (p) => this.raw.swmm_2d_triangle_coupling_count(this.handle, p));
   }
 
   /** Node index coupled to a vertex, or `-1`. */
   getVertexCoupledNode(vertexIdx: number): number {
-    return withInt(this.mod, p => this.raw.swmm_2d_vertex_get_coupled_node(this.handle, vertexIdx, p));
+    return withInt(this.mod, (p) =>
+      this.raw.swmm_2d_vertex_get_coupled_node(this.handle, vertexIdx, p),
+    );
   }
   setVertexCoupledNode(vertexIdx: number, nodeName: string): void {
     raiseForCode(this.raw.swmm_2d_set_vertex_coupled_node(this.handle, vertexIdx, nodeName));
   }
 
   getVertexCouplingCd(vertexIdx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_vertex_coupling_cd(this.handle, vertexIdx, p));
+    return withDouble(this.mod, (p) =>
+      this.raw.swmm_2d_get_vertex_coupling_cd(this.handle, vertexIdx, p),
+    );
   }
   setVertexCouplingCd(vertexIdx: number, cd: number): void {
     raiseForCode(this.raw.swmm_2d_set_vertex_coupling_cd(this.handle, vertexIdx, cd));
   }
 
   getVertexCouplingArea(vertexIdx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_vertex_coupling_area(this.handle, vertexIdx, p));
+    return withDouble(this.mod, (p) =>
+      this.raw.swmm_2d_get_vertex_coupling_area(this.handle, vertexIdx, p),
+    );
   }
   setVertexCouplingArea(vertexIdx: number, area: number): void {
     raiseForCode(this.raw.swmm_2d_set_vertex_coupling_area(this.handle, vertexIdx, area));
@@ -332,7 +377,9 @@ export class Surface2D {
 
   /** Node index coupled to a triangle, or `-1`. */
   getTriangleCoupledNode(triIdx: number): number {
-    return withInt(this.mod, p => this.raw.swmm_2d_triangle_get_coupled_node(this.handle, triIdx, p));
+    return withInt(this.mod, (p) =>
+      this.raw.swmm_2d_triangle_get_coupled_node(this.handle, triIdx, p),
+    );
   }
   addTriangleCoupling(triIdx: number, nodeName: string, cd: number, area: number): void {
     raiseForCode(this.raw.swmm_2d_add_triangle_coupling(this.handle, triIdx, nodeName, cd, area));
@@ -341,11 +388,13 @@ export class Surface2D {
     raiseForCode(this.raw.swmm_2d_clear_triangle_couplings(this.handle));
   }
   get triangleCouplingRows(): number {
-    return withInt(this.mod, p => this.raw.swmm_2d_triangle_coupling_rows(this.handle, p));
+    return withInt(this.mod, (p) => this.raw.swmm_2d_triangle_coupling_rows(this.handle, p));
   }
   getTriangleCouplingRow(rowIdx: number): TriangleCouplingRow {
-    return scratch(this.mod, 24, p => {
-      raiseForCode(this.raw.swmm_2d_get_triangle_coupling_row(this.handle, rowIdx, p, p + 4, p + 8, p + 16));
+    return scratch(this.mod, 24, (p) => {
+      raiseForCode(
+        this.raw.swmm_2d_get_triangle_coupling_row(this.handle, rowIdx, p, p + 4, p + 8, p + 16),
+      );
       return {
         triangle: this.mod.getValue(p, "i32"),
         node: this.mod.getValue(p + 4, "i32"),
@@ -358,48 +407,55 @@ export class Surface2D {
   // ---- state: per-cell arrays (copies) ---------------------------------------
 
   /** Water depth per cell (m). */
-  getDepths(): Float64Array { return this.cellArray(p => this.raw.swmm_2d_get_depths_bulk(this.handle, p)); }
+  getDepths(): Float64Array {
+    return this.cellArray((p) => this.raw.swmm_2d_get_depths_bulk(this.handle, p));
+  }
   /** Water-surface elevation per cell (m). */
-  getHeads(): Float64Array { return this.cellArray(p => this.raw.swmm_2d_get_heads_bulk(this.handle, p)); }
+  getHeads(): Float64Array {
+    return this.cellArray((p) => this.raw.swmm_2d_get_heads_bulk(this.handle, p));
+  }
   /** 1D coupling flux per cell (m/s per unit cell area, positive into the surface). */
   getCouplingFluxes(): Float64Array {
-    return this.cellArray(p => this.raw.swmm_2d_get_coupling_fluxes_bulk(this.handle, p));
+    return this.cellArray((p) => this.raw.swmm_2d_get_coupling_fluxes_bulk(this.handle, p));
   }
   /** Rainfall rate per cell (m/s). */
-  getRainfallBulk(): Float64Array { return this.cellArray(p => this.raw.swmm_2d_get_rainfall_bulk(this.handle, p)); }
+  getRainfallBulk(): Float64Array {
+    return this.cellArray((p) => this.raw.swmm_2d_get_rainfall_bulk(this.handle, p));
+  }
   /** Cumulative rainfall volume per cell (m³). */
   getRainVolumeBulk(): Float64Array {
-    return this.cellArray(p => this.raw.swmm_2d_get_rain_volume_bulk(this.handle, p));
+    return this.cellArray((p) => this.raw.swmm_2d_get_rain_volume_bulk(this.handle, p));
   }
   /** Cumulative 1D-exchange volume per cell (m³). */
   getCouplingVolumeBulk(): Float64Array {
-    return this.cellArray(p => this.raw.swmm_2d_get_coupling_volume_bulk(this.handle, p));
+    return this.cellArray((p) => this.raw.swmm_2d_get_coupling_volume_bulk(this.handle, p));
   }
   /** Maximum depth reached per cell (m). */
   getStatMaxDepths(): Float64Array {
-    return this.cellArray(p => this.raw.swmm_2d_get_stat_max_depths(this.handle, p));
+    return this.cellArray((p) => this.raw.swmm_2d_get_stat_max_depths(this.handle, p));
   }
   /** Maximum velocity magnitude per cell (m/s). */
   getStatMaxVelocities(): Float64Array {
-    return this.cellArray(p => this.raw.swmm_2d_get_stat_max_velocities(this.handle, p));
+    return this.cellArray((p) => this.raw.swmm_2d_get_stat_max_velocities(this.handle, p));
   }
   /** Maximum per-cell continuity error. */
   getStatMaxContinuityErr(): Float64Array {
-    return this.cellArray(p => this.raw.swmm_2d_get_stat_max_continuity_err(this.handle, p));
+    return this.cellArray((p) => this.raw.swmm_2d_get_stat_max_continuity_err(this.handle, p));
   }
 
   // ---- state: edge and vertex arrays -----------------------------------------
 
   /** Depth-integrated normal flux per edge slot (m²/s, positive leaving the cell). */
   getEdgeFluxBulk(): Float64Array {
-    return this.edgeArray(p => this.raw.swmm_2d_get_edge_flux_bulk(this.handle, p));
+    return this.edgeArray((p) => this.raw.swmm_2d_get_edge_flux_bulk(this.handle, p));
   }
 
   /** Edge length and outward unit normal per edge slot. */
   getEdgeGeometryBulk(): EdgeGeometry {
     const n = this.nTriangles * this.edgeStride;
-    if (n <= 0) return { length: new Float64Array(0), nx: new Float64Array(0), ny: new Float64Array(0) };
-    return scratch(this.mod, 24 * n, p => {
+    if (n <= 0)
+      return { length: new Float64Array(0), nx: new Float64Array(0), ny: new Float64Array(0) };
+    return scratch(this.mod, 24 * n, (p) => {
       raiseForCode(this.raw.swmm_2d_edge_get_geometry_bulk(this.handle, p, p + 8 * n, p + 16 * n));
       const all = new Float64Array(this.mod.HEAPF64.buffer, p, 3 * n).slice();
       return { length: all.subarray(0, n), nx: all.subarray(n, 2 * n), ny: all.subarray(2 * n) };
@@ -408,50 +464,63 @@ export class Surface2D {
 
   /** Edge conveyance multipliers per edge slot (1 = unrestricted). */
   getEdgeConveyanceBulk(): Float64Array {
-    return this.edgeArray(p => this.raw.swmm_2d_get_edge_conveyance_bulk(this.handle, p));
+    return this.edgeArray((p) => this.raw.swmm_2d_get_edge_conveyance_bulk(this.handle, p));
   }
 
   /** Reconstructed water-surface elevation per vertex (m). */
   getVertexHeads(): Float64Array {
-    return withDoubleArray(this.mod, this.nVertices, p => this.raw.swmm_2d_vertex_get_heads_bulk(this.handle, p));
+    return withDoubleArray(this.mod, this.nVertices, (p) =>
+      this.raw.swmm_2d_vertex_get_heads_bulk(this.handle, p),
+    );
   }
 
   /** Depth per vertex for rendering (m). */
   getVertexRenderDepths(): Float64Array {
-    return withDoubleArray(this.mod, this.nVertices,
-      p => this.raw.swmm_2d_vertex_get_render_depths_bulk(this.handle, p));
+    return withDoubleArray(this.mod, this.nVertices, (p) =>
+      this.raw.swmm_2d_vertex_get_render_depths_bulk(this.handle, p),
+    );
   }
 
   // ---- state: single values --------------------------------------------------
 
-  getDepth(idx: number): number { return withDouble(this.mod, p => this.raw.swmm_2d_get_depth(this.handle, idx, p)); }
-  getHead(idx: number): number { return withDouble(this.mod, p => this.raw.swmm_2d_get_head(this.handle, idx, p)); }
+  getDepth(idx: number): number {
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_depth(this.handle, idx, p));
+  }
+  getHead(idx: number): number {
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_head(this.handle, idx, p));
+  }
   getRainfall(idx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_rainfall(this.handle, idx, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_rainfall(this.handle, idx, p));
   }
   /** Net source/sink rate (m/s). */
   getNetSource(idx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_net_source(this.handle, idx, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_net_source(this.handle, idx, p));
   }
   getCouplingFlux(idx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_coupling_flux(this.handle, idx, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_coupling_flux(this.handle, idx, p));
   }
   getVertexHead(idx: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_vertex_get_head(this.handle, idx, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_vertex_get_head(this.handle, idx, p));
   }
 
   /** Gages and weights that distribute rainfall onto `cell`. */
   rainfallWeights(cell: number): RainfallWeights {
-    return scratch(this.mod, 8, hdr => {
+    return scratch(this.mod, 8, (hdr) => {
       raiseForCode(this.raw.swmm_2d_get_rainfall_weights(this.handle, cell, hdr, 0, 0, 0, hdr + 4));
       const count = this.mod.getValue(hdr + 4, "i32");
       if (count <= 0) {
-        return { method: this.mod.getValue(hdr, "i32"), gages: new Int32Array(0), weights: new Float64Array(0) };
+        return {
+          method: this.mod.getValue(hdr, "i32"),
+          gages: new Int32Array(0),
+          weights: new Float64Array(0),
+        };
       }
       // Doubles first: the block is 8-byte aligned, the ints after it need 4.
-      return scratch(this.mod, 12 * count, w => {
+      return scratch(this.mod, 12 * count, (w) => {
         const g = w + 8 * count;
-        raiseForCode(this.raw.swmm_2d_get_rainfall_weights(this.handle, cell, hdr, g, w, count, hdr + 4));
+        raiseForCode(
+          this.raw.swmm_2d_get_rainfall_weights(this.handle, cell, hdr, g, w, count, hdr + 4),
+        );
         const n = Math.min(count, this.mod.getValue(hdr + 4, "i32"));
         return {
           method: this.mod.getValue(hdr, "i32"),
@@ -465,31 +534,35 @@ export class Surface2D {
   // ---- run summary ------------------------------------------------------------
 
   /** Largest cell depth right now (m). */
-  get maxDepth(): number { return withDouble(this.mod, p => this.raw.swmm_2d_get_max_depth(this.handle, p)); }
+  get maxDepth(): number {
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_max_depth(this.handle, p));
+  }
   /** Water volume on the surface (m³). */
-  get totalVolume(): number { return withDouble(this.mod, p => this.raw.swmm_2d_get_total_volume(this.handle, p)); }
+  get totalVolume(): number {
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_total_volume(this.handle, p));
+  }
   /** Sum of the 1D coupling flows (m³/s, positive from the surface into the 1D network). */
   get totalExchangeFlow(): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_total_exchange_flow(this.handle, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_total_exchange_flow(this.handle, p));
   }
   /** Internal marcher steps taken in the last advance. */
   get solverSteps(): number {
     // `long` is 32-bit on wasm32; the count is never negative.
-    return withInt(this.mod, p => this.raw.swmm_2d_get_solver_steps(this.handle, p)) >>> 0;
+    return withInt(this.mod, (p) => this.raw.swmm_2d_get_solver_steps(this.handle, p)) >>> 0;
   }
   /** Last accepted internal step (s). */
   get solverLastStep(): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_solver_last_step(this.handle, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_solver_last_step(this.handle, p));
   }
   /** Continuity error of the 2D volume balance as a fraction, `(in - out) / in`. */
   get continuityError(): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_continuity_error(this.handle, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_continuity_error(this.handle, p));
   }
 
   get runStats(): RunStats2D {
     const s = STRUCTS.SWMM_2DRunStats;
     const f = s.fields;
-    return scratch(this.mod, s.size, p => {
+    return scratch(this.mod, s.size, (p) => {
       this.mod.HEAPU8.fill(0, p, p + s.size);
       raiseForCode(this.raw.swmm_2d_get_run_stats(this.handle, p));
       const i32 = (o: number) => this.mod.getValue(p + o, "i32");
@@ -503,7 +576,11 @@ export class Surface2D {
         steps: i32(f.steps.offset) >>> 0,
         faceEvals: i32(f.face_evals.offset) >>> 0,
         lastStep: f64(f.last_step.offset),
-        activeFrac: [f64(f.active_frac_min.offset), f64(f.active_frac_mean.offset), f64(f.active_frac_max.offset)],
+        activeFrac: [
+          f64(f.active_frac_min.offset),
+          f64(f.active_frac_mean.offset),
+          f64(f.active_frac_max.offset),
+        ],
         tierCells: Array.from({ length: nTiers }, (_, k) => i32(f.tier_cells.offset + 4 * k) >>> 0),
       };
     });
@@ -511,15 +588,35 @@ export class Surface2D {
 
   /** 2D volume balance (m³) and its continuity error (a fraction). */
   getMassBalance(): MassBalance2D {
-    const v = scratch(this.mod, 80, p => {
-      raiseForCode(this.raw.swmm_2d_get_mass_balance(this.handle,
-        p, p + 8, p + 16, p + 24, p + 32, p + 40, p + 48, p + 56, p + 64, p + 72));
+    const v = scratch(this.mod, 80, (p) => {
+      raiseForCode(
+        this.raw.swmm_2d_get_mass_balance(
+          this.handle,
+          p,
+          p + 8,
+          p + 16,
+          p + 24,
+          p + 32,
+          p + 40,
+          p + 48,
+          p + 56,
+          p + 64,
+          p + 72,
+        ),
+      );
       return Array.from({ length: 10 }, (_, k) => this.mod.getValue(p + 8 * k, "double"));
     });
     return {
-      initStorage: v[0], finalStorage: v[1], rainfallIn: v[2],
-      coupling1dTo2dIn: v[3], coupling2dTo1dOut: v[4],
-      outfallIn: v[5], outfallOut: v[6], boundaryIn: v[7], boundaryOut: v[8], evapOut: v[9],
+      initStorage: v[0],
+      finalStorage: v[1],
+      rainfallIn: v[2],
+      coupling1dTo2dIn: v[3],
+      coupling2dTo1dOut: v[4],
+      outfallIn: v[5],
+      outfallOut: v[6],
+      boundaryIn: v[7],
+      boundaryOut: v[8],
+      evapOut: v[9],
       continuityError: this.continuityError,
     };
   }
@@ -555,17 +652,23 @@ export class Surface2D {
   }
 
   /** Depth below which a cell is treated as dry (m). */
-  get dryDepth(): number { return withDouble(this.mod, p => this.raw.swmm_2d_get_dry_depth(this.handle, p)); }
-  set dryDepth(value: number) { raiseForCode(this.raw.swmm_2d_set_dry_depth(this.handle, value)); }
+  get dryDepth(): number {
+    return withDouble(this.mod, (p) => this.raw.swmm_2d_get_dry_depth(this.handle, p));
+  }
+  set dryDepth(value: number) {
+    raiseForCode(this.raw.swmm_2d_set_dry_depth(this.handle, value));
+  }
 
   // ---- boundary conditions ------------------------------------------------------
 
   get boundaryEdgeCount(): number {
-    return withInt(this.mod, p => this.raw.swmm_2d_boundary_edge_count(this.handle, p));
+    return withInt(this.mod, (p) => this.raw.swmm_2d_boundary_edge_count(this.handle, p));
   }
 
   getEdgeBcType(triIdx: number, edge: number): SurfaceBoundaryType {
-    return withInt(this.mod, p => this.raw.swmm_2d_get_edge_bc_type(this.handle, triIdx, edge, p));
+    return withInt(this.mod, (p) =>
+      this.raw.swmm_2d_get_edge_bc_type(this.handle, triIdx, edge, p),
+    );
   }
   setEdgeBcType(triIdx: number, edge: number, bcType: SurfaceBoundaryType): void {
     raiseForCode(this.raw.swmm_2d_set_edge_bc_type(this.handle, triIdx, edge, bcType));
@@ -573,7 +676,9 @@ export class Surface2D {
 
   /** Specified stage (m). */
   getEdgeBcHead(triIdx: number, edge: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_edge_bc_head(this.handle, triIdx, edge, p));
+    return withDouble(this.mod, (p) =>
+      this.raw.swmm_2d_get_edge_bc_head(this.handle, triIdx, edge, p),
+    );
   }
   setEdgeBcHead(triIdx: number, edge: number, head: number): void {
     raiseForCode(this.raw.swmm_2d_set_edge_bc_head(this.handle, triIdx, edge, head));
@@ -581,7 +686,9 @@ export class Surface2D {
 
   /** Normal-flow slope. */
   getEdgeBcSlope(triIdx: number, edge: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_edge_bc_slope(this.handle, triIdx, edge, p));
+    return withDouble(this.mod, (p) =>
+      this.raw.swmm_2d_get_edge_bc_slope(this.handle, triIdx, edge, p),
+    );
   }
   setEdgeBcSlope(triIdx: number, edge: number, slope: number): void {
     raiseForCode(this.raw.swmm_2d_set_edge_bc_slope(this.handle, triIdx, edge, slope));
@@ -589,7 +696,9 @@ export class Surface2D {
 
   /** Specified flow (m³/s). */
   getEdgeBcFlow(triIdx: number, edge: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_edge_bc_flow(this.handle, triIdx, edge, p));
+    return withDouble(this.mod, (p) =>
+      this.raw.swmm_2d_get_edge_bc_flow(this.handle, triIdx, edge, p),
+    );
   }
   setEdgeBcFlow(triIdx: number, edge: number, flow: number): void {
     raiseForCode(this.raw.swmm_2d_set_edge_bc_flow(this.handle, triIdx, edge, flow));
@@ -597,28 +706,33 @@ export class Surface2D {
 
   /** Cumulative volume through a boundary edge (m³, positive leaving). */
   getEdgeBcCumFlux(triIdx: number, edge: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_edge_bc_cum_flux(this.handle, triIdx, edge, p));
+    return withDouble(this.mod, (p) =>
+      this.raw.swmm_2d_get_edge_bc_cum_flux(this.handle, triIdx, edge, p),
+    );
   }
 
   getEdgeBcTseriesName(triIdx: number, edge: number): string {
-    return withCString(this.mod, TAG_BYTES,
-      (b, n) => this.raw.swmm_2d_get_edge_bc_tseries_name(this.handle, triIdx, edge, b, n));
+    return withCString(this.mod, TAG_BYTES, (b, n) =>
+      this.raw.swmm_2d_get_edge_bc_tseries_name(this.handle, triIdx, edge, b, n),
+    );
   }
   setEdgeBcTseriesName(triIdx: number, edge: number, name: string): void {
     raiseForCode(this.raw.swmm_2d_set_edge_bc_tseries_name(this.handle, triIdx, edge, name));
   }
 
   getEdgeBcFlowTseriesName(triIdx: number, edge: number): string {
-    return withCString(this.mod, TAG_BYTES,
-      (b, n) => this.raw.swmm_2d_get_edge_bc_flow_tseries_name(this.handle, triIdx, edge, b, n));
+    return withCString(this.mod, TAG_BYTES, (b, n) =>
+      this.raw.swmm_2d_get_edge_bc_flow_tseries_name(this.handle, triIdx, edge, b, n),
+    );
   }
   setEdgeBcFlowTseriesName(triIdx: number, edge: number, name: string): void {
     raiseForCode(this.raw.swmm_2d_set_edge_bc_flow_tseries_name(this.handle, triIdx, edge, name));
   }
 
   getEdgeBcRatingCurveName(triIdx: number, edge: number): string {
-    return withCString(this.mod, TAG_BYTES,
-      (b, n) => this.raw.swmm_2d_get_edge_bc_rating_curve_name(this.handle, triIdx, edge, b, n));
+    return withCString(this.mod, TAG_BYTES, (b, n) =>
+      this.raw.swmm_2d_get_edge_bc_rating_curve_name(this.handle, triIdx, edge, b, n),
+    );
   }
   setEdgeBcRatingCurveName(triIdx: number, edge: number, name: string): void {
     raiseForCode(this.raw.swmm_2d_set_edge_bc_rating_curve_name(this.handle, triIdx, edge, name));
@@ -627,7 +741,9 @@ export class Surface2D {
   // ---- edge conveyance ------------------------------------------------------------
 
   getEdgeConveyance(tri: number, edge: number): number {
-    return withDouble(this.mod, p => this.raw.swmm_2d_get_edge_conveyance(this.handle, tri, edge, p));
+    return withDouble(this.mod, (p) =>
+      this.raw.swmm_2d_get_edge_conveyance(this.handle, tri, edge, p),
+    );
   }
   setEdgeConveyance(tri: number, edge: number, conveyance: number): void {
     raiseForCode(this.raw.swmm_2d_set_edge_conveyance(this.handle, tri, edge, conveyance));
@@ -675,7 +791,7 @@ export class Surface2D {
   }
 
   private cellInts(_idx: number, call: (v: number, nv: number) => number): number[] {
-    return scratch(this.mod, 20, p => {
+    return scratch(this.mod, 20, (p) => {
       raiseForCode(call(p, p + 16));
       const nv = Math.max(0, Math.min(this.mod.getValue(p + 16, "i32"), 4));
       return Array.from({ length: nv }, (_, k) => this.mod.getValue(p + 4 * k, "i32"));
@@ -683,16 +799,24 @@ export class Surface2D {
   }
 
   private ints3(call: (p: number) => number): [number, number, number] {
-    return scratch(this.mod, 12, p => {
+    return scratch(this.mod, 12, (p) => {
       raiseForCode(call(p));
-      return [this.mod.getValue(p, "i32"), this.mod.getValue(p + 4, "i32"), this.mod.getValue(p + 8, "i32")];
+      return [
+        this.mod.getValue(p, "i32"),
+        this.mod.getValue(p + 4, "i32"),
+        this.mod.getValue(p + 8, "i32"),
+      ];
     });
   }
 
   private doubles3(call: (p: number) => number): [number, number, number] {
-    return scratch(this.mod, 24, p => {
+    return scratch(this.mod, 24, (p) => {
       raiseForCode(call(p));
-      return [this.mod.getValue(p, "double"), this.mod.getValue(p + 8, "double"), this.mod.getValue(p + 16, "double")];
+      return [
+        this.mod.getValue(p, "double"),
+        this.mod.getValue(p + 8, "double"),
+        this.mod.getValue(p + 16, "double"),
+      ];
     });
   }
 }
@@ -725,23 +849,31 @@ export class Infiltration2D {
 
   /** Evaluation cadence (s); `<= 0` uses the project `WET_STEP`. */
   get infilStep(): number {
-    return withDouble(this.mod, p => this.raw.swmm_infil2d_get_options(this.handle, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_infil2d_get_options(this.handle, p));
   }
   set infilStep(seconds: number) {
-    scratch(this.mod, STRUCTS.SWMM_Infil2DOptions.size, p => {
-      this.mod.setValue(p + STRUCTS.SWMM_Infil2DOptions.fields.infil_step.offset, seconds, "double");
+    scratch(this.mod, STRUCTS.SWMM_Infil2DOptions.size, (p) => {
+      this.mod.setValue(
+        p + STRUCTS.SWMM_Infil2DOptions.fields.infil_step.offset,
+        seconds,
+        "double",
+      );
       raiseForCode(this.raw.swmm_infil2d_set_options(this.handle, p));
     });
   }
 
   /** Tag-keyed default rows (Python `defaults`, a mapping). */
   get defaults(): Map<string, Infil2DRow> {
-    const n = withInt(this.mod, p => this.raw.swmm_infil2d_defaults_count(this.handle, p));
+    const n = withInt(this.mod, (p) => this.raw.swmm_infil2d_defaults_count(this.handle, p));
     const out = new Map<string, Infil2DRow>();
     for (let i = 0; i < n; i++) {
-      const tag = withCString(this.mod, TAG_BYTES,
-        (b, len) => this.raw.swmm_infil2d_get_default_tag(this.handle, i, b, len));
-      out.set(tag, this.readRow(p => this.raw.swmm_infil2d_get_default(this.handle, i, p)));
+      const tag = withCString(this.mod, TAG_BYTES, (b, len) =>
+        this.raw.swmm_infil2d_get_default_tag(this.handle, i, b, len),
+      );
+      out.set(
+        tag,
+        this.readRow((p) => this.raw.swmm_infil2d_get_default(this.handle, i, p)),
+      );
     }
     return out;
   }
@@ -752,13 +884,13 @@ export class Infiltration2D {
       raiseForCode(this.raw.swmm_infil2d_remove_default(this.handle, tag));
       return;
     }
-    this.withRow(row, p => this.raw.swmm_infil2d_set_default(this.handle, tag, p));
+    this.withRow(row, (p) => this.raw.swmm_infil2d_set_default(this.handle, tag, p));
   }
 
   /** The cell's effective row and whether it is the cell's own. */
   cell(tri: number): Infil2DCell {
-    return scratch(this.mod, 4, flag => {
-      const row = this.readRow(p => this.raw.swmm_infil2d_get_cell(this.handle, tri, p, flag));
+    return scratch(this.mod, 4, (flag) => {
+      const row = this.readRow((p) => this.raw.swmm_infil2d_get_cell(this.handle, tri, p, flag));
       return { row, isOverride: this.mod.getValue(flag, "i32") !== 0 };
     });
   }
@@ -769,51 +901,60 @@ export class Infiltration2D {
       raiseForCode(this.raw.swmm_infil2d_set_cell(this.handle, tri, 0));
       return;
     }
-    this.withRow(row, p => this.raw.swmm_infil2d_set_cell(this.handle, tri, p));
+    this.withRow(row, (p) => this.raw.swmm_infil2d_set_cell(this.handle, tri, p));
   }
 
   /** {@link setCell} for many cells at once. */
   setCells(tris: ArrayLike<number>, row: Infil2DRow | null): void {
     const n = tris.length;
-    if (n === 0) return;   // as Python: nothing to set
-    scratch(this.mod, 4 * n, t => {
+    if (n === 0) return; // as Python: nothing to set
+    scratch(this.mod, 4 * n, (t) => {
       this.mod.HEAP32.set(Array.from(tris), t / 4);
       if (row === null) {
         raiseForCode(this.raw.swmm_infil2d_set_cells(this.handle, t, n, 0));
       } else {
-        this.withRow(row, p => this.raw.swmm_infil2d_set_cells(this.handle, t, n, p));
+        this.withRow(row, (p) => this.raw.swmm_infil2d_set_cells(this.handle, t, n, p));
       }
     });
   }
 
   /** Current infiltration rate per cell (m/s). */
   rate(): Float64Array {
-    const n = withInt(this.mod, p => this.raw.swmm_2d_triangle_count(this.handle, p));
-    return withDoubleArray(this.mod, n, p => this.raw.swmm_infil2d_get_rate_bulk(this.handle, p, n));
+    const n = withInt(this.mod, (p) => this.raw.swmm_2d_triangle_count(this.handle, p));
+    return withDoubleArray(this.mod, n, (p) =>
+      this.raw.swmm_infil2d_get_rate_bulk(this.handle, p, n),
+    );
   }
 
   /** Cumulative infiltrated depth per cell (m). */
   cumulative(): Float64Array {
-    const n = withInt(this.mod, p => this.raw.swmm_2d_triangle_count(this.handle, p));
-    return withDoubleArray(this.mod, n, p => this.raw.swmm_infil2d_get_cum_bulk(this.handle, p, n));
+    const n = withInt(this.mod, (p) => this.raw.swmm_2d_triangle_count(this.handle, p));
+    return withDoubleArray(this.mod, n, (p) =>
+      this.raw.swmm_infil2d_get_cum_bulk(this.handle, p, n),
+    );
   }
 
   /** Total infiltrated volume (m³). */
   get totalVolume(): number {
-    return withDouble(this.mod, p => this.raw.swmm_infil2d_get_total_volume(this.handle, p));
+    return withDouble(this.mod, (p) => this.raw.swmm_infil2d_get_total_volume(this.handle, p));
   }
 
   private readRow(call: (p: number) => number): Infil2DRow {
-    return scratch(this.mod, ROW.size, p => {
+    return scratch(this.mod, ROW.size, (p) => {
       this.mod.HEAPU8.fill(0, p, p + ROW.size);
       raiseForCode(call(p));
       const has = this.mod.getValue(p + ROW.fields.has_method.offset, "i32") !== 0;
-      const params = Array.from({ length: MAX_PARAMS },
-        (_, k) => this.mod.getValue(p + ROW.fields.p.offset + 8 * k, "double"));
+      const params = Array.from({ length: MAX_PARAMS }, (_, k) =>
+        this.mod.getValue(p + ROW.fields.p.offset + 8 * k, "double"),
+      );
       return {
-        method: has ? this.mod.getValue(p + ROW.fields.method.offset, "i32") as SurfaceInfilMethod : null,
+        method: has
+          ? (this.mod.getValue(p + ROW.fields.method.offset, "i32") as SurfaceInfilMethod)
+          : null,
         params,
-        dest: has ? this.mod.getValue(p + ROW.fields.dest.offset, "i32") as SurfaceInfilDest : SurfaceInfilDest.LOST,
+        dest: has
+          ? (this.mod.getValue(p + ROW.fields.dest.offset, "i32") as SurfaceInfilDest)
+          : SurfaceInfilDest.LOST,
       };
     });
   }
@@ -823,7 +964,7 @@ export class Infiltration2D {
     if (params.length > MAX_PARAMS) {
       throw new BadParamError(`an infiltration row takes at most ${MAX_PARAMS} parameters`);
     }
-    scratch(this.mod, ROW.size, p => {
+    scratch(this.mod, ROW.size, (p) => {
       this.mod.HEAPU8.fill(0, p, p + ROW.size);
       this.mod.setValue(p + ROW.fields.has_method.offset, row.method === null ? 0 : 1, "i32");
       this.mod.setValue(p + ROW.fields.method.offset, row.method ?? 0, "i32");

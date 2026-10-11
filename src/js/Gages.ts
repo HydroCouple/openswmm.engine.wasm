@@ -192,10 +192,15 @@ export class Gages implements Iterable<Gage> {
 
   /** @internal */
   /** @internal Check the owner before touching native memory. */
-  assertAlive(): void { this._checkOwner(); }
+  assertAlive(): void {
+    this._checkOwner();
+  }
 
-  constructor(mod: OpenSwmmWasmModule, engine: number,
-    private readonly _checkOwner: () => void = () => {}) {
+  constructor(
+    mod: OpenSwmmWasmModule,
+    engine: number,
+    private readonly _checkOwner: () => void = () => {},
+  ) {
     this._mod = mod;
     this._raw = guardedRaw(mod, this._checkOwner);
     this._engine = engine;

@@ -90,7 +90,10 @@ export class Solver {
    */
   private _handle: number;
 
-  get handle(): number { this._assertAlive(); return this._handle; }
+  get handle(): number {
+    this._assertAlive();
+    return this._handle;
+  }
 
   private _assertAlive(): void {
     if (!this._handle) throw new BadHandleError("Solver has been destroyed");
@@ -267,7 +270,6 @@ export class Solver {
       const msg = this._raw.swmm_get_last_error_msg(this.handle);
       raiseForCode(rc, msg);
     }
-
   }
 
   /**
@@ -399,13 +401,7 @@ export class Solver {
    * @param saveResults Write binary output (default `true`).
    * @param pluginLib   Optional plugin library path.
    */
-  run(
-    inp: string,
-    rpt: string,
-    out: string,
-    saveResults = true,
-    pluginLib = "",
-  ): void {
+  run(inp: string, rpt: string, out: string, saveResults = true, pluginLib = ""): void {
     this.open(inp, rpt, out, pluginLib);
     this.initialize();
     this.start(saveResults);
