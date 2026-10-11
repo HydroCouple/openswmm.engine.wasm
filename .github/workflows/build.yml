@@ -2,29 +2,67 @@ name: Build & Test
 
 on:
   push:
-    branches: ["**"]
+    branches: [dev, main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "tools/**"
+      - "extern/**"
+      - "CMakeLists.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "vitest.config.ts"
+      - ".github/workflows/build.yml"
   pull_request:
-    branches: ["**"]
+    branches: [dev, main]
+    paths:
+      - "src/**"
+      - "tests/**"
+      - "tools/**"
+      - "extern/**"
+      - "CMakeLists.txt"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "vitest.config.ts"
+      - ".github/workflows/build.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   # ---------------------------------------------------------------------------
   # TypeScript type-check, unit tests (mock module), and host-shim binding check
-  # (native compile of bindings.cpp against the engine headers — no emsdk).
+  # (native compile of the generated static_asserts and module.cpp against the
+  # engine headers — no emsdk). Runs on every supported Node major.
   # ---------------------------------------------------------------------------
   typecheck:
-    name: TypeScript — type-check, unit tests, binding check
+    name: TypeScript — type-check, unit tests, binding check (Node ${{ matrix.node }})
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
-          node-version: "20"
+          node-version: ${{ matrix.node }}
           cache: "npm"
+
+      # The raw layer is generated from the pinned engine headers; a stale
+      # commit fails here before anything is compiled.
+      - name: Generated binding drift
+        run: python3 tools/gen_bindings.py --check
 
       - name: Install dependencies
         run: npm ci
@@ -42,24 +80,31 @@ jobs:
         run: npm run check:bindings
 
   # ---------------------------------------------------------------------------
-  # WASM build via Emscripten + Node smoke test against the native reference
+  # WASM build via Emscripten + Node smoke tests against the native references
   # ---------------------------------------------------------------------------
   wasm-build:
-    name: WASM — Emscripten build & smoke test
+    name: WASM — Emscripten build & smoke tests
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
     container:
       # Pinned to the version of the first successful local build (2026-09-06).
       image: emscripten/emsdk:6.0.9
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           submodules: recursive
 
       - name: Generated binding drift
         run: python3 tools/gen_bindings.py --check
+
+      # The host-shim check skips struct layouts on a 64-bit host; em++ checks
+      # them under the real wasm32 ABI.
+      - name: Struct layouts under the wasm32 ABI
+        run: |
+          E=extern/openswmm.engine
+          em++ -std=c++20 -fsyntax-only -DOPENSWMM_ENGINE_STATIC -Itools/host_shim \
+            -I$E/include -I$E/include/openswmm/engine -I$E/include/openswmm/plugin_sdk \
+            tools/host_shim/raw_check.cpp
 
       - name: Configure (emcmake)
         run: emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release
@@ -77,14 +122,15 @@ jobs:
       - name: Build TypeScript wrappers
         run: npm ci && npm run build
 
-      - name: Smoke test (Node)
+      - name: Smoke tests (1D and 2D, Node)
         run: npm run smoke
 
       - name: Upload WASM artefacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openswmm-wasm
           path: |
             dist/
             tests/_work/smoke.wasm.rpt
+            tests/_work/smoke2d.wasm.rpt
           retention-days: 14

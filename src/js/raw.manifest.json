@@ -968,6 +968,24 @@
     ]
    ]
   },
+  "swmm_2d_get_report_rainfall_bulk": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double",
+     "report_date"
+    ],
+    [
+     "double*",
+     "rainfall"
+    ]
+   ]
+  },
   "swmm_2d_get_rain_volume_bulk": {
    "header": "openswmm_2d.h",
    "ret": "int",
@@ -1007,6 +1025,68 @@
     [
      "double*",
      "flux"
+    ]
+   ]
+  },
+  "swmm_2d_species_count": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int*",
+     "count"
+    ]
+   ]
+  },
+  "swmm_2d_species_name": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "species"
+    ],
+    [
+     "char*",
+     "buf"
+    ],
+    [
+     "int",
+     "buflen"
+    ]
+   ]
+  },
+  "swmm_2d_get_cell_conc": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "species"
+    ],
+    [
+     "double*",
+     "out"
+    ],
+    [
+     "int",
+     "len"
+    ],
+    [
+     "int*",
+     "written"
     ]
    ]
   },
@@ -1507,6 +1587,50 @@
     [
      "int*",
      "bc_type"
+    ]
+   ]
+  },
+  "swmm_2d_set_edge_bc_concentrations": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "int",
+     "edge"
+    ],
+    [
+     "const double*",
+     "values"
+    ],
+    [
+     "int",
+     "species_count"
+    ]
+   ]
+  },
+  "swmm_2d_clear_edge_bc": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "int",
+     "edge"
     ]
    ]
   },
@@ -2893,6 +3017,456 @@
     ]
    ]
   },
+  "swmm_coupling_apply_frame": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "const SWMM_CouplingFrame*",
+     ""
+    ]
+   ]
+  },
+  "swmm_coupling_clear_source_cell": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "domain"
+    ],
+    [
+     "const char*",
+     "id"
+    ],
+    [
+     "int",
+     "cell"
+    ]
+   ]
+  },
+  "swmm_coupling_get_receipts": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "domain"
+    ],
+    [
+     "const char*",
+     "id"
+    ],
+    [
+     "const int*",
+     "cells"
+    ],
+    [
+     "int",
+     "count"
+    ],
+    [
+     "SWMM_CouplingReceipt*",
+     ""
+    ],
+    [
+     "double*",
+     "requested_species"
+    ],
+    [
+     "double*",
+     "applied_species"
+    ],
+    [
+     "int",
+     "species_count"
+    ]
+   ]
+  },
+  "swmm_coupling_get_boundary_receipt": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "domain"
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "int",
+     "edge"
+    ],
+    [
+     "SWMM_CouplingReceipt*",
+     ""
+    ],
+    [
+     "double*",
+     "requested_species"
+    ],
+    [
+     "double*",
+     "applied_species"
+    ],
+    [
+     "int",
+     "species_count"
+    ]
+   ]
+  },
+  "swmm_coupling_get_infiltration_receipt": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "SWMM_CouplingReceipt*",
+     ""
+    ],
+    [
+     "double*",
+     "requested_species"
+    ],
+    [
+     "double*",
+     "applied_species"
+    ],
+    [
+     "int",
+     "species_count"
+    ]
+   ]
+  },
+  "swmm_2d_get_species_ledger": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "species"
+    ],
+    [
+     "int",
+     "term"
+    ],
+    [
+     "double*",
+     "value"
+    ]
+   ]
+  },
+  "swmm_coupling_set_source": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "const char*",
+     "id"
+    ],
+    [
+     "int",
+     "domain"
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "double",
+     "flow_m3_s"
+    ],
+    [
+     "double",
+     "heat_w"
+    ],
+    [
+     "const double*",
+     "concentrations"
+    ],
+    [
+     "const double*",
+     "rates"
+    ],
+    [
+     "int",
+     "species_count"
+    ],
+    [
+     "double",
+     "until_seconds"
+    ]
+   ]
+  },
+  "swmm_gw2d_set_runtime_boundary": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "int",
+     "edge"
+    ],
+    [
+     "int",
+     "kind"
+    ],
+    [
+     "double",
+     "value"
+    ],
+    [
+     "const double*",
+     "concentrations"
+    ],
+    [
+     "int",
+     "species_count"
+    ]
+   ]
+  },
+  "swmm_gw2d_clear_runtime_boundary": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "int",
+     "edge"
+    ]
+   ]
+  },
+  "swmm_gw2d_get_runtime_boundary_flow": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "int",
+     "edge"
+    ],
+    [
+     "double*",
+     "flow_m3_s"
+    ]
+   ]
+  },
+  "swmm_2d_set_runtime_boundary": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "int",
+     "edge"
+    ],
+    [
+     "int",
+     "kind"
+    ],
+    [
+     "double",
+     "value"
+    ],
+    [
+     "const double*",
+     "concentrations"
+    ],
+    [
+     "int",
+     "species_count"
+    ]
+   ]
+  },
+  "swmm_coupling_set_sources": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "const SWMM_CouplingSource*",
+     ""
+    ],
+    [
+     "int",
+     "count"
+    ]
+   ]
+  },
+  "swmm_coupling_clear_source": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "domain"
+    ],
+    [
+     "const char*",
+     "id"
+    ]
+   ]
+  },
+  "swmm_coupling_get_receipt": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "domain"
+    ],
+    [
+     "const char*",
+     "id"
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "SWMM_CouplingReceipt*",
+     "out"
+    ],
+    [
+     "double*",
+     "requested_species"
+    ],
+    [
+     "double*",
+     "applied_species"
+    ],
+    [
+     "int",
+     "capacity"
+    ]
+   ]
+  },
+  "swmm_coupling_get_water_totals": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "domain"
+    ],
+    [
+     "double*",
+     "incoming_m3"
+    ],
+    [
+     "double*",
+     "outgoing_m3"
+    ]
+   ]
+  },
+  "swmm_coupling_advance_to": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "double",
+     "target_seconds"
+    ],
+    [
+     "double*",
+     "actual_seconds"
+    ]
+   ]
+  },
+  "swmm_coupling_capabilities": {
+   "header": "openswmm_coupling.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "unsigned*",
+     "flags"
+    ]
+   ]
+  },
   "swmm_datetime_encode_date": {
    "header": "openswmm_datetime.h",
    "ret": "int",
@@ -3877,6 +4451,38 @@
     [
      "int",
      "save_results"
+    ]
+   ]
+  },
+  "swmm_engine_advance_to": {
+   "header": "openswmm_engine.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double",
+     "target_seconds"
+    ],
+    [
+     "double*",
+     "actual_seconds"
+    ]
+   ]
+  },
+  "swmm_engine_get_elapsed_seconds": {
+   "header": "openswmm_engine.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double*",
+     "seconds"
     ]
    ]
   },
@@ -6287,6 +6893,32 @@
     ]
    ]
   },
+  "swmm_gw2d_process_options_set": {
+   "header": "openswmm_gw2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "const char*",
+     "et"
+    ],
+    [
+     "const char*",
+     "link"
+    ],
+    [
+     "const char*",
+     "wilting"
+    ],
+    [
+     "int",
+     "authored"
+    ]
+   ]
+  },
   "swmm_gw2d_option_set": {
    "header": "openswmm_gw2d.h",
    "ret": "int",
@@ -8137,6 +8769,11 @@
     ]
    ]
   },
+  "swmm_hotstart_last_io_error": {
+   "header": "openswmm_hotstart.h",
+   "ret": "const char*",
+   "params": []
+  },
   "swmm_hotstart_open": {
    "header": "openswmm_hotstart.h",
    "ret": "int",
@@ -8269,6 +8906,20 @@
     ]
    ]
   },
+  "swmm_hotstart_get_start_date": {
+   "header": "openswmm_hotstart.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_HotStart",
+     "hs"
+    ],
+    [
+     "double*",
+     "start_date"
+    ]
+   ]
+  },
   "swmm_hotstart_get_crs": {
    "header": "openswmm_hotstart.h",
    "ret": "int",
@@ -8338,6 +8989,102 @@
     [
      "SWMM_HotStart",
      "hs"
+    ]
+   ]
+  },
+  "swmm_infil2d_get_authored_rows": {
+   "header": "openswmm_infil2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "SWMM_Infil2DAuthoredRow*",
+     "out"
+    ],
+    [
+     "int",
+     "len"
+    ],
+    [
+     "int*",
+     "written"
+    ]
+   ]
+  },
+  "swmm_infil2d_replace_authored_rows": {
+   "header": "openswmm_infil2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "const SWMM_Infil2DAuthoredRow*",
+     "rows"
+    ],
+    [
+     "int",
+     "count"
+    ]
+   ]
+  },
+  "swmm_infil2d_get_ownership_bulk": {
+   "header": "openswmm_infil2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int*",
+     "owners"
+    ],
+    [
+     "int*",
+     "aq_rows"
+    ],
+    [
+     "int*",
+     "conflicts"
+    ],
+    [
+     "int",
+     "len"
+    ],
+    [
+     "int*",
+     "written"
+    ]
+   ]
+  },
+  "swmm_infil2d_get_ownership": {
+   "header": "openswmm_infil2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "cell"
+    ],
+    [
+     "int*",
+     "owner"
+    ],
+    [
+     "int*",
+     "aq_row"
+    ],
+    [
+     "int*",
+     "conflict"
     ]
    ]
   },
@@ -10418,6 +11165,392 @@
     [
      "int",
      "type"
+    ]
+   ]
+  },
+  "swmm_lid_richards_options_get": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "control"
+    ],
+    [
+     "SWMM_LidRichardsOptions*",
+     ""
+    ]
+   ]
+  },
+  "swmm_lid_richards_material_get": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "control"
+    ],
+    [
+     "int",
+     "row"
+    ],
+    [
+     "SWMM_LidRichardsMaterial*",
+     ""
+    ]
+   ]
+  },
+  "swmm_lid_node_treatment_count": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "control"
+    ]
+   ]
+  },
+  "swmm_lid_node_treatment_get": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "control"
+    ],
+    [
+     "int",
+     "row"
+    ],
+    [
+     "SWMM_LidLayerTreatment*",
+     "out"
+    ]
+   ]
+  },
+  "swmm_lid_node_configure": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "control"
+    ],
+    [
+     "const SWMM_LidNodeLayer*",
+     "layers"
+    ],
+    [
+     "int",
+     "count"
+    ],
+    [
+     "const SWMM_LidLayerTreatment*",
+     "treatment"
+    ],
+    [
+     "int",
+     "treatment_count"
+    ]
+   ]
+  },
+  "swmm_lid_node_configure_flow": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "control"
+    ],
+    [
+     "const SWMM_LidNodeLayer*",
+     ""
+    ],
+    [
+     "int",
+     "count"
+    ],
+    [
+     "const SWMM_LidLayerTreatment*",
+     ""
+    ],
+    [
+     "int",
+     "treatment_count"
+    ],
+    [
+     "const SWMM_LidRichardsOptions*",
+     ""
+    ],
+    [
+     "const SWMM_LidRichardsMaterial*",
+     ""
+    ]
+   ]
+  },
+  "swmm_lid_node_layer_count": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "control"
+    ]
+   ]
+  },
+  "swmm_lid_node_layer_get": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "control"
+    ],
+    [
+     "int",
+     "row"
+    ],
+    [
+     "SWMM_LidNodeLayer*",
+     "out"
+    ]
+   ]
+  },
+  "swmm_lid_node_layers_set": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "control"
+    ],
+    [
+     "const SWMM_LidNodeLayer*",
+     "rows"
+    ],
+    [
+     "int",
+     "count"
+    ]
+   ]
+  },
+  "swmm_node_get_lid": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "node"
+    ],
+    [
+     "int*",
+     "control"
+    ],
+    [
+     "double*",
+     "saturation"
+    ]
+   ]
+  },
+  "swmm_node_set_lid": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "node"
+    ],
+    [
+     "int",
+     "control"
+    ],
+    [
+     "double",
+     "saturation"
+    ]
+   ]
+  },
+  "swmm_lid_node_outlet_get": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "link"
+    ],
+    [
+     "int*",
+     "layer"
+    ],
+    [
+     "int*",
+     "top"
+    ]
+   ]
+  },
+  "swmm_lid_node_outlet_set": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "link"
+    ],
+    [
+     "int",
+     "layer"
+    ],
+    [
+     "int",
+     "top"
+    ]
+   ]
+  },
+  "swmm_lid_node_state_count": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "node"
+    ]
+   ]
+  },
+  "swmm_lid_node_state_get": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "node"
+    ],
+    [
+     "int",
+     "row"
+    ],
+    [
+     "int*",
+     "layer"
+    ],
+    [
+     "double*",
+     "bottom"
+    ],
+    [
+     "double*",
+     "top"
+    ],
+    [
+     "double*",
+     "moisture"
+    ]
+   ]
+  },
+  "swmm_lid_richards_state_get": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "node"
+    ],
+    [
+     "int",
+     "row"
+    ],
+    [
+     "double*",
+     "pressure"
+    ],
+    [
+     "double*",
+     "head"
+    ],
+    [
+     "double*",
+     "water"
+    ]
+   ]
+  },
+  "swmm_lid_richards_statistics_get": {
+   "header": "openswmm_infrastructure.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int",
+     "node"
+    ],
+    [
+     "SWMM_LidRichardsStatistics*",
+     ""
     ]
    ]
   },
@@ -16705,6 +17838,35 @@
     ]
    ]
   },
+  "swmm_component_search_path_add": {
+   "header": "openswmm_process_components.h",
+   "ret": "int",
+   "params": [
+    [
+     "const char*",
+     "dir"
+    ]
+   ]
+  },
+  "swmm_component_library_count": {
+   "header": "openswmm_process_components.h",
+   "ret": "int",
+   "params": []
+  },
+  "swmm_component_library_get": {
+   "header": "openswmm_process_components.h",
+   "ret": "int",
+   "params": [
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "SWMM_ComponentLibraryInfo*",
+     "info"
+    ]
+   ]
+  },
   "swmm_landuse_count": {
    "header": "openswmm_quality.h",
    "ret": "int",
@@ -20507,6 +21669,38 @@
     ]
    ]
   },
+  "swmm_subcatch_set_snowpack": {
+   "header": "openswmm_subcatchments.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "const char*",
+     "name"
+    ]
+   ]
+  },
+  "swmm_subcatch_get_snowpack": {
+   "header": "openswmm_subcatchments.h",
+   "ret": "const char*",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "idx"
+    ]
+   ]
+  },
   "swmm_snowpack_count": {
    "header": "openswmm_subcatchments.h",
    "ret": "int",
@@ -21214,6 +22408,140 @@
     [
      "int",
      "buflen"
+    ]
+   ]
+  },
+  "swmm_surface_owner_get": {
+   "header": "openswmm_surface_ownership.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "int*",
+     "rows"
+    ],
+    [
+     "int",
+     "capacity"
+    ],
+    [
+     "int*",
+     "count"
+    ]
+   ]
+  },
+  "swmm_surface_owner_preview": {
+   "header": "openswmm_surface_ownership.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "const int*",
+     "rows"
+    ],
+    [
+     "int",
+     "count"
+    ],
+    [
+     "SWMM_SurfaceOwnerObject*",
+     "objects"
+    ],
+    [
+     "int",
+     "object_capacity"
+    ],
+    [
+     "int*",
+     "object_count"
+    ],
+    [
+     "SWMM_SurfaceOwnerShare*",
+     "shares"
+    ],
+    [
+     "int",
+     "share_capacity"
+    ],
+    [
+     "int*",
+     "share_count"
+    ],
+    [
+     "double*",
+     "mesh_weather_area"
+    ],
+    [
+     "int",
+     "cell_capacity"
+    ],
+    [
+     "int*",
+     "cell_count"
+    ],
+    [
+     "int*",
+     "valid"
+    ],
+    [
+     "char*",
+     "token"
+    ],
+    [
+     "int",
+     "token_capacity"
+    ],
+    [
+     "char*",
+     "diagnostics"
+    ],
+    [
+     "int",
+     "diagnostic_capacity"
+    ],
+    [
+     "SWMM_SurfaceOwnerProgress",
+     "progress"
+    ],
+    [
+     "void*",
+     "user"
+    ]
+   ]
+  },
+  "swmm_surface_owner_replace": {
+   "header": "openswmm_surface_ownership.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     ""
+    ],
+    [
+     "const int*",
+     "rows"
+    ],
+    [
+     "int",
+     "count"
+    ],
+    [
+     "const char*",
+     "expected_token"
+    ],
+    [
+     "char*",
+     "diagnostics"
+    ],
+    [
+     "int",
+     "diagnostic_capacity"
     ]
    ]
   },
@@ -23321,6 +24649,144 @@
      "size": 4
     }
    ]
+  }
+ },
+ "callbacks": {
+  "SWMM_ProgressCallback": {
+   "ret": "void",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double",
+     "elapsed_frac"
+    ],
+    [
+     "double",
+     "sim_time"
+    ],
+    [
+     "void*",
+     "user_data"
+    ]
+   ],
+   "signature": "viddi"
+  },
+  "SWMM_WarningCallback": {
+   "ret": "void",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "code"
+    ],
+    [
+     "const char*",
+     "message"
+    ],
+    [
+     "void*",
+     "user_data"
+    ]
+   ],
+   "signature": "viiii"
+  },
+  "SWMM_StepBeginCallback": {
+   "ret": "void",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double",
+     "sim_time"
+    ],
+    [
+     "double",
+     "dt"
+    ],
+    [
+     "void*",
+     "user_data"
+    ]
+   ],
+   "signature": "viddi"
+  },
+  "SWMM_StepEndCallback": {
+   "ret": "void",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double",
+     "sim_time"
+    ],
+    [
+     "double",
+     "dt"
+    ],
+    [
+     "void*",
+     "user_data"
+    ]
+   ],
+   "signature": "viddi"
+  },
+  "SWMM_PluginStateCallback": {
+   "ret": "void",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "const char*",
+     "plugin_id"
+    ],
+    [
+     "int",
+     "old_state"
+    ],
+    [
+     "int",
+     "new_state"
+    ],
+    [
+     "void*",
+     "user_data"
+    ]
+   ],
+   "signature": "viiiii"
+  },
+  "SWMM_HotStartMissingCallback": {
+   "ret": "void",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "const char*",
+     "object_type"
+    ],
+    [
+     "const char*",
+     "object_id"
+    ],
+    [
+     "void*",
+     "user_data"
+    ]
+   ],
+   "signature": "viiii"
   }
  },
  "excludedHeaders": [],

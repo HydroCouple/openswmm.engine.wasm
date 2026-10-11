@@ -206,6 +206,7 @@ export enum LidType {
   RAIN_BARREL = 5,
   ROOFTOP_DISCONN = 6,
   VEGETATIVE_SWALE = 7,
+  NODE = 8,
 }
 
 export enum AquiferParam {
@@ -678,6 +679,22 @@ export enum GroundwaterVariable {
   TIER = 11,
   CLOSURE = 12,
   QLINK = 13,
+  INFIL_CAPACITY = 14,
+  INFIL_REMAINING = 15,
+  INFIL_REFRESH = 16,
+  INFIL_PENDING = 17,
+  REJECT = 18,
+  REJECT_CUM = 19,
+  DUNNE_CUM = 20,
+  ET_PENDING = 21,
+  ET_POTENTIAL_CUM = 22,
+  ET_SURFACE_CUM = 23,
+  ET_SOIL_CUM = 24,
+  ET_UNUSED_CUM = 25,
+  ET_SURFACE = 26,
+  ET_POTENTIAL = 27,
+  ET_STRESS = 28,
+  ET_REFRESH = 29,
 }
 
 export enum GroundwaterLedger {
@@ -694,6 +711,7 @@ export enum GroundwaterLedger {
   LINK = 10,
   SOURCE_IN = 11,
   SOURCE_OUT = 12,
+  REJECT = 13,
 }
 
 export enum GroundwaterZone {

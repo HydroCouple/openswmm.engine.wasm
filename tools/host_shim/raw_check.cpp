@@ -7,8 +7,10 @@
 #include <cstdint>
 #include "openswmm/engine/openswmm_engine.h"
 #include "openswmm/engine/openswmm_2d.h"
+#include "openswmm/engine/openswmm_callbacks.h"
 #include "openswmm/engine/openswmm_climate.h"
 #include "openswmm/engine/openswmm_controls.h"
+#include "openswmm/engine/openswmm_coupling.h"
 #include "openswmm/engine/openswmm_datetime.h"
 #include "openswmm/engine/openswmm_edit.h"
 #include "openswmm/engine/openswmm_engine.h"
@@ -36,6 +38,7 @@
 #include "openswmm/engine/openswmm_sq2d.h"
 #include "openswmm/engine/openswmm_statistics.h"
 #include "openswmm/engine/openswmm_subcatchments.h"
+#include "openswmm/engine/openswmm_surface_ownership.h"
 #include "openswmm/engine/openswmm_tables.h"
 #include "openswmm/engine/openswmm_trace.h"
 #include "openswmm/engine/openswmm_transport.h"
@@ -94,9 +97,13 @@ static_assert(std::is_same_v<decltype(&swmm_2d_get_depths_bulk), int (*)(SWMM_En
 static_assert(std::is_same_v<decltype(&swmm_2d_get_heads_bulk), int (*)(SWMM_Engine, double*)>, "swmm_2d_get_heads_bulk: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_coupling_fluxes_bulk), int (*)(SWMM_Engine, double*)>, "swmm_2d_get_coupling_fluxes_bulk: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_rainfall_bulk), int (*)(SWMM_Engine, double*)>, "swmm_2d_get_rainfall_bulk: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_2d_get_report_rainfall_bulk), int (*)(SWMM_Engine, double, double*)>, "swmm_2d_get_report_rainfall_bulk: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_rain_volume_bulk), int (*)(SWMM_Engine, double*)>, "swmm_2d_get_rain_volume_bulk: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_coupling_volume_bulk), int (*)(SWMM_Engine, double*)>, "swmm_2d_get_coupling_volume_bulk: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_edge_flux_bulk), int (*)(SWMM_Engine, double*)>, "swmm_2d_get_edge_flux_bulk: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_2d_species_count), int (*)(SWMM_Engine, int*)>, "swmm_2d_species_count: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_2d_species_name), int (*)(SWMM_Engine, int, char*, int)>, "swmm_2d_species_name: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_2d_get_cell_conc), int (*)(SWMM_Engine, int, double*, int, int*)>, "swmm_2d_get_cell_conc: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_edge_conveyance), int (*)(SWMM_Engine, int, int, double*)>, "swmm_2d_get_edge_conveyance: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_set_edge_conveyance), int (*)(SWMM_Engine, int, int, double)>, "swmm_2d_set_edge_conveyance: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_edge_conveyance_bulk), int (*)(SWMM_Engine, double*)>, "swmm_2d_get_edge_conveyance_bulk: prototype drift");
@@ -125,6 +132,8 @@ static_assert(std::is_same_v<decltype(&swmm_2d_get_dry_depth), int (*)(SWMM_Engi
 static_assert(std::is_same_v<decltype(&swmm_2d_set_dry_depth), int (*)(SWMM_Engine, double)>, "swmm_2d_set_dry_depth: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_boundary_edge_count), int (*)(SWMM_Engine, int*)>, "swmm_2d_boundary_edge_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_edge_bc_type), int (*)(SWMM_Engine, int, int, int*)>, "swmm_2d_get_edge_bc_type: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_2d_set_edge_bc_concentrations), int (*)(SWMM_Engine, int, int, const double*, int)>, "swmm_2d_set_edge_bc_concentrations: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_2d_clear_edge_bc), int (*)(SWMM_Engine, int, int)>, "swmm_2d_clear_edge_bc: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_set_edge_bc_type), int (*)(SWMM_Engine, int, int, int)>, "swmm_2d_set_edge_bc_type: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_get_edge_bc_head), int (*)(SWMM_Engine, int, int, double*)>, "swmm_2d_get_edge_bc_head: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_2d_set_edge_bc_head), int (*)(SWMM_Engine, int, int, double)>, "swmm_2d_set_edge_bc_head: prototype drift");
@@ -207,6 +216,23 @@ static_assert(std::is_same_v<decltype(&swmm_control_find_references), int (*)(SW
 static_assert(std::is_same_v<decltype(&swmm_control_validate_rule), int (*)(SWMM_Engine, const char*, char*, int, int*)>, "swmm_control_validate_rule: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_control_set_link_setting), int (*)(SWMM_Engine, int, double)>, "swmm_control_set_link_setting: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_control_set_link_status), int (*)(SWMM_Engine, int, int)>, "swmm_control_set_link_status: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_apply_frame), int (*)(SWMM_Engine, const SWMM_CouplingFrame*)>, "swmm_coupling_apply_frame: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_clear_source_cell), int (*)(SWMM_Engine, int, const char*, int)>, "swmm_coupling_clear_source_cell: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_get_receipts), int (*)(SWMM_Engine, int, const char*, const int*, int, SWMM_CouplingReceipt*, double*, double*, int)>, "swmm_coupling_get_receipts: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_get_boundary_receipt), int (*)(SWMM_Engine, int, int, int, SWMM_CouplingReceipt*, double*, double*, int)>, "swmm_coupling_get_boundary_receipt: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_get_infiltration_receipt), int (*)(SWMM_Engine, int, SWMM_CouplingReceipt*, double*, double*, int)>, "swmm_coupling_get_infiltration_receipt: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_2d_get_species_ledger), int (*)(SWMM_Engine, int, int, double*)>, "swmm_2d_get_species_ledger: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_set_source), int (*)(SWMM_Engine, const char*, int, int, double, double, const double*, const double*, int, double)>, "swmm_coupling_set_source: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_gw2d_set_runtime_boundary), int (*)(SWMM_Engine, int, int, int, double, const double*, int)>, "swmm_gw2d_set_runtime_boundary: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_gw2d_clear_runtime_boundary), int (*)(SWMM_Engine, int, int)>, "swmm_gw2d_clear_runtime_boundary: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_gw2d_get_runtime_boundary_flow), int (*)(SWMM_Engine, int, int, double*)>, "swmm_gw2d_get_runtime_boundary_flow: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_2d_set_runtime_boundary), int (*)(SWMM_Engine, int, int, int, double, const double*, int)>, "swmm_2d_set_runtime_boundary: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_set_sources), int (*)(SWMM_Engine, const SWMM_CouplingSource*, int)>, "swmm_coupling_set_sources: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_clear_source), int (*)(SWMM_Engine, int, const char*)>, "swmm_coupling_clear_source: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_get_receipt), int (*)(SWMM_Engine, int, const char*, int, SWMM_CouplingReceipt*, double*, double*, int)>, "swmm_coupling_get_receipt: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_get_water_totals), int (*)(SWMM_Engine, int, double*, double*)>, "swmm_coupling_get_water_totals: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_advance_to), int (*)(SWMM_Engine, double, double*)>, "swmm_coupling_advance_to: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_coupling_capabilities), int (*)(SWMM_Engine, unsigned*)>, "swmm_coupling_capabilities: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_datetime_encode_date), int (*)(int, int, int, double*)>, "swmm_datetime_encode_date: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_datetime_encode_time), int (*)(int, int, int, double*)>, "swmm_datetime_encode_time: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_datetime_decode_date), int (*)(double, int*, int*, int*)>, "swmm_datetime_decode_date: prototype drift");
@@ -259,6 +285,8 @@ static_assert(std::is_same_v<decltype(&swmm_engine_create), SWMM_Engine (*)(void
 static_assert(std::is_same_v<decltype(&swmm_engine_open), int (*)(SWMM_Engine, const char*, const char*, const char*, const char*)>, "swmm_engine_open: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_engine_initialize), int (*)(SWMM_Engine)>, "swmm_engine_initialize: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_engine_start), int (*)(SWMM_Engine, int)>, "swmm_engine_start: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_engine_advance_to), int (*)(SWMM_Engine, double, double*)>, "swmm_engine_advance_to: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_engine_get_elapsed_seconds), int (*)(SWMM_Engine, double*)>, "swmm_engine_get_elapsed_seconds: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_engine_step), int (*)(SWMM_Engine, double*)>, "swmm_engine_step: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_engine_stride), int (*)(SWMM_Engine, int, double*)>, "swmm_engine_stride: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_engine_end), int (*)(SWMM_Engine)>, "swmm_engine_end: prototype drift");
@@ -395,6 +423,7 @@ static_assert(std::is_same_v<decltype(&swmm_gw2d_species_name), int (*)(SWMM_Eng
 static_assert(std::is_same_v<decltype(&swmm_gw2d_get_cell_conc), int (*)(SWMM_Engine, int, int, double*, int, int*)>, "swmm_gw2d_get_cell_conc: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw2d_get_species_ledger), int (*)(SWMM_Engine, int, int, double*)>, "swmm_gw2d_get_species_ledger: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw2d_option_get), int (*)(SWMM_Engine, const char*, char*, int)>, "swmm_gw2d_option_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_gw2d_process_options_set), int (*)(SWMM_Engine, const char*, const char*, const char*, int)>, "swmm_gw2d_process_options_set: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw2d_option_set), int (*)(SWMM_Engine, const char*, const char*)>, "swmm_gw2d_option_set: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw2d_row_count), int (*)(SWMM_Engine, int*)>, "swmm_gw2d_row_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw2d_row_add), int (*)(SWMM_Engine, int, const char*, int, double, double, double, double, double)>, "swmm_gw2d_row_add: prototype drift");
@@ -486,6 +515,7 @@ static_assert(std::is_same_v<decltype(&swmm_hotstart_saves_add), int (*)(SWMM_En
 static_assert(std::is_same_v<decltype(&swmm_hotstart_saves_remove), int (*)(SWMM_Engine, int)>, "swmm_hotstart_saves_remove: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_saves_clear), int (*)(SWMM_Engine)>, "swmm_hotstart_saves_clear: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_save), int (*)(SWMM_Engine, const char*)>, "swmm_hotstart_save: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_hotstart_last_io_error), const char* (*)(void)>, "swmm_hotstart_last_io_error: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_open), int (*)(const char*, SWMM_HotStart*)>, "swmm_hotstart_open: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_apply), int (*)(SWMM_Engine, SWMM_HotStart)>, "swmm_hotstart_apply: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_set_node_depth), int (*)(SWMM_HotStart, const char*, double)>, "swmm_hotstart_set_node_depth: prototype drift");
@@ -494,12 +524,17 @@ static_assert(std::is_same_v<decltype(&swmm_hotstart_set_link_flow), int (*)(SWM
 static_assert(std::is_same_v<decltype(&swmm_hotstart_set_link_depth), int (*)(SWMM_HotStart, const char*, double)>, "swmm_hotstart_set_link_depth: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_set_subcatch_runoff), int (*)(SWMM_HotStart, const char*, double)>, "swmm_hotstart_set_subcatch_runoff: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_get_sim_time), int (*)(SWMM_HotStart, double*)>, "swmm_hotstart_get_sim_time: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_hotstart_get_start_date), int (*)(SWMM_HotStart, double*)>, "swmm_hotstart_get_start_date: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_get_crs), int (*)(SWMM_HotStart, char*, int)>, "swmm_hotstart_get_crs: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_node_count), int (*)(SWMM_HotStart)>, "swmm_hotstart_node_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_link_count), int (*)(SWMM_HotStart)>, "swmm_hotstart_link_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_warning_count), int (*)(SWMM_HotStart)>, "swmm_hotstart_warning_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_warning), const char* (*)(SWMM_HotStart, int)>, "swmm_hotstart_warning: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_hotstart_close), int (*)(SWMM_HotStart)>, "swmm_hotstart_close: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_infil2d_get_authored_rows), int (*)(SWMM_Engine, SWMM_Infil2DAuthoredRow*, int, int*)>, "swmm_infil2d_get_authored_rows: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_infil2d_replace_authored_rows), int (*)(SWMM_Engine, const SWMM_Infil2DAuthoredRow*, int)>, "swmm_infil2d_replace_authored_rows: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_infil2d_get_ownership_bulk), int (*)(SWMM_Engine, int*, int*, int*, int, int*)>, "swmm_infil2d_get_ownership_bulk: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_infil2d_get_ownership), int (*)(SWMM_Engine, int, int*, int*, int*)>, "swmm_infil2d_get_ownership: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_infil2d_get_options), int (*)(SWMM_Engine, SWMM_Infil2DOptions*)>, "swmm_infil2d_get_options: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_infil2d_set_options), int (*)(SWMM_Engine, const SWMM_Infil2DOptions*)>, "swmm_infil2d_set_options: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_infil2d_defaults_count), int (*)(SWMM_Engine, int*)>, "swmm_infil2d_defaults_count: prototype drift");
@@ -594,6 +629,23 @@ static_assert(std::is_same_v<decltype(&swmm_inlet_usage_get), int (*)(SWMM_Engin
 static_assert(std::is_same_v<decltype(&swmm_inlet_usage_set), int (*)(SWMM_Engine, const SWMM_InletUsage*, int*)>, "swmm_inlet_usage_set: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_inlet_usage_remove), int (*)(SWMM_Engine, int)>, "swmm_inlet_usage_remove: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_lid_add), int (*)(SWMM_Engine, const char*, int)>, "swmm_lid_add: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_richards_options_get), int (*)(SWMM_Engine, int, SWMM_LidRichardsOptions*)>, "swmm_lid_richards_options_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_richards_material_get), int (*)(SWMM_Engine, int, int, SWMM_LidRichardsMaterial*)>, "swmm_lid_richards_material_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_treatment_count), int (*)(SWMM_Engine, int)>, "swmm_lid_node_treatment_count: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_treatment_get), int (*)(SWMM_Engine, int, int, SWMM_LidLayerTreatment*)>, "swmm_lid_node_treatment_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_configure), int (*)(SWMM_Engine, int, const SWMM_LidNodeLayer*, int, const SWMM_LidLayerTreatment*, int)>, "swmm_lid_node_configure: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_configure_flow), int (*)(SWMM_Engine, int, const SWMM_LidNodeLayer*, int, const SWMM_LidLayerTreatment*, int, const SWMM_LidRichardsOptions*, const SWMM_LidRichardsMaterial*)>, "swmm_lid_node_configure_flow: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_layer_count), int (*)(SWMM_Engine, int)>, "swmm_lid_node_layer_count: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_layer_get), int (*)(SWMM_Engine, int, int, SWMM_LidNodeLayer*)>, "swmm_lid_node_layer_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_layers_set), int (*)(SWMM_Engine, int, const SWMM_LidNodeLayer*, int)>, "swmm_lid_node_layers_set: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_node_get_lid), int (*)(SWMM_Engine, int, int*, double*)>, "swmm_node_get_lid: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_node_set_lid), int (*)(SWMM_Engine, int, int, double)>, "swmm_node_set_lid: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_outlet_get), int (*)(SWMM_Engine, int, int*, int*)>, "swmm_lid_node_outlet_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_outlet_set), int (*)(SWMM_Engine, int, int, int)>, "swmm_lid_node_outlet_set: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_state_count), int (*)(SWMM_Engine, int)>, "swmm_lid_node_state_count: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_node_state_get), int (*)(SWMM_Engine, int, int, int*, double*, double*, double*)>, "swmm_lid_node_state_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_richards_state_get), int (*)(SWMM_Engine, int, int, double*, double*, double*)>, "swmm_lid_richards_state_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_lid_richards_statistics_get), int (*)(SWMM_Engine, int, SWMM_LidRichardsStatistics*)>, "swmm_lid_richards_statistics_get: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_lid_rename), int (*)(SWMM_Engine, int, const char*)>, "swmm_lid_rename: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_lid_set_surface), int (*)(SWMM_Engine, int, double, double, double)>, "swmm_lid_set_surface: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_lid_set_soil), int (*)(SWMM_Engine, int, double, double, double, double, double, double)>, "swmm_lid_set_soil: prototype drift");
@@ -929,6 +981,9 @@ static_assert(std::is_same_v<decltype(&swmm_process_component_register), int (*)
 static_assert(std::is_same_v<decltype(&swmm_process_component_remove), int (*)(SWMM_Engine, int)>, "swmm_process_component_remove: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_process_component_known_count), int (*)(void)>, "swmm_process_component_known_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_process_component_known_get), int (*)(int, char*, int, char*, int, int*)>, "swmm_process_component_known_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_component_search_path_add), int (*)(const char*)>, "swmm_component_search_path_add: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_component_library_count), int (*)(void)>, "swmm_component_library_count: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_component_library_get), int (*)(int, SWMM_ComponentLibraryInfo*)>, "swmm_component_library_get: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_landuse_count), int (*)(SWMM_Engine)>, "swmm_landuse_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_landuse_index), int (*)(SWMM_Engine, const char*)>, "swmm_landuse_index: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_landuse_id), const char* (*)(SWMM_Engine, int)>, "swmm_landuse_id: prototype drift");
@@ -1115,6 +1170,8 @@ static_assert(std::is_same_v<decltype(&swmm_aquifer_get_param), int (*)(SWMM_Eng
 static_assert(std::is_same_v<decltype(&swmm_aquifer_set_param), int (*)(SWMM_Engine, int, int, double)>, "swmm_aquifer_set_param: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_aquifer_get_evap_pattern), int (*)(SWMM_Engine, int, char*, int)>, "swmm_aquifer_get_evap_pattern: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_aquifer_set_evap_pattern), int (*)(SWMM_Engine, int, const char*)>, "swmm_aquifer_set_evap_pattern: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_subcatch_set_snowpack), int (*)(SWMM_Engine, int, const char*)>, "swmm_subcatch_set_snowpack: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_subcatch_get_snowpack), const char* (*)(SWMM_Engine, int)>, "swmm_subcatch_get_snowpack: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_snowpack_count), int (*)(SWMM_Engine)>, "swmm_snowpack_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_snowpack_index), int (*)(SWMM_Engine, const char*)>, "swmm_snowpack_index: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_snowpack_id), const char* (*)(SWMM_Engine, int)>, "swmm_snowpack_id: prototype drift");
@@ -1144,6 +1201,9 @@ static_assert(std::is_same_v<decltype(&swmm_gwf_variable_name), int (*)(SWMM_Eng
 static_assert(std::is_same_v<decltype(&swmm_gwf_variable_description), int (*)(SWMM_Engine, int, char*, int)>, "swmm_gwf_variable_description: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gwf_function_count), int (*)(SWMM_Engine)>, "swmm_gwf_function_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gwf_function_name), int (*)(SWMM_Engine, int, char*, int)>, "swmm_gwf_function_name: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_surface_owner_get), int (*)(SWMM_Engine, int*, int, int*)>, "swmm_surface_owner_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_surface_owner_preview), int (*)(SWMM_Engine, const int*, int, SWMM_SurfaceOwnerObject*, int, int*, SWMM_SurfaceOwnerShare*, int, int*, double*, int, int*, int*, char*, int, char*, int, SWMM_SurfaceOwnerProgress, void*)>, "swmm_surface_owner_preview: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_surface_owner_replace), int (*)(SWMM_Engine, const int*, int, const char*, char*, int)>, "swmm_surface_owner_replace: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_table_count), int (*)(SWMM_Engine)>, "swmm_table_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_table_index), int (*)(SWMM_Engine, const char*)>, "swmm_table_index: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_table_id), const char* (*)(SWMM_Engine, int)>, "swmm_table_id: prototype drift");
@@ -1229,6 +1289,14 @@ static_assert(std::is_same_v<decltype(&swmm_xsect_sectfactor_of_area_array), int
 static_assert(std::is_same_v<decltype(&swmm_xsect_area_of_sectfactor_array), int (*)(SWMM_XSect, const double*, int, double*)>, "swmm_xsect_area_of_sectfactor_array: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_xsect_dsda_array), int (*)(SWMM_XSect, const double*, int, double*)>, "swmm_xsect_dsda_array: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_xsect_critical_depth_array), int (*)(SWMM_XSect, const double*, int, double*)>, "swmm_xsect_critical_depth_array: prototype drift");
+
+// Callback typedefs: the TS layer derives addFunction() signatures from these.
+static_assert(std::is_same_v<SWMM_ProgressCallback, void (*)(SWMM_Engine, double, double, void*)>, "SWMM_ProgressCallback: callback typedef drift");
+static_assert(std::is_same_v<SWMM_WarningCallback, void (*)(SWMM_Engine, int, const char*, void*)>, "SWMM_WarningCallback: callback typedef drift");
+static_assert(std::is_same_v<SWMM_StepBeginCallback, void (*)(SWMM_Engine, double, double, void*)>, "SWMM_StepBeginCallback: callback typedef drift");
+static_assert(std::is_same_v<SWMM_StepEndCallback, void (*)(SWMM_Engine, double, double, void*)>, "SWMM_StepEndCallback: callback typedef drift");
+static_assert(std::is_same_v<SWMM_PluginStateCallback, void (*)(SWMM_Engine, const char*, int, int, void*)>, "SWMM_PluginStateCallback: callback typedef drift");
+static_assert(std::is_same_v<SWMM_HotStartMissingCallback, void (*)(SWMM_Engine, const char*, const char*, void*)>, "SWMM_HotStartMissingCallback: callback typedef drift");
 
 // Struct layouts are asserted only under a 32-bit-pointer ABI (the wasm32 model).
 #if UINTPTR_MAX == 0xffffffffu

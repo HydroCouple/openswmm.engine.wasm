@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import manifest from "../src/js/raw.manifest.json" with { type: "json" };
 import exported from "../src/bindings/exported_functions.json" with { type: "json" };
 import exportedNo2d from "../src/bindings/exported_functions.no2d.json" with { type: "json" };
-import { RAW_FUNCTION_COUNT } from "../src/js/raw.js";
+import { CALLBACK_SIGNATURES, RAW_FUNCTION_COUNT } from "../src/js/raw.js";
 
 const engineRoot = process.env.ENGINE_ROOT ?? resolve(__dirname, "..", "extern", "openswmm.engine");
 // Use the engine's tokenizer: comments, docstrings and extern declarations
@@ -26,6 +26,18 @@ describe("raw layer", () => {
     ]);
     const headers = new Set(Object.values(manifest.functions).map(f => f.header));
     for (const h of manifest.optionalHeaders["2d"]) expect(headers.has(h)).toBe(true);
+  });
+  it("carries the callback typedefs with their wasm32 addFunction signatures", () => {
+    // engine handle / pointers / int / const char* -> "i", double -> "d", void return -> "v"
+    expect(manifest.callbacks).toEqual({
+      SWMM_ProgressCallback: expect.objectContaining({ signature: "viddi" }),
+      SWMM_WarningCallback: expect.objectContaining({ signature: "viiii" }),
+      SWMM_StepBeginCallback: expect.objectContaining({ signature: "viddi" }),
+      SWMM_StepEndCallback: expect.objectContaining({ signature: "viddi" }),
+      SWMM_PluginStateCallback: expect.objectContaining({ signature: "viiiii" }),
+      SWMM_HotStartMissingCallback: expect.objectContaining({ signature: "viiii" }),
+    });
+    expect(CALLBACK_SIGNATURES.SWMM_WarningCallback).toBe("viiii");
   });
   it("the 1D-only export list drops exactly the 2D headers' functions", () => {
     const optional = new Set(manifest.optionalHeaders["2d"]);
