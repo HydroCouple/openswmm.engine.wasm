@@ -1,6 +1,6 @@
 {
   "name": "@hydrocouple/openswmm-engine-wasm",
-  "version": "6.0.0-dev.0",
+  "version": "6.0.0-alpha.4",
   "description": "WebAssembly bindings for the OpenSWMM Engine C++ API — mirrors the openswmm.engine Python bindings surface.",
   "license": "Apache-2.0",
   "author": "Caleb Buahin <caleb.buahin@gmail.com>",
@@ -43,6 +43,7 @@
     "dist/",
     "src/",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE",
     "NOTICE"
   ],

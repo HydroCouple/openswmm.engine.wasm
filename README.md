@@ -41,8 +41,20 @@ npm install @hydrocouple/openswmm-engine-wasm
 The published package carries the compiled module (`dist/openswmm_engine.wasm`
 and its `.js` glue) as well as the TypeScript wrappers. Pre-releases are
 published under the `next` dist-tag (`npm install @hydrocouple/openswmm-engine-wasm@next`).
-Builds of every push are also available as GitHub Actions artefacts on the
-[`build` workflow](https://github.com/HydroCouple/openswmm.engine.wasm/actions).
+
+Other channels carry the same build:
+
+- **GitHub Packages.** Add `@hydrocouple:registry=https://npm.pkg.github.com`
+  to your `.npmrc` (GitHub requires an authenticated client with
+  `read:packages`, even for public packages), then `npm install` as above.
+- **Without a bundler.** Each
+  [GitHub Release](https://github.com/HydroCouple/openswmm.engine.wasm/releases)
+  carries `openswmm-engine-wasm-<version>-browser.zip` (the ES module glue,
+  the `.wasm` and the compiled wrappers) and `SHA256SUMS`. The npm package is
+  also served by CDNs, e.g.
+  `https://cdn.jsdelivr.net/npm/@hydrocouple/openswmm-engine-wasm@next/dist/openswmm_engine.js`.
+- Builds of every push are available as GitHub Actions artefacts on the
+  [`build` workflow](https://github.com/HydroCouple/openswmm.engine.wasm/actions).
 
 ---
 
@@ -427,35 +439,18 @@ dist/
 
 ## Releasing
 
-Publishing a GitHub Release publishes the package to npm
-([`release.yml`](.github/workflows/release.yml)):
+Pushing a tag `v<version>` runs [`release.yml`](.github/workflows/release.yml):
+it checks that the tag matches `package.json` and that the version tracks the
+pinned engine (`tools/check_version.py`), builds the module in the pinned
+`emscripten/emsdk` image, runs the generated-binding, struct-layout, lint,
+unit and 1D/2D smoke checks, then creates the GitHub Release (tarball,
+browser zip, `SHA256SUMS`) and publishes the tarball to npm and GitHub
+Packages — under `next` for pre-release versions, otherwise `latest`.
+Run the workflow by hand with *Dry run* checked to rehearse a release.
 
-1. Set `version` in `package.json` (e.g. `6.0.0-alpha.5`) and commit.
-2. Create a release whose tag is `v` + that version (`v6.0.0-alpha.5`).
-3. The workflow checks the tag against `package.json`, builds the module in
-   the pinned `emscripten/emsdk` image, runs the generated-binding,
-   struct-layout, unit and 1D/2D smoke tests, packs the tarball and checks it
-   carries the `.wasm`, the glue and the typed wrappers. It then publishes with
-   `--access public` under the `next` dist-tag when the version has a
-   pre-release suffix or the release is marked as a pre-release, otherwise
-   `latest`, and attaches the tarball to the release.
-
-Authentication, set up once:
-
-- **Trusted publishing (recommended).** On npmjs.com, add a trusted publisher
-  to the package: GitHub Actions, `HydroCouple/openswmm.engine.wasm`, workflow
-  `release.yml`, environment `npm`. No secret is needed afterwards. Trusted
-  publishers are set in the package's settings on npmjs.com, so the package's
-  first publish uses the token below.
-- **Token.** Otherwise add an npm automation token with publish rights to the
-  `@hydrocouple` scope as the `NPM_TOKEN` repository secret.
-
-Provenance is attached when the repository is public; npm cannot attest
-private repositories. To rehearse a release, run the workflow by hand
-(Actions → Release → Run workflow) with *Dry run* checked: it performs the
-whole build and `npm publish --dry-run`. A manual run without *Dry run*
-publishes for real and is accepted only on the release tag, to retry a
-failed release.
+The rules, the release steps and the one-time npm/GitHub setup (environment
+`npm`, `NPM_TOKEN` bootstrap, trusted publishing) are in
+[RELEASING.md](RELEASING.md); changes are listed in [CHANGELOG.md](CHANGELOG.md).
 
 ---
 
