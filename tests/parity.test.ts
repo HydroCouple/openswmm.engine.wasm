@@ -9,9 +9,13 @@ import { CALLBACK_SIGNATURES, RAW_FUNCTION_COUNT } from "../src/js/raw.js";
 const engineRoot = process.env.ENGINE_ROOT ?? resolve(__dirname, "..", "extern", "openswmm.engine");
 // Use the engine's tokenizer: comments, docstrings and extern declarations
 // are not executable uses; shared .pxd helpers are. Missing sources fail CI.
-const surface = JSON.parse(execFileSync(process.env.PYTHON ?? "python3", [
-  resolve(__dirname, "../tools/check_python_parity.py"), "--engine-root", engineRoot,
-], { encoding: "utf8" })) as Record<string, string[]>;
+const surface = JSON.parse(
+  execFileSync(
+    process.env.PYTHON ?? "python3",
+    [resolve(__dirname, "../tools/check_python_parity.py"), "--engine-root", engineRoot],
+    { encoding: "utf8" },
+  ),
+) as Record<string, string[]>;
 
 describe("raw layer", () => {
   it("manifest and raw.ts agree", () => {
@@ -21,10 +25,13 @@ describe("raw layer", () => {
     expect(manifest.excludedHeaders).toEqual([]);
     expect(manifest.excludedFunctions).toEqual([]);
     expect(manifest.optionalHeaders["2d"]).toEqual([
-      "openswmm_2d.h", "openswmm_gw2d.h", "openswmm_gw_transport.h",
-      "openswmm_infil2d.h", "openswmm_sq2d.h",
+      "openswmm_2d.h",
+      "openswmm_gw2d.h",
+      "openswmm_gw_transport.h",
+      "openswmm_infil2d.h",
+      "openswmm_sq2d.h",
     ]);
-    const headers = new Set(Object.values(manifest.functions).map(f => f.header));
+    const headers = new Set(Object.values(manifest.functions).map((f) => f.header));
     for (const h of manifest.optionalHeaders["2d"]) expect(headers.has(h)).toBe(true);
   });
   it("carries the callback typedefs with their wasm32 addFunction signatures", () => {
@@ -43,13 +50,16 @@ describe("raw layer", () => {
     const optional = new Set(manifest.optionalHeaders["2d"]);
     const all = Object.entries(manifest.functions);
     expect(exported).toEqual(["_malloc", "_free", ...all.map(([n]) => `_${n}`)]);
-    expect(exportedNo2d).toEqual(["_malloc", "_free",
-      ...all.filter(([, f]) => !optional.has(f.header)).map(([n]) => `_${n}`)]);
+    expect(exportedNo2d).toEqual([
+      "_malloc",
+      "_free",
+      ...all.filter(([, f]) => !optional.has(f.header)).map(([n]) => `_${n}`),
+    ]);
   });
 });
 describe("Python executable coverage", () => {
   it("includes .pxd helpers as well as .pyx modules", () => {
-    expect(Object.keys(surface).some(p => p.endsWith(".pxd"))).toBe(true);
+    expect(Object.keys(surface).some((p) => p.endsWith(".pxd"))).toBe(true);
     expect(surface).toHaveProperty("_common.pxd");
     expect(surface).toHaveProperty("_transport.pyx");
   });

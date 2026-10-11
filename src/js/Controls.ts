@@ -72,8 +72,11 @@ export class Controls implements Iterable<ControlRule> {
   private readonly _engine: number;
 
   /** @internal */
-  constructor(mod: OpenSwmmWasmModule, engine: number,
-    private readonly _checkOwner: () => void = () => {}) {
+  constructor(
+    mod: OpenSwmmWasmModule,
+    engine: number,
+    private readonly _checkOwner: () => void = () => {},
+  ) {
     this._mod = mod;
     this._raw = guardedRaw(mod, this._checkOwner);
     this._engine = engine;
@@ -97,12 +100,8 @@ export class Controls implements Iterable<ControlRule> {
     const textBuf = this._mod._malloc(RULE_BUF_SIZE);
     const idBuf = this._mod._malloc(256);
     try {
-      raiseForCode(
-        this._raw.swmm_control_get_rule(this._engine, index, textBuf, RULE_BUF_SIZE),
-      );
-      raiseForCode(
-        this._raw.swmm_control_get_id(this._engine, index, idBuf, 256),
-      );
+      raiseForCode(this._raw.swmm_control_get_rule(this._engine, index, textBuf, RULE_BUF_SIZE));
+      raiseForCode(this._raw.swmm_control_get_id(this._engine, index, idBuf, 256));
       return {
         id: this._mod.UTF8ToString(idBuf),
         text: this._mod.UTF8ToString(textBuf),

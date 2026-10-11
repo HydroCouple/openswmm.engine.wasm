@@ -37,10 +37,7 @@ export class EngineError extends Error {
   readonly codeEnum: ErrorCode;
 
   constructor(code: number, message?: string) {
-    const resolved =
-      message != null && message.length > 0
-        ? message
-        : `SWMM error ${code}`;
+    const resolved = message != null && message.length > 0 ? message : `SWMM error ${code}`;
     super(resolved);
     this.name = "EngineError";
     this.code = code;
@@ -208,9 +205,7 @@ export class ElementNotFoundError extends BadIndexError {
  * the object by id from the current collection to recover.
  */
 export class StaleObjectError extends LifecycleError {
-  constructor(
-    message = "Stale wrapper: the model changed since this object was looked up",
-  ) {
+  constructor(message = "Stale wrapper: the model changed since this object was looked up") {
     super(message);
     this.name = "StaleObjectError";
     Object.setPrototypeOf(this, new.target.prototype);
@@ -222,26 +217,24 @@ export class StaleObjectError extends LifecycleError {
 // =============================================================================
 
 /** Internal map from `ErrorCode` to the exception class to instantiate. */
-const CODE_TO_EXCEPTION: Map<ErrorCode, (msg?: string) => EngineError> = new Map(
-  [
-    [ErrorCode.NOMEM,      (m) => new EngineError(ErrorCode.NOMEM,      m ?? "Out of memory")],
-    [ErrorCode.INPFILE,    (m) => new FileError(ErrorCode.INPFILE,      m)],
-    [ErrorCode.RPTFILE,    (m) => new FileError(ErrorCode.RPTFILE,      m)],
-    [ErrorCode.OUTFILE,    (m) => new FileError(ErrorCode.OUTFILE,      m)],
-    [ErrorCode.PARSE,      (m) => new ParseError(m)],
-    [ErrorCode.LIFECYCLE,  (m) => new LifecycleError(m)],
-    [ErrorCode.BADHANDLE,  (m) => new BadHandleError(m)],
-    [ErrorCode.BADINDEX,   (m) => new BadIndexError(m)],
-    [ErrorCode.BADPARAM,   (m) => new BadParamError(m)],
-    [ErrorCode.PLUGIN,     (m) => new PluginError(m)],
-    [ErrorCode.IO,         (m) => new FileError(ErrorCode.IO,           m)],
-    [ErrorCode.HOTSTART,   (m) => new HotStartError(m)],
-    [ErrorCode.CRS,        (m) => new CRSError(m)],
-    [ErrorCode.NUMERICAL,  (m) => new NumericalError(m)],
-    [ErrorCode.DEPENDENCY, (m) => new DependencyError(m)],
-    [ErrorCode.INTERNAL,   (m) => new EngineError(ErrorCode.INTERNAL,   m ?? "Internal engine error")],
-  ] as const,
-);
+const CODE_TO_EXCEPTION: Map<ErrorCode, (msg?: string) => EngineError> = new Map([
+  [ErrorCode.NOMEM, (m) => new EngineError(ErrorCode.NOMEM, m ?? "Out of memory")],
+  [ErrorCode.INPFILE, (m) => new FileError(ErrorCode.INPFILE, m)],
+  [ErrorCode.RPTFILE, (m) => new FileError(ErrorCode.RPTFILE, m)],
+  [ErrorCode.OUTFILE, (m) => new FileError(ErrorCode.OUTFILE, m)],
+  [ErrorCode.PARSE, (m) => new ParseError(m)],
+  [ErrorCode.LIFECYCLE, (m) => new LifecycleError(m)],
+  [ErrorCode.BADHANDLE, (m) => new BadHandleError(m)],
+  [ErrorCode.BADINDEX, (m) => new BadIndexError(m)],
+  [ErrorCode.BADPARAM, (m) => new BadParamError(m)],
+  [ErrorCode.PLUGIN, (m) => new PluginError(m)],
+  [ErrorCode.IO, (m) => new FileError(ErrorCode.IO, m)],
+  [ErrorCode.HOTSTART, (m) => new HotStartError(m)],
+  [ErrorCode.CRS, (m) => new CRSError(m)],
+  [ErrorCode.NUMERICAL, (m) => new NumericalError(m)],
+  [ErrorCode.DEPENDENCY, (m) => new DependencyError(m)],
+  [ErrorCode.INTERNAL, (m) => new EngineError(ErrorCode.INTERNAL, m ?? "Internal engine error")],
+] as const);
 
 /**
  * Throw the correct {@link EngineError} subclass for `code`.
