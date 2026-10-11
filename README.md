@@ -500,8 +500,9 @@ See also: [CLA.md](CLA.md) · [CCLA.md](CCLA.md)
 ## Compatibility and gaps
 
 The engine submodule is the reproducible source of truth for generation and
-compilation. Generation against the pinned engine yields **1,187 C functions**
-(1,002 without the 2D headers) and **81 enum classes**; no header is excluded.
+compilation. Generation against the pinned engine yields **1,244 C functions**
+(1,048 without the 2D headers), **81 enum classes** and the six callback
+typedefs with their `addFunction()` signatures; no header is excluded.
 The sibling engine working tree can contain newer uncommitted APIs; those are
 not automatically part of this package. Regenerate after deliberately advancing
 the submodule, and rebuild the binary as well as TypeScript.

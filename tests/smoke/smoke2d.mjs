@@ -12,13 +12,15 @@
  * tests/_work/smoke2d.wasm.rpt, and compares the 2D volume balance against the
  * native engine reference in tests/fixtures/smoke2d.native.rpt.
  *
- * The reference comes from a native build with the WASM build's arithmetic:
- * -DOPENSWMM_FORCE_SCALAR=ON, no OpenMP, -ffp-contract=off. WebAssembly has no
- * fused multiply-add, and on this small, stiff deck the marcher's adaptive
- * step turns FMA rounding into differences of about 2 % in the 2D volumes
- * against a default (AVX2/FMA) native build. Against the matching build the
- * reports agree to the printed digit; the 0.5 % tolerance only absorbs libm
- * and compiler-version noise.
+ * The reference comes from tools/native_reference.sh: a native build with the
+ * WASM build's arithmetic — -DOPENSWMM_FORCE_SCALAR=ON, one thread,
+ * -ffp-contract=off, and Emscripten's musl libm linked in. WebAssembly has no
+ * fused multiply-add, and platform libms differ from musl in the last ulp of
+ * pow/exp/cbrt/hypot; on this small, stiff deck the marcher's adaptive step
+ * turns either difference into 2-12 % changes in the 2D volumes. Against the
+ * matching build the reports agree to the printed digit; the 0.5 % tolerance
+ * only absorbs compiler-version noise. Regenerate the reference whenever the
+ * engine submodule moves.
  *
  * Skips (exit 0) when the module was built with -DOPENSWMM_WASM_2D=OFF.
  */
