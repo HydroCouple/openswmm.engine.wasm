@@ -14,6 +14,7 @@ classes cover a subset of the Python API. See [Compatibility and gaps](#compatib
 
 - [Installation](#installation)
 - [Quick start](#quick-start)
+- [Trivial 2D example](#trivial-2d-example)
 - [API reference](#api-reference)
   - [Solver](#solver)
   - [Nodes / Node](#nodes--node)
@@ -119,6 +120,94 @@ const report = solver.readFile("/model.rpt", "utf8");
   solver.run("/model.inp", "/model.rpt", "/model.out");
 }  // solver.destroy() called automatically
 ```
+
+---
+
+## Trivial 2D example
+
+The smallest useful 2D model: rain on a 100 m × 100 m plane, tilted 1 m
+toward its south edge, meshed as **two triangles**, draining through that one
+edge. There is no 1D network — the deck has only a rain gage, its timeseries
+and the `[2D_*]` sections. It ships with the package as
+[`examples/trivial_2d.inp`](examples/trivial_2d.inp) and a runnable script,
+[`examples/trivial_2d.mjs`](examples/trivial_2d.mjs).
+
+```ini
+[RAINGAGES]
+RG1     INTENSITY  0:05  1.0  TIMESERIES STORM
+
+[TIMESERIES]
+;; Each value lasts one gage interval (0:05): 30 minutes of 50 mm/hr = 25 mm.
+STORM   0:00  50
+STORM   0:05  50
+STORM   0:10  50
+STORM   0:15  50
+STORM   0:20  50
+STORM   0:25  50
+
+[2D_VERTICES]
+;;X     Y      Z (m)
+0.0     0.0    0.0
+100.0   0.0    0.0
+100.0   100.0  1.0
+0.0     100.0  1.0
+
+[2D_TRIANGLES]
+;;V1  V2  V3  Manning_n  Init_depth
+0     1   2   0.03       0.0
+0     2   3   0.03       0.0
+
+[2D_BOUNDARY_CONDITIONS]
+;; Edge e is opposite vertex e: triangle 0 edge 2 is (v0, v1), the low side.
+0      2     NORMAL_FLOW  0.01     *        *
+```
+
+(The full file adds `[TITLE]`, `[OPTIONS]` for a two-hour run with a 5 s
+routing step, and a two-line `[2D_OPTIONS]`.)
+
+```ts
+import { readFileSync } from "node:fs";
+import createOpenSwmmModule from "@hydrocouple/openswmm-engine-wasm/wasm";
+import { Solver } from "@hydrocouple/openswmm-engine-wasm";
+
+const solver = new Solver(await createOpenSwmmModule());
+solver.writeFile("/trivial_2d.inp",
+  readFileSync("node_modules/@hydrocouple/openswmm-engine-wasm/examples/trivial_2d.inp", "utf8"));
+
+solver.open("/trivial_2d.inp", "/trivial_2d.rpt", "/trivial_2d.out");
+solver.initialize();                  // builds the 2D solver state
+const mesh = solver.surface2d;        // 4 vertices, 2 triangles
+
+solver.start();
+let peak = 0;
+while (solver.step() > 0) {
+  peak = Math.max(peak, mesh.maxDepth);         // m
+}
+const balance = mesh.getMassBalance();          // m³ (2D is SI throughout)
+solver.end();
+solver.close();
+solver.destroy();
+
+console.log(peak, balance.rainfallIn, balance.boundaryOut, balance.continuityError);
+```
+
+From a clone, `node examples/trivial_2d.mjs` runs the same thing and prints:
+
+```text
+mesh: 4 vertices, 2 triangles
+peak depth   0.0092 m
+rainfall in  250.000 m³
+edge outflow 243.606 m³
+still stored 6.394 m³
+continuity   8.19e-15 %
+```
+
+250 m³ is exactly 25 mm over 10 000 m²; the rest of the water is still on the
+plane when the run ends. `npm run smoke` runs this script and fails if those
+figures stop holding, so the example cannot drift from the engine. To grow it,
+add triangles to `[2D_VERTICES]`/`[2D_TRIANGLES]`, more `[2D_BOUNDARY_CONDITIONS]`
+edges, or couple 1D nodes with `[2D_VERTEX_NODE_MAP]` — the
+[Surface2D](#surface2d-2d-surface-routing) reference covers the rest of the API.
 
 ---
 
