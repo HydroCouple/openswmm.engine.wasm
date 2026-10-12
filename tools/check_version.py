@@ -80,7 +80,9 @@ def main() -> int:
     engine = engine_version(root)
     errors = []
     if native != engine:
-        errors.append(f"engine python/pyproject.toml {py} does not match the native engine {engine}")
+        errors.append(
+            f"engine python/pyproject.toml {py} does not match the native engine {engine}"
+        )
     if package != expected:
         errors.append(
             f"package.json version {package} must carry the Python bindings' qualifier: "
