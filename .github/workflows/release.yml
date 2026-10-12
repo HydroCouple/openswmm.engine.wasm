@@ -1,12 +1,13 @@
 name: Release
 
-# Pushing a tag v<package.json version> (e.g. v6.0.0-alpha.4) builds and tests
-# the module, creates the GitHub Release with the package tarball, a
+# Pushing a tag v<package.json version> (e.g. v6.0.0-alpha.4.dev.2) builds and
+# tests the module, creates the GitHub Release with the package tarball, a
 # bundler-free browser zip and SHA256SUMS, and publishes the same tarball to
 # npm (registry.npmjs.org) and to GitHub Packages (npm.pkg.github.com).
-# A version with a pre-release suffix goes to the "next" dist-tag, otherwise
-# "latest". The package version must track the pinned engine version
-# (tools/check_version.py).
+# The version must carry the pinned engine's Python bindings qualifier
+# (python/pyproject.toml 6.0.0a4.dev2 -> 6.0.0-alpha.4.dev.2;
+# tools/check_version.py). Dist-tags: dev-qualified -> "dev", other
+# pre-releases -> "next", finals -> "latest".
 #
 # npm authentication: trusted publishing (OIDC) once configured for the
 # package on npmjs.com (workflow file "release.yml", environment "npm");
@@ -79,7 +80,14 @@ jobs:
             fi
             python3 tools/check_version.py --tag "$REF_NAME"
           fi
-          case "$version" in *-*) dist_tag=next ;; *) dist_tag=latest ;; esac
+          # Dev builds (the Python .devN qualifier) get their own dist-tag:
+          # SemVer sorts 6.0.0-alpha.4.dev.2 AFTER 6.0.0-alpha.4 (PEP 440 sorts
+          # it before), so they must never become "next" or "latest".
+          case "$version" in
+            *.dev.*|*-dev.*) dist_tag=dev ;;
+            *-*)             dist_tag=next ;;
+            *)               dist_tag=latest ;;
+          esac
           {
             echo "version=$version"
             echo "dist_tag=$dist_tag"
@@ -173,7 +181,7 @@ jobs:
       - uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.build.outputs.version }}
-          prerelease: ${{ needs.build.outputs.dist_tag == 'next' }}
+          prerelease: ${{ needs.build.outputs.dist_tag != 'latest' }}
           generate_release_notes: true
           files: release/*
 
