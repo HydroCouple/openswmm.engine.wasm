@@ -5,13 +5,18 @@ All notable changes to `@hydrocouple/openswmm-engine-wasm` are documented in thi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-The package version tracks the pinned OpenSWMM Engine version
-(`tools/check_version.py`): engine `6.0.0-alpha.4` is published as
-`6.0.0-alpha.4`, and WASM-only re-releases against the same engine as
-`6.0.0-alpha.4.N`. Entries can be drafted with
+The package version carries the qualifier of the `openswmm` Python package
+built from the pinned engine (`tools/check_version.py`): Python
+`6.0.0a4.dev2` is published here as `6.0.0-alpha.4.dev.2`. Entries can be drafted with
 [git-cliff](https://git-cliff.org) (config: `cliff.toml`).
 
 ## [Unreleased]
+
+### Changed
+
+- **Version qualifier follows the Python bindings**: `6.0.0-alpha.4.dev.2`
+  for Python `6.0.0a4.dev2`; dev-qualified versions publish under the `dev`
+  dist-tag.
 
 ### Added
 
@@ -26,7 +31,7 @@ The package version tracks the pinned OpenSWMM Engine version
   reports elapsed seconds, not an OADate. It is now start + elapsed, as in
   Python's `current_datetime`.
 
-## [6.0.0-alpha.4]
+## [6.0.0-alpha.4.dev.2]
 
 First release of the package.
 

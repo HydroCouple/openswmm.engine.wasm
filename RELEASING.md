@@ -14,13 +14,18 @@ which builds and tests the module, then:
   published again, even after an unpublish. The workflow therefore requires
   the tag to equal `v` + `package.json` `version`, and runs every test before
   publishing.
-- **The version tracks the engine.** `tools/check_version.py` requires
-  `package.json` to be the engine version (`project(VERSION)` +
-  `OPENSWMM_PRERELEASE` in `extern/openswmm.engine/CMakeLists.txt`), or that
-  version with a `.N` suffix for a WASM-only re-release.
-- **Pre-releases go to `next`.** A version containing `-` is published with
-  the `next` dist-tag and the GitHub Release is marked pre-release; otherwise
-  `latest`.
+- **The version carries the Python bindings' qualifier.** `tools/check_version.py`
+  derives the required version from the pinned engine's
+  `python/pyproject.toml` (PEP 440) and spells it in SemVer:
+  `6.0.0a4.dev2` → `6.0.0-alpha.4.dev.2`, `6.0.0a4` → `6.0.0-alpha.4`,
+  `6.0.0rc1` → `6.0.0-rc.1`. It also checks that the Python version agrees
+  with the native engine (`project(VERSION)` + `OPENSWMM_PRERELEASE`).
+  `python3 tools/check_version.py --expect` prints the version to use.
+- **Dist-tags.** A dev-qualified version is published under `dev`; any other
+  version containing `-` under `next`; finals under `latest`. Pre-release
+  GitHub Releases are marked as such. Dev builds get their own tag because
+  SemVer sorts `6.0.0-alpha.4.dev.2` *after* `6.0.0-alpha.4`, the reverse of
+  PEP 440, so they must never become `next` or `latest`.
 - **Scoped packages are private by default**, so npm publishes with
   `--access public`.
 - **Provenance** (`--provenance`) is added only when the repository is public.
@@ -31,13 +36,14 @@ which builds and tests the module, then:
 
 1. Bump the engine submodule if needed, then regenerate and re-check:
    `npm run gen`, `tools/native_reference.sh`, `npm run check`, `npm run smoke`.
-2. Set `version` in `package.json` (and `package-lock.json` via
-   `npm install --package-lock-only`); move the `[Unreleased]` entries in
-   `CHANGELOG.md` under the new version.
+2. Set the version the pin requires:
+   `npm version "$(python3 tools/check_version.py --expect)" --no-git-tag-version`
+   (updates `package.json` and `package-lock.json`); move the `[Unreleased]`
+   entries in `CHANGELOG.md` under the new version.
 3. Commit, push, and rehearse: Actions → Release → Run workflow with
    *Dry run* checked (full build and tests, `npm publish --dry-run` to both
    registries, no GitHub Release).
-4. Tag and push: `git tag v6.0.0-alpha.4 && git push origin v6.0.0-alpha.4`.
+4. Tag and push: `git tag v6.0.0-alpha.4.dev.2 && git push origin v6.0.0-alpha.4.dev.2`.
 
 A failed publish can be retried with Run workflow on the tag with *Dry run*
 unchecked; from a branch, only dry runs are accepted.

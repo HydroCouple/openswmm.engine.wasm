@@ -40,8 +40,15 @@ npm install @hydrocouple/openswmm-engine-wasm
 ```
 
 The published package carries the compiled module (`dist/openswmm_engine.wasm`
-and its `.js` glue) as well as the TypeScript wrappers. Pre-releases are
-published under the `next` dist-tag (`npm install @hydrocouple/openswmm-engine-wasm@next`).
+and its `.js` glue) as well as the TypeScript wrappers. Its version carries
+the same qualifier as the `openswmm` Python package built from the same engine
+(`6.0.0a4.dev2` on PyPI is `6.0.0-alpha.4.dev.2` here). Development builds are
+published under the `dev` dist-tag, other pre-releases under `next`:
+
+```bash
+npm install @hydrocouple/openswmm-engine-wasm@dev    # matches openswmm 6.0.0a4.dev2
+npm install @hydrocouple/openswmm-engine-wasm@next   # latest alpha/beta/rc
+```
 
 Other channels carry the same build:
 
@@ -530,11 +537,12 @@ dist/
 
 Pushing a tag `v<version>` runs [`release.yml`](.github/workflows/release.yml):
 it checks that the tag matches `package.json` and that the version tracks the
-pinned engine (`tools/check_version.py`), builds the module in the pinned
-`emscripten/emsdk` image, runs the generated-binding, struct-layout, lint,
-unit and 1D/2D smoke checks, then creates the GitHub Release (tarball,
-browser zip, `SHA256SUMS`) and publishes the tarball to npm and GitHub
-Packages — under `next` for pre-release versions, otherwise `latest`.
+pinned engine's Python bindings (`tools/check_version.py`), builds the
+module in the pinned `emscripten/emsdk` image, runs the generated-binding,
+struct-layout, lint, unit and 1D/2D smoke checks, then creates the GitHub
+Release (tarball, browser zip, `SHA256SUMS`) and publishes the tarball to npm
+and GitHub Packages — under `dev` for dev-qualified versions, `next` for other
+pre-releases, otherwise `latest`.
 Run the workflow by hand with *Dry run* checked to rehearse a release.
 
 The rules, the release steps and the one-time npm/GitHub setup (environment
