@@ -463,10 +463,13 @@ export class Solver {
    * Only valid during and after the simulation loop.
    */
   get currentDatetime(): Date {
+    // swmm_get_current_time reports ELAPSED SECONDS since the start, not an
+    // OADate (Python's current_datetime makes the same correction).
     const ptr = this._mod._malloc(8);
     try {
       raiseForCode(this._raw.swmm_get_current_time(this.handle, ptr));
-      return oadateToDate(this._mod.getValue(ptr, "double"));
+      const elapsedSeconds = this._mod.getValue(ptr, "double");
+      return new Date(this.startDatetime.getTime() + elapsedSeconds * 1000);
     } finally {
       this._mod._free(ptr);
     }

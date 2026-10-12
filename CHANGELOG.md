@@ -13,6 +13,19 @@ The package version tracks the pinned OpenSWMM Engine version
 
 ## [Unreleased]
 
+### Added
+
+- **Trivial 2D example** (`examples/trivial_2d.inp`, `examples/trivial_2d.mjs`,
+  shipped in the package): rain on a two-triangle sloped plane draining
+  through one edge, with no 1D network. Featured in the README and run by
+  `npm run smoke`.
+
+### Fixed
+
+- **`Solver.currentDatetime`** returned 1900-era dates: `swmm_get_current_time`
+  reports elapsed seconds, not an OADate. It is now start + elapsed, as in
+  Python's `current_datetime`.
+
 ## [6.0.0-alpha.4]
 
 First release of the package.
