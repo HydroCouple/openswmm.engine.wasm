@@ -109,8 +109,9 @@ jobs:
       - name: Configure (emcmake)
         run: emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release
 
+      # Bound compiler concurrency to avoid exhausting hosted-runner memory.
       - name: Build WASM module
-        run: cmake --build build --parallel
+        run: cmake --build build --parallel 2
 
       - name: Verify outputs
         run: |
