@@ -10,7 +10,7 @@
  * ```
  *
  * The class also exposes typed accessors for nodes, links, subcatchments,
- * gages, controls, and forcing.
+ * gages, controls, forcing, transport and the 2D surface ({@link Solver.surface2d}).
  *
  * ### Virtual filesystem
  * The WASM engine uses the Emscripten MEMFS virtual filesystem. Call
@@ -47,7 +47,7 @@
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
- * @license  MIT
+ * @license  Apache-2.0
  */
 
 import { EngineState, FlowUnits } from "./enums.js";
@@ -59,6 +59,7 @@ import { Gages } from "./Gages.js";
 import { Controls } from "./Controls.js";
 import { Transport } from "./Transport.js";
 import { Forcing } from "./Forcing.js";
+import { Surface2D } from "./Surface2D.js";
 import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
 import type { RawApi } from "./raw.js";
 import { rawOf } from "./mem.js";
@@ -89,7 +90,10 @@ export class Solver {
    */
   private _handle: number;
 
-  get handle(): number { this._assertAlive(); return this._handle; }
+  get handle(): number {
+    this._assertAlive();
+    return this._handle;
+  }
 
   private _assertAlive(): void {
     if (!this._handle) throw new BadHandleError("Solver has been destroyed");
@@ -150,6 +154,15 @@ export class Solver {
 
   readonly transport: Transport;
 
+  /**
+   * 2D surface routing (Python `solver.surface2d`).
+   *
+   * Active once the model has a 2D mesh and {@link Solver.initialize} has
+   * run; check {@link Surface2D.isActive}. Results are read here — the WASM
+   * build ignores `[2D_OPTIONS] OUTPUT_FILE`.
+   */
+  readonly surface2d: Surface2D;
+
   // -------------------------------------------------------------------------
   // Constructor
   // -------------------------------------------------------------------------
@@ -181,6 +194,7 @@ export class Solver {
     this.controls = new Controls(mod, h, () => this._assertAlive());
     this.transport = new Transport(mod, h, () => this._assertAlive());
     this.forcing = new Forcing(mod, h, () => this._assertAlive());
+    this.surface2d = new Surface2D(mod, h, () => this._assertAlive());
   }
 
   // -------------------------------------------------------------------------
@@ -256,7 +270,6 @@ export class Solver {
       const msg = this._raw.swmm_get_last_error_msg(this.handle);
       raiseForCode(rc, msg);
     }
-
   }
 
   /**
@@ -388,13 +401,7 @@ export class Solver {
    * @param saveResults Write binary output (default `true`).
    * @param pluginLib   Optional plugin library path.
    */
-  run(
-    inp: string,
-    rpt: string,
-    out: string,
-    saveResults = true,
-    pluginLib = "",
-  ): void {
+  run(inp: string, rpt: string, out: string, saveResults = true, pluginLib = ""): void {
     this.open(inp, rpt, out, pluginLib);
     this.initialize();
     this.start(saveResults);
@@ -456,10 +463,13 @@ export class Solver {
    * Only valid during and after the simulation loop.
    */
   get currentDatetime(): Date {
+    // swmm_get_current_time reports ELAPSED SECONDS since the start, not an
+    // OADate (Python's current_datetime makes the same correction).
     const ptr = this._mod._malloc(8);
     try {
       raiseForCode(this._raw.swmm_get_current_time(this.handle, ptr));
-      return oadateToDate(this._mod.getValue(ptr, "double"));
+      const elapsedSeconds = this._mod.getValue(ptr, "double");
+      return new Date(this.startDatetime.getTime() + elapsedSeconds * 1000);
     } finally {
       this._mod._free(ptr);
     }

@@ -3,7 +3,9 @@
 Generate the raw WASM binding layer from the OpenSWMM Engine C API headers.
 
 Reads   extern/openswmm.engine/include/openswmm/engine/*.h
-Writes  src/bindings/exported_functions.json   -> -sEXPORTED_FUNCTIONS=@file
+Writes  src/bindings/exported_functions.json   -> -sEXPORTED_FUNCTIONS=@file (2D build)
+        src/bindings/exported_functions.no2d.json  the same without the 2D headers
+                                                (-DOPENSWMM_WASM_2D=OFF)
         src/js/raw.ts                           typed cwrap table (RawApi, bindRaw)
         src/js/raw.manifest.json                name -> signature (parity tests)
         tools/host_shim/raw_check.cpp           static_asserts: parsed == real prototypes
@@ -17,6 +19,7 @@ Type mapping (wasm32):
           everything else (numbers, enums, pointers, handles, callbacks) -> "number"
 Functions with no string in/out are bound directly to Module._name (no cwrap).
 """
+
 from __future__ import annotations
 
 import argparse
@@ -29,23 +32,52 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 HEADER_DIR_REL = Path("include/openswmm/engine")
 
-# Headers compiled out of the WASM build (-DOPENSWMM_BUILD_2D=OFF).
-EXCLUDED_HEADERS = {
-    "openswmm_2d.h", "openswmm_infil2d.h", "openswmm_gw2d.h",
-    "openswmm_gw_transport.h", "openswmm_sq2d.h",
+# Headers compiled out of the WASM build. None: 2D is built (without its HDF5
+# results writer). Kept so a future optional feature can be listed here.
+EXCLUDED_HEADERS: set[str] = set()
+# Headers of the 2D module. Bound in raw.ts either way; a build configured
+# with -DOPENSWMM_WASM_2D=OFF links exported_functions.no2d.json instead, and
+# calling one of these then throws "export ... is not available".
+OPTIONAL_2D_HEADERS = {
+    "openswmm_2d.h",
+    "openswmm_infil2d.h",
+    "openswmm_gw2d.h",
+    "openswmm_gw_transport.h",
+    "openswmm_sq2d.h",
 }
-# Non-API headers.
-SKIP_HEADERS = {"openswmm_engine_export.h", "openswmm_callbacks.h"}
+# Non-API headers. The callbacks header declares no functions; its function-
+# pointer typedefs are parsed separately (parse_callbacks) so the TS layer gets
+# the wasm32 addFunction() signature of each callback.
+CALLBACK_HEADER = "openswmm_callbacks.h"
+SKIP_HEADERS = {"openswmm_engine_export.h", CALLBACK_HEADER}
+
+CALLBACK_RE = re.compile(
+    r"typedef\s+(?P<ret>[\w\s*]+?)\s*\(\s*\*\s*(?P<name>SWMM_\w+)\s*\)\s*\((?P<params>[^;]*?)\)\s*;",
+    re.S,
+)
 
 # Structs passed by pointer through the C API; field layouts are emitted so the
 # TS layer can read/write them on the heap without hand-maintained offsets.
 STRUCTS_OF_INTEREST = [
-    "SWMM_ImpactEntry", "SWMM_ImpactReport", "SWMM_ConversionResult",
-    "SWMM_ThreadInfo", "SWMM_InletDesign", "SWMM_InletUsage",
+    "SWMM_ImpactEntry",
+    "SWMM_ImpactReport",
+    "SWMM_ConversionResult",
+    "SWMM_ThreadInfo",
+    "SWMM_InletDesign",
+    "SWMM_InletUsage",
+    "SWMM_2DRunStats",
+    "SWMM_Infil2DOptions",
+    "SWMM_Infil2DRow",
 ]
 
-WASM32 = {"int": (4, 4), "double": (8, 8), "float": (4, 4), "long": (4, 4),
-          "char": (1, 1), "ptr": (4, 4)}
+WASM32 = {
+    "int": (4, 4),
+    "double": (8, 8),
+    "float": (4, 4),
+    "long": (4, 4),
+    "char": (1, 1),
+    "ptr": (4, 4),
+}
 
 PROTO_RE = re.compile(
     r"SWMM_ENGINE_API\s+(?P<ret>[^;{]+?)\s*(?P<name>swmm_\w+)\s*\((?P<params>[^;]*?)\)\s*;",
@@ -60,13 +92,15 @@ def strip_comments(text: str) -> str:
 
 def norm(t: str) -> str:
     t = " ".join(t.split())
-    t = re.sub(r"\s*\*", "*", t)          # "double *" -> "double*"
+    t = re.sub(r"\s*\*", "*", t)  # "double *" -> "double*"
     return t
 
 
 def split_param(p: str) -> tuple[str, str]:
     """'const char* name' -> ('const char*', 'name'); arrays -> pointer."""
     p = p.strip()
+    if p.endswith("*"):  # unnamed pointer parameter such as 'const SWMM_CouplingFrame*'
+        return norm(p), ""
     m = re.match(r"^(.*?)(\w+)\s*(\[[^\]]*\])?$", p)
     if not m:
         raise ValueError(f"cannot parse param {p!r}")
@@ -105,10 +139,18 @@ def parse_headers(header_dir: Path):
             if raw_params and raw_params != "void":
                 for p in raw_params.split(","):
                     typ, pname = split_param(p)
-                    params.append({"name": pname, "type": typ,
-                                   "kind": js_kind(typ, is_return=False)})
-            funcs.append({"name": name, "header": h.name, "ret": ret,
-                          "retKind": js_kind(ret, is_return=True), "params": params})
+                    params.append(
+                        {"name": pname, "type": typ, "kind": js_kind(typ, is_return=False)}
+                    )
+            funcs.append(
+                {
+                    "name": name,
+                    "header": h.name,
+                    "ret": ret,
+                    "retKind": js_kind(ret, is_return=True),
+                    "params": params,
+                }
+            )
     names = [f["name"] for f in funcs]
     dupes = {n for n in names if names.count(n) > 1}
     if dupes:
@@ -116,9 +158,65 @@ def parse_headers(header_dir: Path):
     return funcs, sorted(excluded)
 
 
+def wasm_sig_char(ctype: str, *, is_return: bool) -> str:
+    """Emscripten addFunction() signature character for a wasm32 C type."""
+    if ctype == "void" and is_return:
+        return "v"
+    if ctype == "double":
+        return "d"
+    if ctype == "float":
+        return "f"
+    return "i"  # int, enums, handles, pointers, const char*
+
+
+def parse_callbacks(header_dir: Path):
+    """Function-pointer typedefs of openswmm_callbacks.h -> name, prototype, addFunction signature."""
+    text = strip_comments((header_dir / CALLBACK_HEADER).read_text(encoding="utf-8"))
+    callbacks = []
+    for m in CALLBACK_RE.finditer(text):
+        ret = norm(m.group("ret"))
+        params = []
+        raw_params = m.group("params").strip()
+        if raw_params and raw_params != "void":
+            for p in raw_params.split(","):
+                typ, pname = split_param(p)
+                params.append({"name": pname, "type": typ})
+        sig = wasm_sig_char(ret, is_return=True) + "".join(
+            wasm_sig_char(p["type"], is_return=False) for p in params
+        )
+        callbacks.append({"name": m.group("name"), "ret": ret, "params": params, "signature": sig})
+    if not callbacks:
+        raise SystemExit(f"no callback typedefs found in {CALLBACK_HEADER}")
+    return callbacks
+
+
+def parse_defines(header_dir: Path) -> dict[str, int]:
+    """Integer object-like macros (array bounds such as SWMM_INFIL2D_MAX_PARAMS)."""
+    defines = {}
+    for h in sorted(header_dir.glob("*.h")):
+        text = strip_comments(h.read_text(encoding="utf-8"))
+        for m in re.finditer(r"^\s*#\s*define\s+(\w+)\s+\(?\s*(\d+)\s*\)?\s*$", text, re.M):
+            defines[m.group(1)] = int(m.group(2))
+    return defines
+
+
+def parse_struct_field(decl: str, defines: dict[str, int]) -> tuple[str, str, int]:
+    """'double p[N]' -> ('double', 'p', N); scalars and pointers have count 1."""
+    m = re.match(r"^(.*?)(\w+)\s*\[\s*(\w+)\s*\]$", decl.strip())
+    if not m:
+        typ, fname = split_param(decl)
+        return typ, fname, 1
+    bound = m.group(3)
+    count = int(bound) if bound.isdigit() else defines.get(bound)
+    if count is None:
+        raise SystemExit(f"array bound {bound!r} is not an integer macro")
+    return norm(m.group(1)), m.group(2), count
+
+
 def parse_structs(header_dir: Path):
     """Compute wasm32 layouts for the structs of interest."""
     structs = {}
+    defines = parse_defines(header_dir)
     for h in sorted(header_dir.glob("*.h")):
         if h.name in EXCLUDED_HEADERS:
             continue
@@ -134,18 +232,25 @@ def parse_structs(header_dir: Path):
                 decl = decl.strip()
                 if not decl:
                     continue
-                typ, fname = split_param(decl)
+                typ, fname, count = parse_struct_field(decl, defines)
                 base = "ptr" if typ.endswith("*") else typ.replace("const ", "")
                 if base not in WASM32:
                     raise SystemExit(f"{sname}.{fname}: unsupported field type {typ!r}")
                 size, align = WASM32[base]
                 offset = (offset + align - 1) // align * align
-                fields.append({"name": fname, "type": typ, "offset": offset, "size": size})
-                offset += size
+                field = {
+                    "name": fname,
+                    "type": typ if count == 1 else f"{typ}[{count}]",
+                    "offset": offset,
+                    "size": size * count,
+                }
+                if count != 1:
+                    field["count"] = count
+                fields.append(field)
+                offset += size * count
                 max_align = max(max_align, align)
             total = (offset + max_align - 1) // max_align * max_align
-            structs[sname] = {"header": h.name, "size": total, "align": max_align,
-                              "fields": fields}
+            structs[sname] = {"header": h.name, "size": total, "align": max_align, "fields": fields}
     missing = set(STRUCTS_OF_INTEREST) - set(structs)
     if missing:
         raise SystemExit(f"structs not found: {sorted(missing)}")
@@ -156,8 +261,11 @@ def parse_structs(header_dir: Path):
 # Emitters
 # ---------------------------------------------------------------------------
 
-def emit_exported(funcs) -> str:
-    names = ["_malloc", "_free"] + ["_" + f["name"] for f in funcs]
+
+def emit_exported(funcs, *, with_2d: bool = True) -> str:
+    names = ["_malloc", "_free"] + [
+        "_" + f["name"] for f in funcs if with_2d or f["header"] not in OPTIONAL_2D_HEADERS
+    ]
     return json.dumps(names, indent=0) + "\n"
 
 
@@ -169,9 +277,33 @@ def ts_type(kind: str | None, *, is_return: bool) -> str:
     return "number"
 
 
-TS_RESERVED = {"var", "let", "const", "function", "new", "delete", "in", "of", "class",
-               "default", "export", "import", "return", "this", "void", "with", "yield",
-               "enum", "package", "interface", "typeof", "switch", "case", "do", "if"}
+TS_RESERVED = {
+    "var",
+    "let",
+    "const",
+    "function",
+    "new",
+    "delete",
+    "in",
+    "of",
+    "class",
+    "default",
+    "export",
+    "import",
+    "return",
+    "this",
+    "void",
+    "with",
+    "yield",
+    "enum",
+    "package",
+    "interface",
+    "typeof",
+    "switch",
+    "case",
+    "do",
+    "if",
+}
 
 
 def ts_param_name(name: str, i: int) -> str:
@@ -180,80 +312,163 @@ def ts_param_name(name: str, i: int) -> str:
     return name + "_" if name in TS_RESERVED else name
 
 
-def emit_raw_ts(funcs, structs) -> str:
+def emit_raw_ts(funcs, structs, callbacks) -> str:
     out = []
-    out.append("/**\n * @file raw.ts\n * @brief GENERATED by tools/gen_bindings.py — do not edit.\n *\n"
-               " * Typed access to every exported OpenSWMM Engine C function. Pointers and\n"
-               " * handles are heap offsets (numbers); `const char*` inputs are JS strings\n"
-               " * (copied to a temporary C string per call; `null` passes NULL).\n */\n\n")
-    out.append("/** Emscripten module surface the raw layer needs. */\n"
-               "export interface RawModule {\n"
-               "  cwrap(name: string, ret: string | null, args: string[]): (...a: unknown[]) => unknown;\n"
-               "  [exportName: `_${string}`]: unknown;\n"
-               "}\n\n")
+    out.append(
+        "/**\n * @file raw.ts\n * @brief GENERATED by tools/gen_bindings.py — do not edit.\n *\n"
+        " * Typed access to every exported OpenSWMM Engine C function. Pointers and\n"
+        " * handles are heap offsets (numbers); `const char*` inputs are JS strings\n"
+        " * (copied to a temporary C string per call; `null` passes NULL).\n"
+        " * Functions from the 2D headers throw when the module was built with\n"
+        " * -DOPENSWMM_WASM_2D=OFF.\n */\n\n"
+    )
+    out.append(
+        "/** Emscripten module surface the raw layer needs. */\n"
+        "export interface RawModule {\n"
+        "  cwrap(name: string, ret: string | null, args: string[]): (...a: unknown[]) => unknown;\n"
+        "  [exportName: `_${string}`]: unknown;\n"
+        "}\n\n"
+    )
     out.append("export interface RawApi {\n")
     for f in funcs:
-        args = ", ".join(f"{ts_param_name(p['name'], i)}: {ts_type(p['kind'], is_return=False)}"
-                         for i, p in enumerate(f["params"]))
-        out.append(f"  /** `{f['header']}` */\n  {f['name']}({args}): {ts_type(f['retKind'], is_return=True)};\n")
+        args = ", ".join(
+            f"{ts_param_name(p['name'], i)}: {ts_type(p['kind'], is_return=False)}"
+            for i, p in enumerate(f["params"])
+        )
+        out.append(
+            f"  /** `{f['header']}` */\n  {f['name']}({args}): {ts_type(f['retKind'], is_return=True)};\n"
+        )
     out.append("}\n\n")
-    out.append("/** Bind every C function on `mod`. Direct `_name` binding when no strings are involved. */\n"
-               "export function bindRaw(mod: RawModule): RawApi {\n"
-               "  const api: Record<string, unknown> = {};\n"
-               "  const bind = (name: string, ret: string | null, args: string[]): void => {\n"
-               "    if (ret !== \"string\" && !args.includes(\"string\")) {\n"
-               "      const fn = mod[`_${name}`];\n"
-               "      api[name] = typeof fn === \"function\" ? fn : () => {\n"
-               "        throw new Error(`openswmm wasm: export _${name} is not available in this module`);\n"
-               "      };\n"
-               "    } else {\n"
-               "      api[name] = mod.cwrap(name, ret, args);\n"
-               "    }\n"
-               "  };\n")
+    out.append(
+        "/** Bind every C function on `mod`. Direct `_name` binding when no strings are involved. */\n"
+        "export function bindRaw(mod: RawModule): RawApi {\n"
+        "  const api: Record<string, unknown> = {};\n"
+        "  const bind = (name: string, ret: string | null, args: string[]): void => {\n"
+        '    if (ret !== "string" && !args.includes("string")) {\n'
+        "      const fn = mod[`_${name}`];\n"
+        '      api[name] = typeof fn === "function" ? fn : () => {\n'
+        "        throw new Error(`openswmm wasm: export _${name} is not available in this module`);\n"
+        "      };\n"
+        "    } else {\n"
+        "      api[name] = mod.cwrap(name, ret, args);\n"
+        "    }\n"
+        "  };\n"
+    )
     for f in funcs:
         args = json.dumps([p["kind"] for p in f["params"]])
         ret = json.dumps(f["retKind"])
         out.append(f"  bind({json.dumps(f['name'])}, {ret}, {args});\n")
     out.append("  return api as unknown as RawApi;\n}\n\n")
-    out.append("/** wasm32 layouts of C structs passed through the API (byte offsets). */\n"
-               "export const STRUCTS = ")
-    out.append(json.dumps({k: {"size": v["size"], "fields": {fl["name"]: {"offset": fl["offset"], "type": fl["type"]}
-                                                             for fl in v["fields"]}}
-                           for k, v in structs.items()}, indent=2))
+    out.append(
+        "/** wasm32 layouts of C structs passed through the API (byte offsets). */\n"
+        "export const STRUCTS = "
+    )
+    out.append(
+        json.dumps(
+            {
+                k: {
+                    "size": v["size"],
+                    "fields": {
+                        fl["name"]: {
+                            "offset": fl["offset"],
+                            "type": fl["type"],
+                            **({"count": fl["count"]} if "count" in fl else {}),
+                        }
+                        for fl in v["fields"]
+                    },
+                }
+                for k, v in structs.items()
+            },
+            indent=2,
+        )
+    )
     out.append(" as const;\n\n")
-    out.append(f"/** Number of C functions in this layer. */\nexport const RAW_FUNCTION_COUNT = {len(funcs)};\n")
+    out.append(
+        "/** wasm32 `addFunction()` signatures of the C callback typedefs (openswmm_callbacks.h). */\n"
+        "export const CALLBACK_SIGNATURES = {\n"
+    )
+    for cb in callbacks:
+        ptypes = ", ".join(p["type"] for p in cb["params"]) or "void"
+        out.append(
+            f"  /** `{cb['ret']} (*)({ptypes})` */\n  {cb['name']}: {json.dumps(cb['signature'])},\n"
+        )
+    out.append("} as const;\n\n")
+    out.append(
+        f"/** Number of C functions in this layer. */\nexport const RAW_FUNCTION_COUNT = {len(funcs)};\n"
+    )
     return "".join(out)
 
 
-def emit_manifest(funcs, structs, excluded) -> str:
-    return json.dumps({"functions": {f["name"]: {"header": f["header"], "ret": f["ret"],
-                                                  "params": [[p["type"], p["name"]] for p in f["params"]]}
-                                     for f in funcs},
-                       "structs": structs,
-                       "excludedHeaders": sorted(EXCLUDED_HEADERS),
-                       "excludedFunctions": excluded}, indent=1) + "\n"
+def emit_manifest(funcs, structs, excluded, callbacks) -> str:
+    return (
+        json.dumps(
+            {
+                "functions": {
+                    f["name"]: {
+                        "header": f["header"],
+                        "ret": f["ret"],
+                        "params": [[p["type"], p["name"]] for p in f["params"]],
+                    }
+                    for f in funcs
+                },
+                "structs": structs,
+                "callbacks": {
+                    cb["name"]: {
+                        "ret": cb["ret"],
+                        "params": [[p["type"], p["name"]] for p in cb["params"]],
+                        "signature": cb["signature"],
+                    }
+                    for cb in callbacks
+                },
+                "excludedHeaders": sorted(EXCLUDED_HEADERS),
+                "excludedFunctions": excluded,
+                "optionalHeaders": {"2d": sorted(OPTIONAL_2D_HEADERS)},
+            },
+            indent=1,
+        )
+        + "\n"
+    )
 
 
-def emit_raw_check(funcs, structs) -> str:
-    out = ["// GENERATED by tools/gen_bindings.py — do not edit.\n"
-           "// Compiled natively by tools/host_shim/check.sh: every parsed prototype must\n"
-           "// match the real one (signature drift => compile error), and struct layouts\n"
-           "// must match the compiler's under a wasm32-like ABI check.\n"
-           "#include <type_traits>\n#include <cstddef>\n#include <cstdint>\n"
-           "#include \"openswmm/engine/openswmm_engine.h\"\n"]
-    for h in sorted({f["header"] for f in funcs} | {s["header"] for s in structs.values()}):
+def emit_raw_check(funcs, structs, callbacks) -> str:
+    out = [
+        "// GENERATED by tools/gen_bindings.py — do not edit.\n"
+        "// Compiled natively by tools/host_shim/check.sh: every parsed prototype must\n"
+        "// match the real one (signature drift => compile error), and struct layouts\n"
+        "// must match the compiler's under a wasm32-like ABI check.\n"
+        "#include <type_traits>\n#include <cstddef>\n#include <cstdint>\n"
+        '#include "openswmm/engine/openswmm_engine.h"\n'
+    ]
+    for h in sorted(
+        {f["header"] for f in funcs} | {s["header"] for s in structs.values()} | {CALLBACK_HEADER}
+    ):
         out.append(f'#include "openswmm/engine/{h}"\n')
     out.append("\n")
     for f in funcs:
         ptypes = ", ".join(p["type"] for p in f["params"]) or "void"
-        out.append(f"static_assert(std::is_same_v<decltype(&{f['name']}), {f['ret']} (*)({ptypes})>, "
-                   f"\"{f['name']}: prototype drift\");\n")
-    out.append("\n// Struct layouts are asserted only under a 32-bit-pointer ABI (the wasm32 model).\n"
-               "#if UINTPTR_MAX == 0xffffffffu\n")
+        out.append(
+            f"static_assert(std::is_same_v<decltype(&{f['name']}), {f['ret']} (*)({ptypes})>, "
+            f'"{f["name"]}: prototype drift");\n'
+        )
+    out.append(
+        "\n// Callback typedefs: the TS layer derives addFunction() signatures from these.\n"
+    )
+    for cb in callbacks:
+        ptypes = ", ".join(p["type"] for p in cb["params"]) or "void"
+        out.append(
+            f"static_assert(std::is_same_v<{cb['name']}, {cb['ret']} (*)({ptypes})>, "
+            f'"{cb["name"]}: callback typedef drift");\n'
+        )
+    out.append(
+        "\n// Struct layouts are asserted only under a 32-bit-pointer ABI (the wasm32 model).\n"
+        "#if UINTPTR_MAX == 0xffffffffu\n"
+    )
     for s, v in structs.items():
-        out.append(f"static_assert(sizeof({s}) == {v['size']}, \"{s}: size\");\n")
+        out.append(f'static_assert(sizeof({s}) == {v["size"]}, "{s}: size");\n')
         for fl in v["fields"]:
-            out.append(f"static_assert(offsetof({s}, {fl['name']}) == {fl['offset']}, \"{s}.{fl['name']}: offset\");\n")
+            out.append(
+                f'static_assert(offsetof({s}, {fl["name"]}) == {fl["offset"]}, "{s}.{fl["name"]}: offset");\n'
+            )
     out.append("#endif\n")
     return "".join(out)
 
@@ -262,8 +477,10 @@ def emit_enums(engine_root: Path) -> str:
     """Read numeric Python enum declarations without importing native modules."""
     source = engine_root / "python/openswmm/engine/_enums.py"
     tree = ast.parse(source.read_text(encoding="utf-8"))
-    out = ["// GENERATED by tools/gen_bindings.py from the pinned engine's Python enums.\n",
-           "// Selectors for disabled features are constants, not an availability guarantee.\n\n"]
+    out = [
+        "// GENERATED by tools/gen_bindings.py from the pinned engine's Python enums.\n",
+        "// Selectors for disabled features are constants, not an availability guarantee.\n\n",
+    ]
     for node in tree.body:
         if not isinstance(node, ast.ClassDef):
             continue
@@ -296,12 +513,14 @@ def main() -> int:
 
     funcs, excluded = parse_headers(header_dir)
     structs = parse_structs(header_dir)
+    callbacks = parse_callbacks(header_dir)
     outputs = {
         ROOT / "src/bindings/exported_functions.json": emit_exported(funcs),
-        ROOT / "src/js/raw.ts": emit_raw_ts(funcs, structs),
+        ROOT / "src/bindings/exported_functions.no2d.json": emit_exported(funcs, with_2d=False),
+        ROOT / "src/js/raw.ts": emit_raw_ts(funcs, structs, callbacks),
         ROOT / "src/js/enums.ts": emit_enums(Path(a.engine_root)),
-        ROOT / "src/js/raw.manifest.json": emit_manifest(funcs, structs, excluded),
-        ROOT / "tools/host_shim/raw_check.cpp": emit_raw_check(funcs, structs),
+        ROOT / "src/js/raw.manifest.json": emit_manifest(funcs, structs, excluded, callbacks),
+        ROOT / "tools/host_shim/raw_check.cpp": emit_raw_check(funcs, structs, callbacks),
     }
     stale = []
     for path, content in outputs.items():
@@ -313,14 +532,19 @@ def main() -> int:
             path.write_text(content, encoding="utf-8", newline="\n")
     if a.check:
         if stale:
-            print("gen_bindings: outputs out of date, run `npm run gen`: " + ", ".join(map(str, stale)))
+            print(
+                "gen_bindings: outputs out of date, run `npm run gen`: "
+                + ", ".join(map(str, stale))
+            )
             return 1
         print(f"gen_bindings: up to date ({len(funcs)} functions, {len(structs)} structs)")
         return 0
     by_header = {}
     for f in funcs:
         by_header[f["header"]] = by_header.get(f["header"], 0) + 1
-    print(f"gen_bindings: {len(funcs)} functions from {len(by_header)} headers, {len(structs)} structs")
+    print(
+        f"gen_bindings: {len(funcs)} functions from {len(by_header)} headers, {len(structs)} structs"
+    )
     return 0
 
 

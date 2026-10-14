@@ -14,7 +14,7 @@
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
- * @license  MIT
+ * @license  Apache-2.0
  */
 
 import { ForcingMode, ForcingTarget } from "./enums.js";
@@ -67,8 +67,11 @@ export class Forcing {
   private readonly _engine: number;
 
   /** @internal */
-  constructor(mod: OpenSwmmWasmModule, engine: number,
-    private readonly _checkOwner: () => void = () => {}) {
+  constructor(
+    mod: OpenSwmmWasmModule,
+    engine: number,
+    private readonly _checkOwner: () => void = () => {},
+  ) {
     this._mod = mod;
     this._raw = guardedRaw(mod, this._checkOwner);
     this._engine = engine;
@@ -112,7 +115,13 @@ export class Forcing {
     persist = false,
   ): void {
     raiseForCode(
-      this._raw.swmm_forcing_node_head_boundary(this._engine, nodeIdx, value, mode, persist ? 1 : 0),
+      this._raw.swmm_forcing_node_head_boundary(
+        this._engine,
+        nodeIdx,
+        value,
+        mode,
+        persist ? 1 : 0,
+      ),
     );
   }
 
@@ -226,17 +235,22 @@ export class Forcing {
   }
   /** Node temperature: REPLACE in °C; ADD in °C·ft³/s. Requires heat transport. Indices are zero-based; RESET by default. */
   nodeTemperature(index: number, value: number, mode = ForcingMode.REPLACE, persist = false): void {
-    raiseForCode(this._raw.swmm_forcing_node_temperature(this._engine, index, value, mode, persist ? 1 : 0));
+    raiseForCode(
+      this._raw.swmm_forcing_node_temperature(this._engine, index, value, mode, persist ? 1 : 0),
+    );
   }
 
   /** Node age: REPLACE in hours; ADD in hours·ft³/s. Requires water age. Indices are zero-based; RESET by default. */
   nodeAge(index: number, value: number, mode = ForcingMode.REPLACE, persist = false): void {
-    raiseForCode(this._raw.swmm_forcing_node_age(this._engine, index, value, mode, persist ? 1 : 0));
+    raiseForCode(
+      this._raw.swmm_forcing_node_age(this._engine, index, value, mode, persist ? 1 : 0),
+    );
   }
 
   /** Link seepage override in internal flow units (ft³/s). Indices are zero-based; RESET by default. */
   linkSeepage(index: number, value: number, mode = ForcingMode.REPLACE, persist = false): void {
-    raiseForCode(this._raw.swmm_forcing_link_seepage(this._engine, index, value, mode, persist ? 1 : 0));
+    raiseForCode(
+      this._raw.swmm_forcing_link_seepage(this._engine, index, value, mode, persist ? 1 : 0),
+    );
   }
-
 }

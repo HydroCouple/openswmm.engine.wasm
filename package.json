@@ -1,13 +1,13 @@
 {
   "name": "@hydrocouple/openswmm-engine-wasm",
-  "version": "6.0.0-dev.0",
-  "description": "WebAssembly bindings for the OpenSWMM Engine C++ API \u2014 mirrors the openswmm.engine Python bindings surface.",
-  "license": "MIT",
+  "version": "6.0.0-alpha.4.dev.2",
+  "description": "WebAssembly bindings for the OpenSWMM Engine C++ API — mirrors the openswmm.engine Python bindings surface.",
+  "license": "Apache-2.0",
   "author": "Caleb Buahin <caleb.buahin@gmail.com>",
   "homepage": "https://github.com/HydroCouple/openswmm.engine.wasm",
   "repository": {
     "type": "git",
-    "url": "https://github.com/HydroCouple/openswmm.engine.wasm.git"
+    "url": "git+https://github.com/HydroCouple/openswmm.engine.wasm.git"
   },
   "bugs": {
     "url": "https://github.com/HydroCouple/openswmm.engine.wasm/issues"
@@ -42,8 +42,11 @@
   "files": [
     "dist/",
     "src/",
+    "examples/",
     "README.md",
-    "LICENSE"
+    "CHANGELOG.md",
+    "LICENSE",
+    "NOTICE"
   ],
   "scripts": {
     "gen": "python3 tools/gen_bindings.py",
@@ -52,24 +55,35 @@
     "build:ts": "tsc --project tsconfig.json",
     "build": "npm run build:ts",
     "test": "vitest run",
-    "smoke": "node tests/smoke/smoke.mjs",
+    "smoke": "node tests/smoke/smoke.mjs && node tests/smoke/smoke2d.mjs && node examples/trivial_2d.mjs",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage",
-    "lint": "eslint 'src/**/*.ts' 'tests/**/*.ts'",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "check:bindings": "bash tools/host_shim/check.sh"
+    "check:bindings": "bash tools/host_shim/check.sh",
+    "prepublishOnly": "node -e \"for (const f of ['dist/openswmm_engine.wasm','dist/openswmm_engine.js','dist/index.js']) require('fs').accessSync(f)\"",
+    "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint:py": "ruff check tools && ruff format --check tools",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run lint:py && npm test"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "devDependencies": {
+    "@eslint/js": "9.39.5",
     "@types/node": "^22.0.0",
-    "@typescript-eslint/eslint-plugin": "^8.0.0",
-    "@typescript-eslint/parser": "^8.0.0",
     "@vitest/coverage-v8": "^3.2.7",
-    "eslint": "^9.0.0",
+    "eslint": "9.39.5",
+    "globals": "17.13.0",
+    "prettier": "3.9.10",
     "typescript": "^5.5.0",
+    "typescript-eslint": "8.71.1",
     "vitest": "^3.2.7"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   },
   "sideEffects": false
 }

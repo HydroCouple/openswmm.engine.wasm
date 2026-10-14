@@ -1,0 +1,267 @@
+name: Release
+
+# Pushing a tag v<package.json version> (e.g. v6.0.0-alpha.4.dev.2) builds and
+# tests the module, creates the GitHub Release with the package tarball, a
+# bundler-free browser zip and SHA256SUMS, and publishes the same tarball to
+# npm (registry.npmjs.org) and to GitHub Packages (npm.pkg.github.com).
+# The version must carry the pinned engine's Python bindings qualifier
+# (python/pyproject.toml 6.0.0a4.dev2 -> 6.0.0-alpha.4.dev.2;
+# tools/check_version.py). Dist-tags: dev-qualified -> "dev", other
+# pre-releases -> "next", finals -> "latest".
+#
+# npm authentication: trusted publishing (OIDC) once configured for the
+# package on npmjs.com (workflow file "release.yml", environment "npm");
+# otherwise the NPM_TOKEN secret of the "npm" environment. The first publish
+# of a new package needs the token. See RELEASING.md.
+#
+# Run it by hand (Actions → Release → Run workflow) for a dry run: the full
+# build and tests, then `npm publish --dry-run` to both registries and no
+# GitHub Release. Unchecking "Dry run" publishes for real and is accepted only
+# on the release tag (to retry a failed release).
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Dry run (npm publish --dry-run; nothing is published)"
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Build the WASM module and the TypeScript layer, run every test tier, and
+  # pack the exact files that will be published.
+  # ---------------------------------------------------------------------------
+  build:
+    name: Build, test and pack
+    runs-on: ubuntu-latest
+    container:
+      # Same toolchain as build.yml.
+      image: emscripten/emsdk:6.0.9
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      dist_tag: ${{ steps.version.outputs.dist_tag }}
+      tarball: ${{ steps.pack.outputs.tarball }}
+      dry_run: ${{ steps.version.outputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          submodules: recursive
+
+      - name: Version gate
+        id: version
+        shell: bash
+        env:
+          EVENT: ${{ github.event_name }}
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          DRY_INPUT: ${{ inputs.dry_run }}
+        run: |
+          version=$(node -p "require('./package.json').version")
+          dry_run=false
+          [ "$EVENT" = "workflow_dispatch" ] && [ "$DRY_INPUT" = "true" ] && dry_run=true
+          if [ "$dry_run" = "true" ]; then
+            python3 tools/check_version.py
+          else
+            # A real publish runs only from the matching tag (tag push, or a
+            # manual retry started on the tag).
+            if [ "$REF_TYPE" != "tag" ]; then
+              echo "::error::A real publish must run on tag v$version, not $REF_TYPE $REF_NAME; use Dry run otherwise"
+              exit 1
+            fi
+            python3 tools/check_version.py --tag "$REF_NAME"
+          fi
+          # Dev builds (the Python .devN qualifier) get their own dist-tag:
+          # SemVer sorts 6.0.0-alpha.4.dev.2 AFTER 6.0.0-alpha.4 (PEP 440 sorts
+          # it before), so they must never become "next" or "latest".
+          case "$version" in
+            *.dev.*|*-dev.*) dist_tag=dev ;;
+            *-*)             dist_tag=next ;;
+            *)               dist_tag=latest ;;
+          esac
+          {
+            echo "version=$version"
+            echo "dist_tag=$dist_tag"
+            echo "dry_run=$dry_run"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generated binding drift
+        run: python3 tools/gen_bindings.py --check
+
+      - name: Struct layouts under the wasm32 ABI
+        run: |
+          E=extern/openswmm.engine
+          em++ -std=c++20 -fsyntax-only -DOPENSWMM_ENGINE_STATIC -Itools/host_shim \
+            -I$E/include -I$E/include/openswmm/engine -I$E/include/openswmm/plugin_sdk \
+            tools/host_shim/raw_check.cpp
+
+      - name: Configure (emcmake)
+        run: emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release
+
+      # Bound compiler concurrency to avoid exhausting hosted-runner memory.
+      - name: Build WASM module
+        run: cmake --build build --parallel 2
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type-check, lint, unit tests, TypeScript build
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run format:check
+          npm test
+          npm run build
+
+      - name: Smoke tests (1D and 2D, Node)
+        run: npm run smoke
+
+      - name: Pack
+        id: pack
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          mkdir -p release
+          tarball=$(npm pack --pack-destination release --silent | tail -n 1)
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+          # The tarball must carry the module, the glue and the typed wrappers.
+          listing=$(tar -tzf "release/$tarball")
+          for f in dist/openswmm_engine.wasm dist/openswmm_engine.js dist/index.js dist/index.d.ts \
+                   dist/raw.js dist/raw.d.ts package.json README.md CHANGELOG.md LICENSE NOTICE; do
+            grep -Fx "package/$f" <<<"$listing" >/dev/null || { echo "::error::$f missing from $tarball"; exit 1; }
+          done
+          # Bundler-free browser bundle: the ES module glue, the .wasm and the
+          # compiled wrappers, loadable straight from a static server.
+          zip_dir="openswmm-engine-wasm-$VERSION"
+          mkdir -p "release/$zip_dir"
+          cp -R dist/. "release/$zip_dir/"
+          cp README.md LICENSE NOTICE "release/$zip_dir/"
+          (cd release && python3 -m zipfile -c "$zip_dir-browser.zip" "$zip_dir" && rm -rf "$zip_dir")
+          (cd release && sha256sum "$tarball" "$zip_dir-browser.zip" > SHA256SUMS)
+          {
+            echo "### $tarball"
+            echo
+            echo "| file | size |"
+            echo "|---|---|"
+            tar -tvzf "release/$tarball" | awk '$6 ~ /\.(wasm|js)$/ && $6 ~ /openswmm_engine|index/ {printf "| `%s` | %.2f MB |\n", $6, $3/1048576}'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v5
+        with:
+          name: release-files
+          path: release/
+          if-no-files-found: error
+          retention-days: 30
+
+  # ---------------------------------------------------------------------------
+  # GitHub Release with the tarball, the browser zip and checksums.
+  # ---------------------------------------------------------------------------
+  github-release:
+    name: GitHub Release
+    needs: build
+    if: needs.build.outputs.dry_run != 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: release-files
+          path: release
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.build.outputs.version }}
+          prerelease: ${{ needs.build.outputs.dist_tag != 'latest' }}
+          generate_release_notes: true
+          files: release/*
+
+  # ---------------------------------------------------------------------------
+  # npm. Publishes on a GitHub-hosted runner: trusted publishing does not
+  # support containers or self-hosted runners.
+  # ---------------------------------------------------------------------------
+  publish-npm:
+    name: Publish to npm
+    needs: build
+    runs-on: ubuntu-latest
+    environment: npm
+    permissions:
+      contents: read
+      id-token: write # npm trusted publishing and provenance
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: release-files
+          path: release
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          registry-url: "https://registry.npmjs.org"
+
+      - name: npm with trusted-publishing support (>= 11.5.1)
+        run: npm install -g npm@^11.5.1
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          VERSION: ${{ needs.build.outputs.version }}
+          TARBALL: ${{ needs.build.outputs.tarball }}
+          DIST_TAG: ${{ needs.build.outputs.dist_tag }}
+          DRY_RUN: ${{ needs.build.outputs.dry_run }}
+          PRIVATE_REPO: ${{ github.event.repository.private }}
+        run: |
+          args=(--access public --tag "$DIST_TAG")
+          [ "$PRIVATE_REPO" = "false" ] && args+=(--provenance)
+          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          echo "npm publish release/$TARBALL ${args[*]}"
+          npm publish "./release/$TARBALL" "${args[@]}"
+          if [ "$DRY_RUN" = "true" ]; then what="Dry run for"; else what="Published"; fi
+          echo "$what \`@hydrocouple/openswmm-engine-wasm@$VERSION\` on npm with dist-tag \`$DIST_TAG\`" >> "$GITHUB_STEP_SUMMARY"
+
+  # ---------------------------------------------------------------------------
+  # GitHub Packages mirror of the same tarball (GITHUB_TOKEN only).
+  # ---------------------------------------------------------------------------
+  publish-github-packages:
+    name: Publish to GitHub Packages
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/download-artifact@v5
+        with:
+          name: release-files
+          path: release
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "24"
+          registry-url: "https://npm.pkg.github.com"
+          scope: "@hydrocouple"
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+          TARBALL: ${{ needs.build.outputs.tarball }}
+          DIST_TAG: ${{ needs.build.outputs.dist_tag }}
+          DRY_RUN: ${{ needs.build.outputs.dry_run }}
+        run: |
+          args=(--registry https://npm.pkg.github.com --tag "$DIST_TAG")
+          [ "$DRY_RUN" = "true" ] && args+=(--dry-run)
+          echo "npm publish release/$TARBALL ${args[*]}"
+          npm publish "./release/$TARBALL" "${args[@]}"
+          if [ "$DRY_RUN" = "true" ]; then what="Dry run for"; else what="Published"; fi
+          echo "$what \`@hydrocouple/openswmm-engine-wasm@$VERSION\` on GitHub Packages with dist-tag \`$DIST_TAG\`" >> "$GITHUB_STEP_SUMMARY"

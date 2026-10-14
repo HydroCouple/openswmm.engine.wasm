@@ -6,7 +6,7 @@
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
- * @license  MIT
+ * @license  Apache-2.0
  */
 
 import { GageDataSource, GageRainType } from "./enums.js";
@@ -192,10 +192,15 @@ export class Gages implements Iterable<Gage> {
 
   /** @internal */
   /** @internal Check the owner before touching native memory. */
-  assertAlive(): void { this._checkOwner(); }
+  assertAlive(): void {
+    this._checkOwner();
+  }
 
-  constructor(mod: OpenSwmmWasmModule, engine: number,
-    private readonly _checkOwner: () => void = () => {}) {
+  constructor(
+    mod: OpenSwmmWasmModule,
+    engine: number,
+    private readonly _checkOwner: () => void = () => {},
+  ) {
     this._mod = mod;
     this._raw = guardedRaw(mod, this._checkOwner);
     this._engine = engine;

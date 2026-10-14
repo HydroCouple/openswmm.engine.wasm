@@ -28,7 +28,7 @@
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
- * @license  MIT
+ * @license  Apache-2.0
  */
 
 // ---------------------------------------------------------------------------
@@ -96,7 +96,29 @@ export { oadateToDate, dateToOadate } from "./types.js";
 // ---------------------------------------------------------------------------
 export { bindRaw, STRUCTS, RAW_FUNCTION_COUNT } from "./raw.js";
 export type { RawApi, RawModule } from "./raw.js";
-export { rawOf, withCString, withDouble, withInt, withDoubleArray, withDoubleInput } from "./mem.js";
+export {
+  rawOf,
+  withCString,
+  withDouble,
+  withInt,
+  withDoubleArray,
+  withDoubleInput,
+} from "./mem.js";
 
 export { Transport } from "./Transport.js";
 export type { TransportRow, ConduitDispersion } from "./Transport.js";
+
+// ---------------------------------------------------------------------------
+// 2D surface routing (solver.surface2d)
+// ---------------------------------------------------------------------------
+export { Surface2D, Infiltration2D } from "./Surface2D.js";
+export type {
+  SurfaceForcingOptions,
+  TriangleCouplingRow,
+  RainfallWeights,
+  EdgeGeometry,
+  MassBalance2D,
+  RunStats2D,
+  Infil2DRow,
+  Infil2DCell,
+} from "./Surface2D.js";

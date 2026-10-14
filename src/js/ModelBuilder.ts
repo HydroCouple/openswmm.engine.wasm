@@ -39,7 +39,7 @@
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
- * @license  MIT
+ * @license  Apache-2.0
  */
 
 import { StaleObjectError, EngineError, raiseForCode, CRSError } from "./errors.js";
@@ -47,8 +47,6 @@ import { Nodes } from "./Nodes.js";
 import { Links } from "./Links.js";
 import { Subcatchments } from "./Subcatchments.js";
 import { Gages } from "./Gages.js";
-import { Controls } from "./Controls.js";
-import { Forcing } from "./Forcing.js";
 import { Transport } from "./Transport.js";
 import { Solver } from "./Solver.js";
 import { type OpenSwmmWasmModule, oadateToDate, dateToOadate } from "./types.js";
@@ -56,9 +54,9 @@ import type { RawApi } from "./raw.js";
 import { rawOf, withCString } from "./mem.js";
 
 // Buffer sizes used when reading variable-length strings from the engine.
-const BUF_SMALL  = 256;
+const BUF_SMALL = 256;
 const BUF_MEDIUM = 1024;
-const BUF_LARGE  = 4096;
+const BUF_LARGE = 4096;
 
 // =============================================================================
 // UserFlagDef
@@ -403,14 +401,7 @@ export class ModelBuilder {
    * @param geom4  Quaternary geometry parameter (default `0`).
    * @throws {@link EngineError} on failure.
    */
-  setLinkXsect(
-    idx: number,
-    shape: number,
-    geom1: number,
-    geom2 = 0,
-    geom3 = 0,
-    geom4 = 0,
-  ): void {
+  setLinkXsect(idx: number, shape: number, geom1: number, geom2 = 0, geom3 = 0, geom4 = 0): void {
     this._assertValid();
     raiseForCode(
       this._raw.swmm_link_set_xsect(this._handle, idx, shape, geom1, geom2, geom3, geom4),
@@ -777,15 +768,18 @@ export class ModelBuilder {
     try {
       raiseForCode(
         this._raw.swmm_userflag_def_get(
-          this._handle, index,
-          nameBuf, BUF_SMALL,
+          this._handle,
+          index,
+          nameBuf,
+          BUF_SMALL,
           typePtr,
-          descBuf, BUF_MEDIUM,
+          descBuf,
+          BUF_MEDIUM,
         ),
       );
       return {
-        name:        this._mod.UTF8ToString(nameBuf),
-        type:        this._mod.getValue(typePtr, "i32"),
+        name: this._mod.UTF8ToString(nameBuf),
+        type: this._mod.getValue(typePtr, "i32"),
         description: this._mod.UTF8ToString(descBuf),
       };
     } finally {
@@ -830,18 +824,20 @@ export class ModelBuilder {
    * @param flagName  Flag name (case-insensitive).
    * @throws {@link EngineError} on failure.
    */
-  getUserflagValue(
-    objType: string,
-    objName: string,
-    flagName: string,
-  ): string | undefined {
+  getUserflagValue(objType: string, objName: string, flagName: string): string | undefined {
     this._assertValid();
-    const buf      = this._mod._malloc(BUF_MEDIUM);
+    const buf = this._mod._malloc(BUF_MEDIUM);
     const foundPtr = this._mod._malloc(4);
     try {
       raiseForCode(
         this._raw.swmm_userflag_value_get(
-          this._handle, objType, objName, flagName, buf, BUF_MEDIUM, foundPtr,
+          this._handle,
+          objType,
+          objName,
+          flagName,
+          buf,
+          BUF_MEDIUM,
+          foundPtr,
         ),
       );
       const found = this._mod.getValue(foundPtr, "i32");
@@ -857,12 +853,7 @@ export class ModelBuilder {
    *
    * @throws {@link EngineError} on undefined flag, unparseable value, or failure.
    */
-  setUserflagValue(
-    objType: string,
-    objName: string,
-    flagName: string,
-    value: string,
-  ): void {
+  setUserflagValue(objType: string, objName: string, flagName: string, value: string): void {
     this._assertValid();
     raiseForCode(
       this._raw.swmm_userflag_value_set(this._handle, objType, objName, flagName, value),
@@ -876,9 +867,7 @@ export class ModelBuilder {
    */
   clearUserflagValue(objType: string, objName: string, flagName: string): void {
     this._assertValid();
-    raiseForCode(
-      this._raw.swmm_userflag_value_clear(this._handle, objType, objName, flagName),
-    );
+    raiseForCode(this._raw.swmm_userflag_value_clear(this._handle, objType, objName, flagName));
   }
 
   // -------------------------------------------------------------------------
@@ -911,11 +900,7 @@ export class ModelBuilder {
     const argsBuf = this._mod._malloc(BUF_MEDIUM);
     try {
       raiseForCode(
-        this._raw.swmm_plugin_get(
-          this._handle, idx,
-          pathBuf, BUF_MEDIUM,
-          argsBuf, BUF_MEDIUM,
-        ),
+        this._raw.swmm_plugin_get(this._handle, idx, pathBuf, BUF_MEDIUM, argsBuf, BUF_MEDIUM),
       );
       return {
         path: this._mod.UTF8ToString(pathBuf),
@@ -991,14 +976,18 @@ export class ModelBuilder {
    */
   filePathGet(role: number, owner = ""): FilePaths {
     this._assertValid();
-    const absBuf  = this._mod._malloc(BUF_LARGE);
+    const absBuf = this._mod._malloc(BUF_LARGE);
     const origBuf = this._mod._malloc(BUF_LARGE);
     try {
       raiseForCode(
         this._raw.swmm_file_path_get(
-          this._handle, role, owner,
-          absBuf, BUF_LARGE,
-          origBuf, BUF_LARGE,
+          this._handle,
+          role,
+          owner,
+          absBuf,
+          BUF_LARGE,
+          origBuf,
+          BUF_LARGE,
         ),
       );
       return {
