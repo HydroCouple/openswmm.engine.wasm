@@ -8,7 +8,7 @@
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
- * @license  MIT
+ * @license  Apache-2.0
  */
 
 import { LinkType } from "./enums.js";
@@ -286,10 +286,15 @@ export class Links implements Iterable<Link> {
 
   /** @internal */
   /** @internal Check the owner before touching native memory. */
-  assertAlive(): void { this._checkOwner(); }
+  assertAlive(): void {
+    this._checkOwner();
+  }
 
-  constructor(mod: OpenSwmmWasmModule, engine: number,
-    private readonly _checkOwner: () => void = () => {}) {
+  constructor(
+    mod: OpenSwmmWasmModule,
+    engine: number,
+    private readonly _checkOwner: () => void = () => {},
+  ) {
     this._mod = mod;
     this._raw = guardedRaw(mod, this._checkOwner);
     this._engine = engine;
@@ -317,7 +322,10 @@ export class Links implements Iterable<Link> {
     }
     const count = this.length;
     if (indexOrId < 0 || indexOrId >= count) {
-      throw new ElementNotFoundError(indexOrId, `Link index ${indexOrId} out of range [0, ${count})`);
+      throw new ElementNotFoundError(
+        indexOrId,
+        `Link index ${indexOrId} out of range [0, ${count})`,
+      );
     }
     return new Link(this._mod, this._engine, this, this.generation, indexOrId);
   }

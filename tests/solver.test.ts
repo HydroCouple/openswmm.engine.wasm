@@ -11,7 +11,7 @@
  *
  * @author   Caleb Buahin <caleb.buahin@gmail.com>
  * @copyright Copyright (c) 2026 Caleb Buahin. All rights reserved.
- * @license  MIT
+ * @license  Apache-2.0
  */
 
 import { describe, it, expect } from "vitest";
@@ -316,7 +316,7 @@ function makeMockModule(): OpenSwmmWasmModule {
       mkdir: () => {},
       writeFile: () => {},
       readFile: (path: string, opts?: unknown) => {
-        if (opts && (opts as {encoding: string}).encoding === "utf8") return "";
+        if (opts && (opts as { encoding: string }).encoding === "utf8") return "";
         return new Uint8Array(0);
       },
       unlink: () => {},
@@ -351,82 +351,217 @@ function makeMockModule(): OpenSwmmWasmModule {
     _swmm_error_message: (code: number) => `Error ${code}`,
     _swmm_get_error_count: () => 0,
     _swmm_get_warning_count: () => 0,
-    _swmm_get_start_time: (h: number, ptr: number) => { heap[ptr] = 45296.0; return 0; },
-    _swmm_get_end_time: (h: number, ptr: number) => { heap[ptr] = 45297.0; return 0; },
-    _swmm_get_current_time: (h: number, ptr: number) => { heap[ptr] = 45296.5; return 0; },
-    _swmm_get_routing_step: (h: number, ptr: number) => { heap[ptr] = 300; return 0; },
-    _swmm_get_flow_units: (h: number, ptr: number) => { heap[ptr] = FlowUnits.CMS; return 0; },
-    _swmm_get_unit_system: (h: number, ptr: number) => { heap[ptr] = 1; return 0; },
+    _swmm_get_start_time: (h: number, ptr: number) => {
+      heap[ptr] = 45296.0;
+      return 0;
+    },
+    _swmm_get_end_time: (h: number, ptr: number) => {
+      heap[ptr] = 45297.0;
+      return 0;
+    },
+    _swmm_get_current_time: (h: number, ptr: number) => {
+      heap[ptr] = 45296.5;
+      return 0;
+    },
+    _swmm_get_routing_step: (h: number, ptr: number) => {
+      heap[ptr] = 300;
+      return 0;
+    },
+    _swmm_get_flow_units: (h: number, ptr: number) => {
+      heap[ptr] = FlowUnits.CMS;
+      return 0;
+    },
+    _swmm_get_unit_system: (h: number, ptr: number) => {
+      heap[ptr] = 1;
+      return 0;
+    },
 
     // Nodes
     _swmm_node_count: () => 3,
-    _swmm_node_index: (h: number, id: string) => id === "J1" ? 0 : id === "J2" ? 1 : -1,
+    _swmm_node_index: (h: number, id: string) => (id === "J1" ? 0 : id === "J2" ? 1 : -1),
     _swmm_node_id: (h: number, idx: number) => ["J1", "J2", "OUT"][idx] ?? "",
-    _swmm_node_get_type: (h: number, i: number, ptr: number) => { heap[ptr] = NodeType.JUNCTION; return 0; },
-    _swmm_node_get_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 1.5; return 0; },
+    _swmm_node_get_type: (h: number, i: number, ptr: number) => {
+      heap[ptr] = NodeType.JUNCTION;
+      return 0;
+    },
+    _swmm_node_get_depth: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 1.5;
+      return 0;
+    },
     _swmm_node_set_depth: () => 0,
-    _swmm_node_get_head: (h: number, i: number, ptr: number) => { heap[ptr] = 10.5; return 0; },
-    _swmm_node_get_volume: (h: number, i: number, ptr: number) => { heap[ptr] = 5.0; return 0; },
-    _swmm_node_get_lateral_inflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.1; return 0; },
+    _swmm_node_get_head: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 10.5;
+      return 0;
+    },
+    _swmm_node_get_volume: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 5.0;
+      return 0;
+    },
+    _swmm_node_get_lateral_inflow: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.1;
+      return 0;
+    },
     _swmm_node_set_lateral_inflow: () => 0,
-    _swmm_node_get_overflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.0; return 0; },
-    _swmm_node_get_inflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.2; return 0; },
-    _swmm_node_get_losses: (h: number, i: number, ptr: number) => { heap[ptr] = 0.0; return 0; },
-    _swmm_node_get_outflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.2; return 0; },
-    _swmm_node_get_invert_elev: (h: number, i: number, ptr: number) => { heap[ptr] = 9.0; return 0; },
+    _swmm_node_get_overflow: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.0;
+      return 0;
+    },
+    _swmm_node_get_inflow: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.2;
+      return 0;
+    },
+    _swmm_node_get_losses: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.0;
+      return 0;
+    },
+    _swmm_node_get_outflow: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.2;
+      return 0;
+    },
+    _swmm_node_get_invert_elev: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 9.0;
+      return 0;
+    },
     _swmm_node_set_invert_elev: () => 0,
-    _swmm_node_get_max_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 3.0; return 0; },
+    _swmm_node_get_max_depth: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 3.0;
+      return 0;
+    },
     _swmm_node_set_max_depth: () => 0,
     _swmm_node_set_head_boundary: () => 0,
-    _swmm_node_get_stat_max_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 2.0; return 0; },
-    _swmm_node_get_stat_max_overflow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.5; return 0; },
-    _swmm_node_get_stat_vol_flooded: (h: number, i: number, ptr: number) => { heap[ptr] = 100.0; return 0; },
-    _swmm_node_get_stat_time_flooded: (h: number, i: number, ptr: number) => { heap[ptr] = 3600.0; return 0; },
+    _swmm_node_get_stat_max_depth: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 2.0;
+      return 0;
+    },
+    _swmm_node_get_stat_max_overflow: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.5;
+      return 0;
+    },
+    _swmm_node_get_stat_vol_flooded: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 100.0;
+      return 0;
+    },
+    _swmm_node_get_stat_time_flooded: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 3600.0;
+      return 0;
+    },
 
     // Links
     _swmm_link_count: () => 2,
-    _swmm_link_index: (h: number, id: string) => id === "C1" ? 0 : id === "C2" ? 1 : -1,
+    _swmm_link_index: (h: number, id: string) => (id === "C1" ? 0 : id === "C2" ? 1 : -1),
     _swmm_link_id: (h: number, idx: number) => ["C1", "C2"][idx] ?? "",
-    _swmm_link_get_type: (h: number, i: number, ptr: number) => { heap[ptr] = LinkType.CONDUIT; return 0; },
-    _swmm_link_get_flow: (h: number, i: number, ptr: number) => { heap[ptr] = 0.3; return 0; },
+    _swmm_link_get_type: (h: number, i: number, ptr: number) => {
+      heap[ptr] = LinkType.CONDUIT;
+      return 0;
+    },
+    _swmm_link_get_flow: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.3;
+      return 0;
+    },
     _swmm_link_set_flow: () => 0,
-    _swmm_link_get_depth: (h: number, i: number, ptr: number) => { heap[ptr] = 0.5; return 0; },
-    _swmm_link_get_velocity: (h: number, i: number, ptr: number) => { heap[ptr] = 1.2; return 0; },
-    _swmm_link_get_capacity: (h: number, i: number, ptr: number) => { heap[ptr] = 0.6; return 0; },
-    _swmm_link_get_volume: (h: number, i: number, ptr: number) => { heap[ptr] = 10.0; return 0; },
-    _swmm_link_get_control_setting: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_link_get_depth: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.5;
+      return 0;
+    },
+    _swmm_link_get_velocity: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 1.2;
+      return 0;
+    },
+    _swmm_link_get_capacity: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.6;
+      return 0;
+    },
+    _swmm_link_get_volume: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 10.0;
+      return 0;
+    },
+    _swmm_link_get_control_setting: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 1.0;
+      return 0;
+    },
     _swmm_link_set_control_setting: () => 0,
-    _swmm_link_get_target_setting: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_link_get_target_setting: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 1.0;
+      return 0;
+    },
     _swmm_link_set_target_setting: () => 0,
-    _swmm_link_get_closed: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
+    _swmm_link_get_closed: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0;
+      return 0;
+    },
     _swmm_link_set_closed: () => 0,
-    _swmm_link_get_from_node: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    _swmm_link_get_to_node: (h: number, i: number, ptr: number) => { heap[ptr] = 1; return 0; },
+    _swmm_link_get_from_node: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0;
+      return 0;
+    },
+    _swmm_link_get_to_node: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 1;
+      return 0;
+    },
 
     // Subcatchments
     _swmm_subcatch_count: () => 1,
-    _swmm_subcatch_index: (h: number, id: string) => id === "S1" ? 0 : -1,
-    _swmm_subcatch_id: (h: number, idx: number) => idx === 0 ? "S1" : "",
-    _swmm_subcatch_get_runoff: (h: number, i: number, ptr: number) => { heap[ptr] = 0.05; return 0; },
-    _swmm_subcatch_get_area: (h: number, i: number, ptr: number) => { heap[ptr] = 10.0; return 0; },
-    _swmm_subcatch_get_imperv_pct: (h: number, i: number, ptr: number) => { heap[ptr] = 50.0; return 0; },
-    _swmm_subcatch_get_width: (h: number, i: number, ptr: number) => { heap[ptr] = 100.0; return 0; },
-    _swmm_subcatch_get_slope: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
-    _swmm_subcatch_get_outlet: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    _swmm_subcatch_get_gage: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
+    _swmm_subcatch_index: (h: number, id: string) => (id === "S1" ? 0 : -1),
+    _swmm_subcatch_id: (h: number, idx: number) => (idx === 0 ? "S1" : ""),
+    _swmm_subcatch_get_runoff: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0.05;
+      return 0;
+    },
+    _swmm_subcatch_get_area: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 10.0;
+      return 0;
+    },
+    _swmm_subcatch_get_imperv_pct: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 50.0;
+      return 0;
+    },
+    _swmm_subcatch_get_width: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 100.0;
+      return 0;
+    },
+    _swmm_subcatch_get_slope: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 1.0;
+      return 0;
+    },
+    _swmm_subcatch_get_outlet: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0;
+      return 0;
+    },
+    _swmm_subcatch_get_gage: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0;
+      return 0;
+    },
 
     // Gages
     _swmm_gage_count: () => 1,
-    _swmm_gage_index: (h: number, id: string) => id === "G1" ? 0 : -1,
-    _swmm_gage_id: (h: number, idx: number) => idx === 0 ? "G1" : "",
-    _swmm_gage_get_rainfall: (h: number, i: number, ptr: number) => { heap[ptr] = 5.0; return 0; },
+    _swmm_gage_index: (h: number, id: string) => (id === "G1" ? 0 : -1),
+    _swmm_gage_id: (h: number, idx: number) => (idx === 0 ? "G1" : ""),
+    _swmm_gage_get_rainfall: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 5.0;
+      return 0;
+    },
     _swmm_gage_set_rainfall: () => 0,
-    _swmm_gage_get_rain_type: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    _swmm_gage_get_data_source: (h: number, i: number, ptr: number) => { heap[ptr] = 0; return 0; },
-    _swmm_gage_get_scale_factor: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_gage_get_rain_type: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0;
+      return 0;
+    },
+    _swmm_gage_get_data_source: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 0;
+      return 0;
+    },
+    _swmm_gage_get_scale_factor: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 1.0;
+      return 0;
+    },
     _swmm_gage_set_scale_factor: () => 0,
-    _swmm_gage_get_rain_interval: (h: number, i: number, ptr: number) => { heap[ptr] = 900; return 0; },
-    _swmm_gage_get_snow_factor: (h: number, i: number, ptr: number) => { heap[ptr] = 1.0; return 0; },
+    _swmm_gage_get_rain_interval: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 900;
+      return 0;
+    },
+    _swmm_gage_get_snow_factor: (h: number, i: number, ptr: number) => {
+      heap[ptr] = 1.0;
+      return 0;
+    },
 
     // Controls
     _swmm_control_count: () => 0,
@@ -449,11 +584,17 @@ function makeMockModule(): OpenSwmmWasmModule {
     _swmm_forcing_clear_all: () => 0,
 
     // WASM heap helpers
-    _malloc: (size: number) => { const p = nextPtr; nextPtr += size + 8; return p; },
+    _malloc: (size: number) => {
+      const p = nextPtr;
+      nextPtr += size + 8;
+      return p;
+    },
     _free: () => {},
     getValue: (ptr: number) => heap[ptr] ?? 0,
-    setValue: (ptr: number, value: number) => { heap[ptr] = value; },
-    UTF8ToString: (ptr: number) => "",
+    setValue: (ptr: number, value: number) => {
+      heap[ptr] = value;
+    },
+    UTF8ToString: (_ptr: number) => "",
     stringToUTF8: () => {},
     lengthBytesUTF8: (s: string) => s.length,
     HEAP8: new Int8Array(0),
@@ -464,7 +605,8 @@ function makeMockModule(): OpenSwmmWasmModule {
     HEAPF64: new Float64Array(0),
     // The raw layer uses cwrap only for string-carrying functions; the mock
     // takes/returns JS strings directly, so cwrap just resolves the export.
-    cwrap: (name: string) => (mod as Record<string, unknown>)[`_${name}`] as (...a: unknown[]) => unknown,
+    cwrap: (name: string) =>
+      (mod as Record<string, unknown>)[`_${name}`] as (...a: unknown[]) => unknown,
     addFunction: () => 1,
     removeFunction: () => {},
   } satisfies OpenSwmmWasmModule;
@@ -760,21 +902,35 @@ describe("Forcing", () => {
   });
 });
 
-
 describe("native owner lifetime", () => {
   it("destroys once and rejects calls from retained views", () => {
     const mod = makeMockModule();
-    let destroys = 0, reads = 0;
-    mod._swmm_engine_destroy = () => { destroys++; };
-    mod._swmm_node_count = () => { reads++; return 2; };
+    let destroys = 0,
+      reads = 0;
+    mod._swmm_engine_destroy = () => {
+      destroys++;
+    };
+    mod._swmm_node_count = () => {
+      reads++;
+      return 2;
+    };
     const s = new Solver(mod);
     const node = s.nodes.get(0);
     const before = reads;
-    s.destroy(); s.destroy(); s[Symbol.dispose]();
+    s.destroy();
+    s.destroy();
+    s[Symbol.dispose]();
     expect(destroys).toBe(1);
-    for (const access of [() => s.handle, () => s.step(), () => s.nodes.length,
-      () => node.depth, () => s.forcing.clearAll(), () => s.controls.length,
-      () => s.transport.targetDx]) expect(access).toThrow(EngineError);
+    for (const access of [
+      () => s.handle,
+      () => s.step(),
+      () => s.nodes.length,
+      () => node.depth,
+      () => s.forcing.clearAll(),
+      () => s.controls.length,
+      () => s.transport.targetDx,
+    ])
+      expect(access).toThrow(EngineError);
     expect(reads).toBe(before);
   });
   it("invalidates element views on close", () => {
@@ -787,7 +943,8 @@ describe("native owner lifetime", () => {
     const mod = makeMockModule();
     mod._swmm_engine_new = () => 42;
     const b = new ModelBuilder(mod);
-    const nodes = b.nodes, t = b.transport;
+    const nodes = b.nodes,
+      t = b.transport;
     const s = b.toSolver();
     expect(() => nodes.length).toThrow(EngineError);
     expect(() => t.targetDx).toThrow(EngineError);
@@ -798,16 +955,22 @@ describe("native owner lifetime", () => {
     const mod = makeMockModule();
     const calls: number[][] = [];
     for (const name of ["node_temperature", "node_age", "link_seepage"]) {
-      mod[`_swmm_forcing_${name}`] = (...args: number[]) => { calls.push(args); return 0; };
+      mod[`_swmm_forcing_${name}`] = (...args: number[]) => {
+        calls.push(args);
+        return 0;
+      };
     }
     const s = new Solver(mod);
     s.forcing.nodeTemperature(1, 18, ForcingMode.ADD, true);
     s.forcing.nodeAge(2, 3600);
     s.forcing.linkSeepage(3, 0.1);
-    expect(calls).toEqual([[42, 1, 18, 2, 1], [42, 2, 3600, 1, 0], [42, 3, 0.1, 1, 0]]);
+    expect(calls).toEqual([
+      [42, 1, 18, 2, 1],
+      [42, 2, 3600, 1, 0],
+      [42, 3, 0.1, 1, 0],
+    ]);
   });
 });
-
 
 describe("new binding regression cases", () => {
   it("invalidates builder views after a structural edit", () => {
@@ -825,25 +988,44 @@ describe("new binding regression cases", () => {
     const mod = makeMockModule();
     const numbers = new Map<number, number>();
     const strings = new Map<number, string>();
-    let freed = 0, fail = false;
+    let freed = 0,
+      fail = false;
     mod.getValue = (p: number) => numbers.get(p) ?? 0;
     mod.UTF8ToString = (p: number) => strings.get(p) ?? "";
-    mod._free = () => { freed++; };
-    mod._swmm_transport_boundary_count = (_h: number, p: number) => { numbers.set(p, 2); return 0; };
-    mod._swmm_transport_get_boundary = (_h: number, i: number, elem: number, _el: number,
-      species: number, _sl: number, isTs: number, value: number, ts: number) => {
+    mod._free = () => {
+      freed++;
+    };
+    mod._swmm_transport_boundary_count = (_h: number, p: number) => {
+      numbers.set(p, 2);
+      return 0;
+    };
+    mod._swmm_transport_get_boundary = (
+      _h: number,
+      i: number,
+      elem: number,
+      _el: number,
+      species: number,
+      _sl: number,
+      isTs: number,
+      value: number,
+      ts: number,
+    ) => {
       if (fail) return 9;
-      strings.set(elem, `J${i}`); strings.set(species, "TSS"); strings.set(ts, i ? "series" : "");
-      numbers.set(isTs, i); numbers.set(value, i ? 0 : 2.5);
+      strings.set(elem, `J${i}`);
+      strings.set(species, "TSS");
+      strings.set(ts, i ? "series" : "");
+      numbers.set(isTs, i);
+      numbers.set(value, i ? 0 : 2.5);
       return 0;
     };
     const s = new Solver(mod);
     const rows = s.transport.boundaries;
     expect(rows).toEqual([
-      {element: "J0", species: "TSS", isTimeseries: false, value: 2.5, timeseries: ""},
-      {element: "J1", species: "TSS", isTimeseries: true, value: 0, timeseries: "series"},
+      { element: "J0", species: "TSS", isTimeseries: false, value: 2.5, timeseries: "" },
+      { element: "J1", species: "TSS", isTimeseries: true, value: 0, timeseries: "series" },
     ]);
-    const before = freed; fail = true;
+    const before = freed;
+    fail = true;
     expect(() => s.transport.boundaries).toThrow(BadParamError);
     expect(freed - before).toBe(2); // count out-pointer and row buffers
     expect(rows[0].element).toBe("J0");
