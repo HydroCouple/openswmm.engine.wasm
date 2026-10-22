@@ -18,6 +18,7 @@ export enum ErrorCode {
   CRS = 13,
   NUMERICAL = 14,
   DEPENDENCY = 15,
+  CANCELLED = 16,
   INTERNAL = 99,
 }
 
@@ -239,6 +240,16 @@ export enum OutSubcatchVar {
   GW_ELEV = 6,
   SOIL_MOIST = 7,
   POLLUT_BASE = 8,
+  SNOW_SWE = 65536,
+  SNOW_ENERGY = 65537,
+  SNOW_SURFACE_TEMP = 65538,
+  SNOW_BULK_TEMP = 65539,
+  SNOW_ALBEDO = 65540,
+  SNOW_COVER = 65541,
+  SNOW_MELT = 65542,
+  SNOW_INPUT = 65543,
+  SNOW_SUBLIMATION = 65544,
+  SNOW_TIME = 65545,
 }
 
 export enum OutNodeVar {
@@ -375,6 +386,15 @@ export enum SurfaceBoundaryType {
   RATING_CURVE = 4,
 }
 
+export enum NodeCoupling2DType {
+  NONE = 0,
+  MANHOLE = 1,
+  GRATE = 2,
+  CURB = 3,
+  OPEN = 4,
+  OUTFALL = 5,
+}
+
 export enum SurfaceInfilMethod {
   HORTON = 0,
   MOD_HORTON = 1,
@@ -457,6 +477,7 @@ export enum HeatFluxModule {
   SURFACE_EXCHANGE = 0,
   RADIATIVE_EXCHANGE = 1,
   LAYER_CONDUCTION = 2,
+  SEDIMENT_EXCHANGE = 3,
 }
 
 export enum HeatShortwaveMode {
@@ -474,6 +495,7 @@ export enum HeatRadiativeParam {
   EMISS_LANDCOVER = 5,
   ATM_EMISS_COEFF = 6,
   LW_REFLECTION = 7,
+  LANDCOVER_TEMPERATURE = 8,
 }
 
 export enum HeatSolarParam {
@@ -493,6 +515,85 @@ export enum HeatCloudParam {
   SW_ATTEN_K = 1,
   SW_ATTEN_N = 2,
   LW_CLOUD_K = 3,
+}
+
+export enum HeatSedimentParam {
+  THERMAL_DIFFUSIVITY = 0,
+  SOLUTE_DIFFUSIVITY = 1,
+  BED_THICKNESS = 2,
+  GROUND_DEPTH = 3,
+  GROUND_TEMPERATURE = 4,
+  HYPORHEIC_VELOCITY = 5,
+  DENSITY = 6,
+  SPECIFIC_HEAT = 7,
+  INITIAL_TEMPERATURE = 8,
+  MESH_POROSITY = 9,
+  GROUND_SOURCE = 10,
+}
+
+export enum HeatAttr {
+  ALBEDO = 0,
+  SHADE_FACTOR = 1,
+  SKY_VIEW = 2,
+  EMISS_WATER = 3,
+  EMISS_LANDCOVER = 4,
+  LANDCOVER_TEMPERATURE = 5,
+  THERMAL_DIFFUSIVITY = 6,
+  SOLUTE_DIFFUSIVITY = 7,
+  BED_THICKNESS = 8,
+  GROUND_DEPTH = 9,
+  GROUND_TEMPERATURE = 10,
+  HYPORHEIC_VELOCITY = 11,
+  SEDIMENT_DENSITY = 12,
+  SEDIMENT_SPECIFIC_HEAT = 13,
+  MESH_POROSITY = 14,
+  GROUND_SOURCE = 15,
+}
+
+export enum HeatOverrideScope {
+  TAG = 1,
+  NODE = 2,
+  LINK = 3,
+  CELL2D = 6,
+  MESH_TAG = 7,
+}
+
+export enum GroundHeatValue {
+  ENERGY = 0,
+  CAPACITY = 1,
+  TEMPERATURE = 2,
+  INITIAL_ENERGY = 3,
+  ADVECTIVE_ENERGY = 4,
+  SOURCE_ENERGY = 5,
+  SURFACE_ENERGY = 6,
+  DEEP_ENERGY = 7,
+  LATENT_ENERGY = 8,
+  LATERAL_ENERGY = 9,
+  WATER_CONTACT_ENERGY = 10,
+  RESIDUAL = 11,
+  NORMALIZED_RESIDUAL = 12,
+  PENDING_LATERAL = 13,
+  CHANNEL_CONTACT = 14,
+  LID_CONTACT = 15,
+}
+
+export enum GroundHeatLayerValue {
+  TOP = 0,
+  BOTTOM = 1,
+  TEMPERATURE = 2,
+  ENERGY = 3,
+  CAPACITY = 4,
+  MOISTURE = 5,
+  CONDUCTIVITY = 6,
+  SATURATED_WATER = 7,
+}
+
+export enum ChannelGroundValue {
+  BED_TEMPERATURE = 0,
+  ATMOSPHERIC_ENERGY = 1,
+  TO_SOIL_ENERGY = 2,
+  WATER_INCREMENT = 3,
+  INTERVAL_COUNT = 4,
 }
 
 export enum HeatSourceKind {
@@ -519,6 +620,8 @@ export enum ReactionScope {
   TERM = 0,
   PIPE = 1,
   TANK = 2,
+  SUBSURFACE = 3,
+  SUBCATCHMENT = 4,
 }
 
 export enum ReactionExprForm {
@@ -712,6 +815,8 @@ export enum GroundwaterLedger {
   SOURCE_IN = 11,
   SOURCE_OUT = 12,
   REJECT = 13,
+  BOUNDARY_IN = 14,
+  BOUNDARY_OUT = 15,
 }
 
 export enum GroundwaterZone {
@@ -735,6 +840,11 @@ export enum GroundwaterSpeciesLedger {
   RESIDUAL = 12,
   SOURCE_IN = 13,
   SOURCE_OUT = 14,
+  BOUNDARY_IN = 15,
+  BOUNDARY_OUT = 16,
+  BOUNDARY_FLUX_IN = 17,
+  BOUNDARY_FLUX_OUT = 18,
+  AGE_GENERATED = 19,
 }
 
 export enum GroundwaterTransportZone {
@@ -765,4 +875,27 @@ export enum TraceTerminal {
   RETAINED = 3,
   UNRESOLVED = 4,
   CIRCULATION = 5,
+}
+
+export enum EvapPreviewStatus {
+  AVAILABLE = 0,
+  HELD = 1,
+  MISSING = 2,
+  ESTIMATED = 3,
+}
+
+export enum Heat2DValue {
+  WATER_TEMPERATURE = 0,
+  BED_TEMPERATURE = 1,
+  BED_ENERGY = 2,
+  BED_CAPACITY = 3,
+  ATMOSPHERIC_ENERGY = 4,
+  RADIATIVE_ENERGY = 5,
+  SENSIBLE_ENERGY = 6,
+  LATENT_ENERGY = 7,
+  DEEP_ENERGY = 8,
+  WATER_TO_BED_ENERGY = 9,
+  WATER_THERMAL_INCREMENT = 10,
+  ACCEPTED_EVAPORATION = 11,
+  THERMAL_RESIDUAL = 12,
 }

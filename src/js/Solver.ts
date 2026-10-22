@@ -231,6 +231,15 @@ export class Solver {
     return this._mod.FS.readFile(path, { encoding: "binary" });
   }
 
+  /** Save the currently opened model to a file in the virtual filesystem. */
+  writeModel(path: string, outputPluginId = ""): void {
+    const h = this.handle;
+    const rc = outputPluginId
+      ? this._raw.swmm_model_write_with_plugin(h, path, outputPluginId)
+      : this._raw.swmm_model_write(h, path);
+    raiseForCode(rc, rc ? this._raw.swmm_get_last_error_msg(h) : undefined);
+  }
+
   // -------------------------------------------------------------------------
   // Configuration
   // -------------------------------------------------------------------------
@@ -402,15 +411,30 @@ export class Solver {
    * @param pluginLib   Optional plugin library path.
    */
   run(inp: string, rpt: string, out: string, saveResults = true, pluginLib = ""): void {
-    this.open(inp, rpt, out, pluginLib);
-    this.initialize();
-    this.start(saveResults);
-    while (this.step() > 0) {
-      /* step until completion */
+    let opened = false;
+    try {
+      this.open(inp, rpt, out, pluginLib);
+      opened = true;
+      this.initialize();
+      this.start(saveResults);
+      while (this.step() > 0) {
+        /* step until completion */
+      }
+      this.end();
+      this.report();
+      this.close();
+    } catch (error) {
+      try {
+        if (opened) this.close();
+      } catch (cleanupError) {
+        if (error instanceof Error) {
+          error.message += `; cleanup also failed: ${String(cleanupError)}`;
+        }
+      } finally {
+        this.destroy();
+      }
+      throw error;
     }
-    this.end();
-    this.report();
-    this.close();
   }
 
   // -------------------------------------------------------------------------

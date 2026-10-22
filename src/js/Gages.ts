@@ -13,7 +13,7 @@ import { GageDataSource, GageRainType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw } from "./mem.js";
+import { guardedRaw, withCString } from "./mem.js";
 
 // =============================================================================
 // Gage
@@ -87,6 +87,11 @@ export class Gage {
     }
   }
 
+  set rainType(value: GageRainType) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_rain_type(this._engine, this.index, value));
+  }
+
   /** Data source ({@link GageDataSource}). */
   get dataSource(): GageDataSource {
     this._checkStale();
@@ -97,6 +102,11 @@ export class Gage {
     } finally {
       this._mod._free(ptr);
     }
+  }
+
+  set dataSource(value: GageDataSource) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_data_source(this._engine, this.index, value));
   }
 
   /** Multiplier applied to all recorded rainfall values. */
@@ -129,6 +139,11 @@ export class Gage {
     }
   }
 
+  set rainInterval(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_rain_interval(this._engine, this.index, value));
+  }
+
   /** Snow catch correction factor. */
   get snowFactor(): number {
     this._checkStale();
@@ -139,6 +154,87 @@ export class Gage {
     } finally {
       this._mod._free(ptr);
     }
+  }
+
+  set snowFactor(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_snow_factor(this._engine, this.index, value));
+  }
+
+  /** Rain depth unit for a file source: 0 = inches, 1 = millimetres. */
+  get rainUnits(): number {
+    this._checkStale();
+    const ptr = this._mod._malloc(4);
+    try {
+      raiseForCode(this._raw.swmm_gage_get_rain_units(this._engine, this.index, ptr));
+      return this._mod.getValue(ptr, "i32");
+    } finally {
+      this._mod._free(ptr);
+    }
+  }
+
+  set rainUnits(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_rain_units(this._engine, this.index, value));
+  }
+
+  /** Assigned time series identifier. */
+  get timeseries(): string {
+    this._checkStale();
+    return withCString(this._mod, 256, (buf, len) =>
+      this._raw.swmm_gage_get_timeseries(this._engine, this.index, buf, len),
+    );
+  }
+
+  set timeseries(value: string) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_timeseries(this._engine, this.index, value));
+  }
+
+  get stationId(): string {
+    this._checkStale();
+    return withCString(this._mod, 256, (buf, len) =>
+      this._raw.swmm_gage_get_station_id(this._engine, this.index, buf, len),
+    );
+  }
+
+  set stationId(value: string) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_station_id(this._engine, this.index, value));
+  }
+
+  get fileColumn(): string {
+    this._checkStale();
+    return withCString(this._mod, 256, (buf, len) =>
+      this._raw.swmm_gage_get_file_column(this._engine, this.index, buf, len),
+    );
+  }
+
+  set fileColumn(value: string) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_file_column(this._engine, this.index, value));
+  }
+
+  get fileFormat(): number {
+    this._checkStale();
+    const ptr = this._mod._malloc(4);
+    try {
+      raiseForCode(this._raw.swmm_gage_get_file_format(this._engine, this.index, ptr));
+      return this._mod.getValue(ptr, "i32");
+    } finally {
+      this._mod._free(ptr);
+    }
+  }
+
+  set fileFormat(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_file_format(this._engine, this.index, value));
+  }
+
+  /** Select a rainfall file and optional station identifier. */
+  setFilename(path: string, stationId = ""): void {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_filename(this._engine, this.index, path, stationId));
   }
 
   // -------------------------------------------------------------------------

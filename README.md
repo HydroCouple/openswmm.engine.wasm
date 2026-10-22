@@ -436,7 +436,7 @@ Notes:
 
 ### Enumerations
 
-All 78 enum classes are generated from the pinned engine’s
+All 90 enum classes are generated from the pinned engine’s
 `openswmm.engine._enums.py`, without importing native Python modules. Enum
 constants for disabled features do not imply that those features are available.
 
@@ -509,7 +509,7 @@ ls dist/
 npm ci
 npm run build
 npm test                      # unit tests (mock module, no WASM needed)
-npm run smoke                 # end-to-end 1D (smoke.inp) and 2D (smoke2d.inp) runs against dist/
+npm run smoke                 # native exports, 1D, rain/snow save/reopen, and 2D runs
 npm run check:bindings        # native signature checks against engine headers (no emsdk needed)
 ```
 
@@ -592,8 +592,8 @@ See also: [CLA.md](CLA.md) · [CCLA.md](CCLA.md)
 ## Compatibility and gaps
 
 The engine submodule is the reproducible source of truth for generation and
-compilation. Generation against the pinned engine yields **1,244 C functions**
-(1,048 without the 2D headers), **81 enum classes** and the six callback
+compilation. Generation against the pinned engine yields **1,400 C functions**
+(1,171 without the 2D headers), **90 enum classes** and the seven callback
 typedefs with their `addFunction()` signatures; no header is excluded.
 The sibling engine working tree can contain newer uncommitted APIs; those are
 not automatically part of this package. Regenerate after deliberately advancing
@@ -603,12 +603,12 @@ the submodule, and rebuild the binary as well as TypeScript.
 |---|---|---|
 | Raw C API | `bindRaw(mod)` / package `/raw`; signatures, export list and struct layouts generated from the engine headers | Heap allocation, pointer lifetimes, return codes and callback registration remain the caller’s responsibility. This is not the Python object API. |
 | Enums | All numeric Python enum classes, including transport and capability selectors | Disabled-feature selectors are constants only. |
-| Solver, builder and element views | Lifecycle, 1D collections, controls and forcing; destroyed owners and transferred builder owners reject view access | Mutations made through raw calls bypass wrapper invalidation. Reacquire views after such mutations. |
+| Solver, builder and element views | Lifecycle, 1D collections, rain-gage configuration, controls, forcing and `solver.writeModel()`; destroyed owners and transferred builder owners reject view access | Mutations made through raw calls bypass wrapper invalidation. Reacquire views after such mutations. |
 | ARD transport | `solver.transport` and `builder.transport`: configuration, conduit overrides, boundary/source snapshots | Persistence needs a process-component registration and config-file path. Capability matrices and other process services remain raw APIs. |
 | Runtime forcing | Existing flow/rainfall controls plus `nodeTemperature`, `nodeAge`, `linkSeepage` | Use native field units: temperature REPLACE is °C, age REPLACE is hours; ADD uses °C·ft³/s or hours·ft³/s. Both require the corresponding model option. |
 | 2D surface routing | `solver.surface2d` (`Surface2D`) and `surface2d.infiltration`, mirroring Python; all five 2D headers in the raw layer | No HDF5 results file (`OUTPUT_FILE` is ignored with a warning). Mesh groundwater, surface quality and groundwater transport are raw-only. |
 | Catalog, generic field paths, Gymnasium specs and MCP tools | Python ecosystem facilities | No TypeScript catalog dispatcher or Gymnasium/MCP runtime is supplied. |
-| Output, hot starts, metadata, batch edits and staged serialization | Available through raw exports for enabled features | Dedicated Python-style facade classes and automatic callback/error marshalling remain future work. |
+| Output, hot starts, metadata, batch edits and staged serialization | Model saving is typed; other services are available through raw exports for enabled features | Dedicated Python-style facade classes and automatic callback/error marshalling remain future work. |
 
 ```ts
 import { TransportDispersionMode } from "@hydrocouple/openswmm-engine-wasm";
@@ -643,5 +643,5 @@ extern declarations do not count as calls, while executable `.pxd` helpers do.
 It fails when source files are missing. Raw API coverage, host signature checks,
 TypeScript unit tests and a real WASM smoke run are separate checks; none alone
 establishes numerical parity for every transport process. Browser execution,
-worker integration, heap-allocation failure handling and complete high-level
+worker integration, broader heap-allocation failure handling and complete high-level
 Python API parity still require dedicated validation/work.

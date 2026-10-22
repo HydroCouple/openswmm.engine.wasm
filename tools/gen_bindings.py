@@ -98,7 +98,7 @@ def norm(t: str) -> str:
 
 def split_param(p: str) -> tuple[str, str]:
     """'const char* name' -> ('const char*', 'name'); arrays -> pointer."""
-    p = p.strip()
+    p = " ".join(p.split())
     if p.endswith("*"):  # unnamed pointer parameter such as 'const SWMM_CouplingFrame*'
         return norm(p), ""
     m = re.match(r"^(.*?)(\w+)\s*(\[[^\]]*\])?$", p)
