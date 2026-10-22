@@ -43,6 +43,7 @@ describe("raw layer", () => {
       SWMM_StepEndCallback: expect.objectContaining({ signature: "viddi" }),
       SWMM_PluginStateCallback: expect.objectContaining({ signature: "viiiii" }),
       SWMM_HotStartMissingCallback: expect.objectContaining({ signature: "viiii" }),
+      SWMM_CancelCallback: expect.objectContaining({ signature: "iiiii" }),
     });
     expect(CALLBACK_SIGNATURES.SWMM_WarningCallback).toBe("viiii");
   });

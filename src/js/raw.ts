@@ -19,7 +19,11 @@ export interface RawApi {
   /** `openswmm_2d.h` */
   swmm_2d_is_active(engine: number, active: number): number;
   /** `openswmm_2d.h` */
+  swmm_2d_set_auto_backend_cpu(engine: number, enabled: number): number;
+  /** `openswmm_2d.h` */
   swmm_2d_prepare_for_edit(engine: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_geometry_scale_to_si(engine: number, scale: number): number;
   /** `openswmm_2d.h` */
   swmm_2d_vertex_count(engine: number, count: number): number;
   /** `openswmm_2d.h` */
@@ -195,6 +199,30 @@ export interface RawApi {
   /** `openswmm_2d.h` */
   swmm_2d_clear_edge_bc(engine: number, cell: number, edge: number): number;
   /** `openswmm_2d.h` */
+  swmm_2d_initial_quality_count(engine: number, count: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_get_initial_quality(engine: number, index: number, scope: number, tag: number, tag_len: number, cell: number, species: number, species_len: number, conc: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_set_initial_quality(engine: number, scope: number, tag: string | null, cell: number, species: string | null, conc: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_remove_initial_quality(engine: number, index: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_initial_bed_quality_count(engine: number, count: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_get_initial_bed_quality(engine: number, index: number, scope: number, tag: number, tag_len: number, cell: number, species: number, species_len: number, conc: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_set_initial_bed_quality(engine: number, scope: number, tag: string | null, cell: number, species: string | null, conc: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_remove_initial_bed_quality(engine: number, index: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_boundary_quality_count(engine: number, count: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_get_boundary_quality(engine: number, index: number, cell: number, edge: number, species: number, species_len: number, conc: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_set_boundary_quality(engine: number, cell: number, edge: number, species: string | null, conc: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_remove_boundary_quality(engine: number, index: number): number;
+  /** `openswmm_2d.h` */
   swmm_2d_set_edge_bc_type(engine: number, tri_idx: number, edge: number, bc_type: number): number;
   /** `openswmm_2d.h` */
   swmm_2d_get_edge_bc_head(engine: number, tri_idx: number, edge: number, head: number): number;
@@ -230,6 +258,38 @@ export interface RawApi {
   swmm_2d_output_variable_mask(text: string | null): number;
   /** `openswmm_2d.h` */
   swmm_2d_output_variable_text(mask: number): string;
+  /** `openswmm_2d.h` */
+  swmm_node_get_2d_coupling_type(engine: number, node_idx: number, type: number, authored: number): number;
+  /** `openswmm_2d.h` */
+  swmm_node_get_2d_coupling_default_type(engine: number, node_idx: number, type: number): number;
+  /** `openswmm_2d.h` */
+  swmm_node_set_2d_coupling_type(engine: number, node_idx: number, type: number): number;
+  /** `openswmm_2d.h` */
+  swmm_node_reset_2d_coupling(engine: number, node_idx: number): number;
+  /** `openswmm_2d.h` */
+  swmm_node_get_2d_coupling_param(engine: number, node_idx: number, key: string | null, value: number, value_len: number): number;
+  /** `openswmm_2d.h` */
+  swmm_node_set_2d_coupling_param(engine: number, node_idx: number, key: string | null, value: string | null): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_start_session(engine: number, options: number): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_capabilities(engine: number, flags: number): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_session_status(engine: number, flags: number): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_inspect(engine: number, path: string | null, snapshot: number): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_inspection_json(snapshot: number, utf8: number, capacity: number, required: number): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_inspection_destroy(snapshot: number): void;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_save(engine: number, new_path: string | null): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_restore(engine: number, path: string | null): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_export_bundle(path: string | null, new_folder: string | null): number;
+  /** `openswmm_checkpoint.h` */
+  swmm_checkpoint_last_error_msg(): string;
   /** `openswmm_climate.h` */
   swmm_climate_get_temp_source(engine: number, source: number): number;
   /** `openswmm_climate.h` */
@@ -270,6 +330,10 @@ export interface RawApi {
   swmm_climate_get_evap_timeseries(engine: number, buf: number, buflen: number): number;
   /** `openswmm_climate.h` */
   swmm_climate_set_evap_timeseries(engine: number, ts_id: string | null): number;
+  /** `openswmm_climate.h` */
+  swmm_climate_preview_evaporation(engine: number, start_date: number, end_date: number, sample_interval_days: number, samples: number, capacity: number, sample_count: number, summary: number, diagnostic: number, diagnostic_capacity: number): number;
+  /** `openswmm_climate.h` */
+  swmm_climate_preview_evaporation_with_config(engine: number, config: number, start_date: number, end_date: number, sample_interval_days: number, samples: number, capacity: number, sample_count: number, summary: number, diagnostic: number, diagnostic_capacity: number): number;
   /** `openswmm_climate.h` */
   swmm_climate_get_pan_coeff(engine: number, buf: number, count: number): number;
   /** `openswmm_climate.h` */
@@ -359,39 +423,39 @@ export interface RawApi {
   /** `openswmm_controls.h` */
   swmm_control_set_link_status(engine: number, link_idx: number, status: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_apply_frame(a0: number, a1: number): number;
+  swmm_coupling_apply_frame(engine: number, frame: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_clear_source_cell(a0: number, domain: number, id: string | null, cell: number): number;
+  swmm_coupling_clear_source_cell(engine: number, domain: number, id: string | null, cell: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_get_receipts(a0: number, domain: number, id: string | null, cells: number, count: number, a5: number, requested_species: number, applied_species: number, species_count: number): number;
+  swmm_coupling_get_receipts(engine: number, domain: number, id: string | null, cells: number, count: number, out: number, requested_species: number, applied_species: number, species_count: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_get_boundary_receipt(a0: number, domain: number, cell: number, edge: number, a4: number, requested_species: number, applied_species: number, species_count: number): number;
+  swmm_coupling_get_boundary_receipt(engine: number, domain: number, cell: number, edge: number, out: number, requested_species: number, applied_species: number, species_count: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_get_infiltration_receipt(a0: number, cell: number, a2: number, requested_species: number, applied_species: number, species_count: number): number;
+  swmm_coupling_get_infiltration_receipt(engine: number, cell: number, out: number, requested_species: number, applied_species: number, species_count: number): number;
   /** `openswmm_coupling.h` */
-  swmm_2d_get_species_ledger(a0: number, species: number, term: number, value: number): number;
+  swmm_2d_get_species_ledger(engine: number, species: number, term: number, value: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_set_source(a0: number, id: string | null, domain: number, cell: number, flow_m3_s: number, heat_w: number, concentrations: number, rates: number, species_count: number, until_seconds: number): number;
+  swmm_coupling_set_source(engine: number, id: string | null, domain: number, cell: number, flow_m3_s: number, heat_w: number, concentrations: number, rates: number, species_count: number, until_seconds: number): number;
   /** `openswmm_coupling.h` */
-  swmm_gw2d_set_runtime_boundary(a0: number, cell: number, edge: number, kind: number, value: number, concentrations: number, species_count: number): number;
+  swmm_gw2d_set_runtime_boundary(engine: number, cell: number, edge: number, kind: number, value: number, concentrations: number, species_count: number): number;
   /** `openswmm_coupling.h` */
-  swmm_gw2d_clear_runtime_boundary(a0: number, cell: number, edge: number): number;
+  swmm_gw2d_clear_runtime_boundary(engine: number, cell: number, edge: number): number;
   /** `openswmm_coupling.h` */
-  swmm_gw2d_get_runtime_boundary_flow(a0: number, cell: number, edge: number, flow_m3_s: number): number;
+  swmm_gw2d_get_runtime_boundary_flow(engine: number, cell: number, edge: number, flow_m3_s: number): number;
   /** `openswmm_coupling.h` */
-  swmm_2d_set_runtime_boundary(a0: number, cell: number, edge: number, kind: number, value: number, concentrations: number, species_count: number): number;
+  swmm_2d_set_runtime_boundary(engine: number, cell: number, edge: number, kind: number, value: number, concentrations: number, species_count: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_set_sources(a0: number, a1: number, count: number): number;
+  swmm_coupling_set_sources(engine: number, sources: number, count: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_clear_source(a0: number, domain: number, id: string | null): number;
+  swmm_coupling_clear_source(engine: number, domain: number, id: string | null): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_get_receipt(a0: number, domain: number, id: string | null, cell: number, out: number, requested_species: number, applied_species: number, capacity: number): number;
+  swmm_coupling_get_receipt(engine: number, domain: number, id: string | null, cell: number, out: number, requested_species: number, applied_species: number, capacity: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_get_water_totals(a0: number, domain: number, incoming_m3: number, outgoing_m3: number): number;
+  swmm_coupling_get_water_totals(engine: number, domain: number, incoming_m3: number, outgoing_m3: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_advance_to(a0: number, target_seconds: number, actual_seconds: number): number;
+  swmm_coupling_advance_to(engine: number, target_seconds: number, actual_seconds: number): number;
   /** `openswmm_coupling.h` */
-  swmm_coupling_capabilities(a0: number, flags: number): number;
+  swmm_coupling_capabilities(engine: number, flags: number): number;
   /** `openswmm_datetime.h` */
   swmm_datetime_encode_date(year: number, month: number, day: number, out: number): number;
   /** `openswmm_datetime.h` */
@@ -493,6 +557,8 @@ export interface RawApi {
   /** `openswmm_engine.h` */
   swmm_engine_open(engine: number, inp: string | null, rpt: string | null, out: string | null, input_plugin_lib: string | null): number;
   /** `openswmm_engine.h` */
+  swmm_engine_open_metadata(engine: number, inp: string | null): number;
+  /** `openswmm_engine.h` */
   swmm_engine_initialize(engine: number): number;
   /** `openswmm_engine.h` */
   swmm_engine_start(engine: number, save_results: number): number;
@@ -548,6 +614,8 @@ export interface RawApi {
   swmm_get_effective_threads(engine: number, threads_option: number, global_threads: number, dw_threads: number, twod_threads: number): number;
   /** `openswmm_engine.h` */
   swmm_get_transport_matrix(engine: number, out: number): number;
+  /** `openswmm_engine.h` */
+  swmm_preview_transport_matrix(engine: number, draft: number, out: number): number;
   /** `openswmm_engine.h` */
   swmm_transport_domain_name(domain: number): string;
   /** `openswmm_engine.h` */
@@ -763,11 +831,25 @@ export interface RawApi {
   /** `openswmm_geopackage.h` */
   swmm_gpkg_query_double(gpkg: number, sql: string | null, result: number): number;
   /** `openswmm_gw2d.h` */
+  swmm_gw2d_boundary_count(engine: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_boundary_get(engine: number, index: number, row: number, series: number, series_len: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_boundary_set(engine: number, row: number, series: string | null): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_boundary_remove(engine: number, index: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_boundary_water(engine: number, index: number, requested_in: number, requested_out: number, applied_in: number, applied_out: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_boundary_species(engine: number, index: number, species: number, advective_in: number, advective_out: number, imposed_in: number, imposed_out: number): number;
+  /** `openswmm_gw2d.h` */
   swmm_gw2d_species_count(engine: number, count: number): number;
   /** `openswmm_gw2d.h` */
   swmm_gw2d_species_name(engine: number, species: number, buf: number, buflen: number): number;
   /** `openswmm_gw2d.h` */
   swmm_gw2d_get_cell_conc(engine: number, zone: number, species: number, out: number, len: number, written: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_get_layer_quality(engine: number, cell: number, layer: number, species: number, water: number, mass: number, concentration: number): number;
   /** `openswmm_gw2d.h` */
   swmm_gw2d_get_species_ledger(engine: number, species: number, term: number, value: number): number;
   /** `openswmm_gw2d.h` */
@@ -801,6 +883,16 @@ export interface RawApi {
   /** `openswmm_gw2d.h` */
   swmm_gw2d_node_set_exchange(engine: number, index: number, exchange: number): number;
   /** `openswmm_gw2d.h` */
+  swmm_gw2d_node_replace(engine: number, expected: number, expected_count: number, replacement: number, count: number, bottoms: number, bottom_count: number, apply: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_link_count(engine: number, count: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_link_add(engine: number, link: string | null, kc: number, dc: number, exchange: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_link_get(engine: number, index: number, link: number, linklen: number, kc: number, dc: number, exchange: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_link_remove(engine: number, index: number): number;
+  /** `openswmm_gw2d.h` */
   swmm_gw2d_is_active(engine: number, active: number): number;
   /** `openswmm_gw2d.h` */
   swmm_gw2d_get_dimensions(engine: number, n_cells: number, m_layers: number): number;
@@ -816,6 +908,8 @@ export interface RawApi {
   swmm_gw2d_get_continuity_error(engine: number, value: number): number;
   /** `openswmm_gw2d.h` */
   swmm_gw2d_get_tier_histogram(engine: number, out: number, len: number, written: number): number;
+  /** `openswmm_gw2d.h` */
+  swmm_gw2d_get_execution_status(engine: number, status: number): number;
   /** `openswmm_gw_transport.h` */
   swmm_gw_transport_option_get(engine: number, key: string | null, buf: number, buflen: number): number;
   /** `openswmm_gw_transport.h` */
@@ -879,6 +973,34 @@ export interface RawApi {
   /** `openswmm_gw_transport.h` */
   swmm_gw_source_species_remove(engine: number, src_idx: number, term_idx: number): number;
   /** `openswmm_heat.h` */
+  swmm_hydrothermal_edit_atomic(engine: number, edit: number, user: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_dry_policy(engine: number, policy: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_set_dry_policy(engine: number, policy: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_lid_material(engine: number, values: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_clear_solar_site(engine: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_authoring_flags(engine: number, flags: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_snapshot_create(engine: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_snapshot_restore(engine: number, snapshot: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_snapshot_destroy(snapshot: number): void;
+  /** `openswmm_heat.h` */
+  swmm_config_snapshot_create(engine: number): number;
+  /** `openswmm_heat.h` */
+  swmm_config_snapshot_restore(engine: number, snapshot: number): number;
+  /** `openswmm_heat.h` */
+  swmm_config_snapshot_destroy(snapshot: number): void;
+  /** `openswmm_heat.h` */
+  swmm_heat_sediment_temperature_configured(engine: number, param: number, configured: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_clear_sediment_temperature(engine: number, param: number): number;
+  /** `openswmm_heat.h` */
   swmm_heat_get_enabled(engine: number, enabled: number): number;
   /** `openswmm_heat.h` */
   swmm_heat_get_module(engine: number, module: number, on: number): number;
@@ -938,6 +1060,50 @@ export interface RawApi {
   swmm_heat_remove_node_override(engine: number, index: number): number;
   /** `openswmm_heat.h` */
   swmm_heat_get_effective_source_temp(engine: number, source: number, node: number, temp_c: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_sediment(engine: number, param: number, value: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_set_sediment(engine: number, param: number, value: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_sediment_ground_timeseries(engine: number, buf: number, buflen: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_set_sediment_ground_timeseries(engine: number, name: string | null): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_element_override_count(engine: number, count: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_element_override(engine: number, index: number, attr: number, scope: number, name: number, name_len: number, value: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_set_element_override(engine: number, attr: number, scope: number, name: string | null, value: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_remove_element_override(engine: number, index: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_effective_element(engine: number, attr: number, scope: number, name: string | null, value: number, source: number, source_name: number, source_name_len: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_2d_status(engine: number, status: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_2d_values(engine: number, kind: number, first_cell: number, count: number, values: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_ground_source_configured(engine: number, configured: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_clear_ground_source(engine: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_ground_status(engine: number, status: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_ground_values(engine: number, kind: number, first_cell: number, count: number, values: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_ground_layers(engine: number, cell: number, kind: number, first_layer: number, count: number, values: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_channel_ground_status(engine: number, status: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_channel_ground_values(engine: number, kind: number, first_link: number, count: number, values: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_get_channel_ground_contact(engine: number, index: number, contact: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_preview_channel_ground_map(engine: number, link: number, out: number, contacts: number, capacity: number, required: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_preview_channel_ground_map_with_progress(engine: number, link: number, out: number, contacts: number, capacity: number, required: number, callback: number, user_data: number): number;
+  /** `openswmm_heat.h` */
+  swmm_heat_preview_channel_ground_map_page(engine: number, link: number, out: number, first: number, contacts: number, capacity: number, required: number, callback: number, user_data: number): number;
   /** `openswmm_hotstart.h` */
   swmm_hotstart_saves_count(engine: number, count: number): number;
   /** `openswmm_hotstart.h` */
@@ -948,6 +1114,12 @@ export interface RawApi {
   swmm_hotstart_saves_set_path(engine: number, idx: number, path: string | null): number;
   /** `openswmm_hotstart.h` */
   swmm_hotstart_saves_set_datetime(engine: number, idx: number, datetime: number): number;
+  /** `openswmm_hotstart.h` */
+  swmm_hotstart_saves_get_format(engine: number, idx: number, format: number): number;
+  /** `openswmm_hotstart.h` */
+  swmm_hotstart_saves_set_format(engine: number, idx: number, format: number): number;
+  /** `openswmm_hotstart.h` */
+  swmm_hotstart_legacy_omits(engine: number, flags: number): number;
   /** `openswmm_hotstart.h` */
   swmm_hotstart_saves_add(engine: number, path: string | null, datetime: number): number;
   /** `openswmm_hotstart.h` */
@@ -1185,9 +1357,9 @@ export interface RawApi {
   /** `openswmm_infrastructure.h` */
   swmm_lid_add(engine: number, id: string | null, type: number): number;
   /** `openswmm_infrastructure.h` */
-  swmm_lid_richards_options_get(a0: number, control: number, a2: number): number;
+  swmm_lid_richards_options_get(engine: number, control: number, out: number): number;
   /** `openswmm_infrastructure.h` */
-  swmm_lid_richards_material_get(a0: number, control: number, row: number, a3: number): number;
+  swmm_lid_richards_material_get(engine: number, control: number, row: number, out: number): number;
   /** `openswmm_infrastructure.h` */
   swmm_lid_node_treatment_count(engine: number, control: number): number;
   /** `openswmm_infrastructure.h` */
@@ -1195,7 +1367,7 @@ export interface RawApi {
   /** `openswmm_infrastructure.h` */
   swmm_lid_node_configure(engine: number, control: number, layers: number, count: number, treatment: number, treatment_count: number): number;
   /** `openswmm_infrastructure.h` */
-  swmm_lid_node_configure_flow(a0: number, control: number, a2: number, count: number, a4: number, treatment_count: number, a6: number, a7: number): number;
+  swmm_lid_node_configure_flow(engine: number, control: number, layers: number, count: number, treatment: number, treatment_count: number, options: number, material: number): number;
   /** `openswmm_infrastructure.h` */
   swmm_lid_node_layer_count(engine: number, control: number): number;
   /** `openswmm_infrastructure.h` */
@@ -1207,6 +1379,14 @@ export interface RawApi {
   /** `openswmm_infrastructure.h` */
   swmm_node_set_lid(engine: number, node: number, control: number, saturation: number): number;
   /** `openswmm_infrastructure.h` */
+  swmm_node_get_lid_bottom(engine: number, node: number, mode: number): number;
+  /** `openswmm_infrastructure.h` */
+  swmm_node_set_lid_bottom(engine: number, node: number, mode: number): number;
+  /** `openswmm_infrastructure.h` */
+  swmm_lid_node_base_area(engine: number, node: number, area: number): number;
+  /** `openswmm_infrastructure.h` */
+  swmm_lid_node_bottom_state_get(engine: number, node: number, out: number): number;
+  /** `openswmm_infrastructure.h` */
   swmm_lid_node_outlet_get(engine: number, link: number, layer: number, top: number): number;
   /** `openswmm_infrastructure.h` */
   swmm_lid_node_outlet_set(engine: number, link: number, layer: number, top: number): number;
@@ -1215,9 +1395,9 @@ export interface RawApi {
   /** `openswmm_infrastructure.h` */
   swmm_lid_node_state_get(engine: number, node: number, row: number, layer: number, bottom: number, top: number, moisture: number): number;
   /** `openswmm_infrastructure.h` */
-  swmm_lid_richards_state_get(a0: number, node: number, row: number, pressure: number, head: number, water: number): number;
+  swmm_lid_richards_state_get(engine: number, node: number, row: number, pressure: number, head: number, water: number): number;
   /** `openswmm_infrastructure.h` */
-  swmm_lid_richards_statistics_get(a0: number, node: number, a2: number): number;
+  swmm_lid_richards_statistics_get(engine: number, node: number, out: number): number;
   /** `openswmm_infrastructure.h` */
   swmm_lid_rename(engine: number, idx: number, new_id: string | null): number;
   /** `openswmm_infrastructure.h` */
@@ -1228,6 +1408,10 @@ export interface RawApi {
   swmm_lid_set_storage(engine: number, idx: number, thick: number, void_frac: number, ksat: number): number;
   /** `openswmm_infrastructure.h` */
   swmm_lid_set_drain(engine: number, idx: number, coeff: number, expon: number, offset: number): number;
+  /** `openswmm_infrastructure.h` */
+  swmm_lid_get_removal(engine: number, idx: number, constituent: number, percent: number): number;
+  /** `openswmm_infrastructure.h` */
+  swmm_lid_set_removal(engine: number, idx: number, constituent: number, percent: number): number;
   /** `openswmm_infrastructure.h` */
   swmm_lid_set_pavement(engine: number, idx: number, thick: number, void_ratio: number, frac_imperv: number, ksat: number, clog_factor: number, regen_days: number): number;
   /** `openswmm_infrastructure.h` */
@@ -1585,6 +1769,8 @@ export interface RawApi {
   /** `openswmm_nodes.h` */
   swmm_node_id(engine: number, idx: number): string;
   /** `openswmm_nodes.h` */
+  swmm_node_get_export_receipt(engine: number, idx: number, receipt: number, pollutant_amounts: number, count: number): number;
+  /** `openswmm_nodes.h` */
   swmm_node_add(engine: number, id: string | null, type: number): number;
   /** `openswmm_nodes.h` */
   swmm_node_pop_last(engine: number, id: string | null): number;
@@ -1751,6 +1937,10 @@ export interface RawApi {
   /** `openswmm_nodes.h` */
   swmm_node_set_tag(engine: number, idx: number, tag: string | null): number;
   /** `openswmm_output.h` */
+  swmm_output_get_pollut_units(handle: number, index: number): number;
+  /** `openswmm_output.h` */
+  swmm_output_has_subcatch_variable(handle: number, code: number): number;
+  /** `openswmm_output.h` */
   swmm_output_open(path: string | null): number;
   /** `openswmm_output.h` */
   swmm_output_open_live(path: string | null): number;
@@ -1820,6 +2010,28 @@ export interface RawApi {
   swmm_output_get_node_stat_time_flooded(handle: number, node_idx: number, value: number): number;
   /** `openswmm_output.h` */
   swmm_output_get_error_code(handle: number): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_available(): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_open(path: string | null, output: number): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_close(output: number): void;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_error(): string;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_datasets(output: number, text: number, capacity: number, required: number): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_shape(output: number, dataset: string | null, rank: number, dimensions: number, integer: number, unlimited_axes: number): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_attributes(output: number, object: string | null, text: number, capacity: number, required: number): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_attribute(output: number, object: string | null, name: string | null, text: number, capacity: number, required: number): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_strings(output: number, dataset: string | null, text: number, capacity: number, required: number): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_read_double(output: number, dataset: string | null, start: number, count: number, stride: number, values: number, capacity: number): number;
+  /** `openswmm_output2d.h` */
+  swmm_output2d_read_int64(output: number, dataset: string | null, start: number, count: number, stride: number, values: number, capacity: number): number;
   /** `openswmm_pollutants.h` */
   swmm_pollutant_count(engine: number): number;
   /** `openswmm_pollutants.h` */
@@ -1971,6 +2183,10 @@ export interface RawApi {
   /** `openswmm_reactions.h` */
   swmm_reaction_init_global_set(engine: number, species_idx: number, value: number): number;
   /** `openswmm_reactions.h` */
+  swmm_reaction_rain_conc_get(engine: number, species_idx: number, value: number): number;
+  /** `openswmm_reactions.h` */
+  swmm_reaction_rain_conc_set(engine: number, species_idx: number, value: number): number;
+  /** `openswmm_reactions.h` */
   swmm_reaction_init_elem_count(engine: number): number;
   /** `openswmm_reactions.h` */
   swmm_reaction_init_elem_get(engine: number, entry_idx: number, is_link: number, elem_idx: number, species_idx: number, value: number): number;
@@ -1994,12 +2210,74 @@ export interface RawApi {
   swmm_reaction_function_count(): number;
   /** `openswmm_reactions.h` */
   swmm_reaction_function_get(idx: number, name: number, name_len: number, arity: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snow_get_model(engine: number, model: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snow_set_model(engine: number, model: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snow_get_step(engine: number, seconds: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snow_set_step(engine: number, seconds: number): number;
+  /** `openswmm_snow.h` */
+  swmm_ueb_option_get(engine: number, key: string | null, value: number, capacity: number): number;
+  /** `openswmm_snow.h` */
+  swmm_ueb_option_set(engine: number, key: string | null, value: string | null): number;
+  /** `openswmm_snow.h` */
+  swmm_ueb_get_monthly_ranges(engine: number, values: number): number;
+  /** `openswmm_snow.h` */
+  swmm_ueb_set_monthly_ranges(engine: number, values: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snowpack_get_ueb(engine: number, pack: number, value: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snowpack_set_ueb(engine: number, pack: number, value: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snowpack_apply(engine: number, edits: number, count: number, diagnostic: number, capacity: number): number;
+  /** `openswmm_snow.h` */
+  swmm_subcatch_get_snow_process_state(engine: number, subcatch: number, surface: number, value: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snow_get_ueb_ledger(engine: number, value: number): number;
+  /** `openswmm_snow.h` */
+  swmm_climate_get_radiation(engine: number, value: number): number;
+  /** `openswmm_snow.h` */
+  swmm_climate_set_radiation(engine: number, value: number): number;
+  /** `openswmm_snow.h` */
+  swmm_climate_get_radiation_source(engine: number, channel: number, value: number, capacity: number): number;
+  /** `openswmm_snow.h` */
+  swmm_climate_set_radiation_source(engine: number, channel: number, value: string | null): number;
+  /** `openswmm_snow.h` */
+  swmm_snow_apply_configuration(engine: number, temperature_rows: string | null, ueb_rows: string | null, diagnostic: number, capacity: number): number;
+  /** `openswmm_snow.h` */
+  swmm_climate_get_cloud(engine: number, config: number, series: number, capacity: number): number;
+  /** `openswmm_snow.h` */
+  swmm_climate_preview_meteorology(engine: number, path: string | null, result: number, diagnostic: number, capacity: number): number;
+  /** `openswmm_snow.h` */
+  swmm_snow_apply_configuration_with_cloud(engine: number, temperature_rows: string | null, ueb_rows: string | null, cloud: number, cloud_series: string | null, diagnostic: number, capacity: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_get_options(engine: number, mode: number, step_s: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_defaults_count(engine: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_cells_count(engine: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_get_configuration(engine: number, section: number, buffer: number, capacity: number, required: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_get_row(engine: number, section: number, row: number, cell: number, tag: number, tag_capacity: number, pack: number, pack_capacity: number, values: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_get_states(engine: number, first: number, count: number, output: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_get_ledgers(engine: number, first: number, count: number, output: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_get_geometry_energy(engine: number, first: number, count: number, energy_kj: number): number;
+  /** `openswmm_snow2d.h` */
+  swmm_snow2d_apply_configuration(engine: number, options: string | null, defaults: string | null, cells: string | null, diagnostic: number, capacity: number): number;
   /** `openswmm_spatial.h` */
   swmm_spatial_set_crs(engine: number, crs: string | null): number;
   /** `openswmm_spatial.h` */
   swmm_spatial_get_crs(engine: number, buf: number, buflen: number): number;
   /** `openswmm_spatial.h` */
   swmm_spatial_set_node_coord(engine: number, idx: number, x: number, y: number): number;
+  /** `openswmm_spatial.h` */
+  swmm_spatial_node_has_coord(engine: number, idx: number, present: number): number;
   /** `openswmm_spatial.h` */
   swmm_spatial_get_node_coord(engine: number, idx: number, x: number, y: number): number;
   /** `openswmm_spatial.h` */
@@ -2030,6 +2308,18 @@ export interface RawApi {
   swmm_spatial_set_gage_coord(engine: number, idx: number, x: number, y: number): number;
   /** `openswmm_spatial.h` */
   swmm_spatial_get_gage_coord(engine: number, idx: number, x: number, y: number): number;
+  /** `openswmm_spatial.h` */
+  swmm_spatial_get_map_dimensions(engine: number, x1: number, y1: number, x2: number, y2: number): number;
+  /** `openswmm_spatial.h` */
+  swmm_spatial_set_map_dimensions(engine: number, x1: number, y1: number, x2: number, y2: number): number;
+  /** `openswmm_spatial.h` */
+  swmm_spatial_get_map_units(engine: number, buf: number, buflen: number): number;
+  /** `openswmm_spatial.h` */
+  swmm_spatial_set_map_units(engine: number, units: string | null): number;
+  /** `openswmm_spatial.h` */
+  swmm_spatial_get_annotation(engine: number, section: string | null, buf: number, buflen: number, required: number): number;
+  /** `openswmm_spatial.h` */
+  swmm_spatial_set_annotation(engine: number, section: string | null, text: string | null): number;
   /** `openswmm_sq2d.h` */
   swmm_2d_coverage_count(engine: number, count: number): number;
   /** `openswmm_sq2d.h` */
@@ -2329,11 +2619,11 @@ export interface RawApi {
   /** `openswmm_subcatchments.h` */
   swmm_gwf_function_name(engine: number, i: number, buf: number, buflen: number): number;
   /** `openswmm_surface_ownership.h` */
-  swmm_surface_owner_get(a0: number, rows: number, capacity: number, count: number): number;
+  swmm_surface_owner_get(engine: number, rows: number, capacity: number, count: number): number;
   /** `openswmm_surface_ownership.h` */
-  swmm_surface_owner_preview(a0: number, rows: number, count: number, objects: number, object_capacity: number, object_count: number, shares: number, share_capacity: number, share_count: number, mesh_weather_area: number, cell_capacity: number, cell_count: number, valid: number, token: number, token_capacity: number, diagnostics: number, diagnostic_capacity: number, progress: number, user: number): number;
+  swmm_surface_owner_preview(engine: number, rows: number, count: number, objects: number, object_capacity: number, object_count: number, shares: number, share_capacity: number, share_count: number, mesh_weather_area: number, cell_capacity: number, cell_count: number, valid: number, token: number, token_capacity: number, diagnostics: number, diagnostic_capacity: number, progress: number, user: number): number;
   /** `openswmm_surface_ownership.h` */
-  swmm_surface_owner_replace(a0: number, rows: number, count: number, expected_token: string | null, diagnostics: number, diagnostic_capacity: number): number;
+  swmm_surface_owner_replace(engine: number, rows: number, count: number, expected_token: string | null, diagnostics: number, diagnostic_capacity: number): number;
   /** `openswmm_tables.h` */
   swmm_table_count(engine: number): number;
   /** `openswmm_tables.h` */
@@ -2380,6 +2670,10 @@ export interface RawApi {
   swmm_pattern_remove(engine: number, idx: number): number;
   /** `openswmm_tables.h` */
   swmm_pattern_rename(engine: number, idx: number, newId: string | null): number;
+  /** `openswmm_tables.h` */
+  swmm_table_rename(engine: number, idx: number, newId: string | null): number;
+  /** `openswmm_tables.h` */
+  swmm_table_set_type(engine: number, idx: number, type: number): number;
   /** `openswmm_trace.h` */
   swmm_trace_default_options(options: number): void;
   /** `openswmm_trace.h` */
@@ -2390,6 +2684,8 @@ export interface RawApi {
   swmm_trace_error(handle: number): string;
   /** `openswmm_trace.h` */
   swmm_trace_prepare(handle: number, output_path: string | null, cache_path: string | null, fingerprint: string | null, progress: number, user: number): number;
+  /** `openswmm_trace.h` */
+  swmm_trace_prepare_live(handle: number, output_path: string | null, progress: number, user: number): number;
   /** `openswmm_trace.h` */
   swmm_trace_set_averages(handle: number, nodes: number, node_count: number, links: number, link_count: number, info: number): number;
   /** `openswmm_trace.h` */
@@ -2430,6 +2726,22 @@ export interface RawApi {
   swmm_transport_source_count(engine: number, count: number): number;
   /** `openswmm_transport.h` */
   swmm_transport_get_source(engine: number, index: number, element: number, elem_len: number, species: number, spec_len: number, is_ts: number, value: number, ts_name: number, ts_len: number): number;
+  /** `openswmm_transport.h` */
+  swmm_transport_get_detailed_output(engine: number, buf: number, buflen: number): number;
+  /** `openswmm_transport.h` */
+  swmm_transport_set_detailed_output(engine: number, path: string | null): number;
+  /** `openswmm_transport.h` */
+  swmm_transport_set_conduit_disp(engine: number, link_index: number, value: number): number;
+  /** `openswmm_transport.h` */
+  swmm_transport_remove_conduit_disp(engine: number, index: number): number;
+  /** `openswmm_transport.h` */
+  swmm_transport_set_boundary(engine: number, element: string | null, species: string | null, is_ts: number, value: number, ts_name: string | null): number;
+  /** `openswmm_transport.h` */
+  swmm_transport_remove_boundary(engine: number, index: number): number;
+  /** `openswmm_transport.h` */
+  swmm_transport_set_source(engine: number, element: string | null, species: string | null, is_ts: number, value: number, ts_name: string | null): number;
+  /** `openswmm_transport.h` */
+  swmm_transport_remove_source(engine: number, index: number): number;
   /** `openswmm_water_age.h` */
   swmm_water_age_get_enabled(engine: number, enabled: number): number;
   /** `openswmm_water_age.h` */
@@ -2520,7 +2832,9 @@ export function bindRaw(mod: RawModule): RawApi {
     }
   };
   bind("swmm_2d_is_active", "number", ["number", "number"]);
+  bind("swmm_2d_set_auto_backend_cpu", "number", ["number", "number"]);
   bind("swmm_2d_prepare_for_edit", "number", ["number"]);
+  bind("swmm_2d_geometry_scale_to_si", "number", ["number", "number"]);
   bind("swmm_2d_vertex_count", "number", ["number", "number"]);
   bind("swmm_2d_triangle_count", "number", ["number", "number"]);
   bind("swmm_2d_vertex_get_xyz", "number", ["number", "number", "number", "number", "number"]);
@@ -2608,6 +2922,18 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_2d_get_edge_bc_type", "number", ["number", "number", "number", "number"]);
   bind("swmm_2d_set_edge_bc_concentrations", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_2d_clear_edge_bc", "number", ["number", "number", "number"]);
+  bind("swmm_2d_initial_quality_count", "number", ["number", "number"]);
+  bind("swmm_2d_get_initial_quality", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_2d_set_initial_quality", "number", ["number", "number", "string", "number", "string", "number"]);
+  bind("swmm_2d_remove_initial_quality", "number", ["number", "number"]);
+  bind("swmm_2d_initial_bed_quality_count", "number", ["number", "number"]);
+  bind("swmm_2d_get_initial_bed_quality", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_2d_set_initial_bed_quality", "number", ["number", "number", "string", "number", "string", "number"]);
+  bind("swmm_2d_remove_initial_bed_quality", "number", ["number", "number"]);
+  bind("swmm_2d_boundary_quality_count", "number", ["number", "number"]);
+  bind("swmm_2d_get_boundary_quality", "number", ["number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_2d_set_boundary_quality", "number", ["number", "number", "number", "string", "number"]);
+  bind("swmm_2d_remove_boundary_quality", "number", ["number", "number"]);
   bind("swmm_2d_set_edge_bc_type", "number", ["number", "number", "number", "number"]);
   bind("swmm_2d_get_edge_bc_head", "number", ["number", "number", "number", "number"]);
   bind("swmm_2d_set_edge_bc_head", "number", ["number", "number", "number", "number"]);
@@ -2626,6 +2952,22 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_2d_output_variable_name", "string", ["number"]);
   bind("swmm_2d_output_variable_mask", "number", ["string"]);
   bind("swmm_2d_output_variable_text", "string", ["number"]);
+  bind("swmm_node_get_2d_coupling_type", "number", ["number", "number", "number", "number"]);
+  bind("swmm_node_get_2d_coupling_default_type", "number", ["number", "number", "number"]);
+  bind("swmm_node_set_2d_coupling_type", "number", ["number", "number", "number"]);
+  bind("swmm_node_reset_2d_coupling", "number", ["number", "number"]);
+  bind("swmm_node_get_2d_coupling_param", "number", ["number", "number", "string", "number", "number"]);
+  bind("swmm_node_set_2d_coupling_param", "number", ["number", "number", "string", "string"]);
+  bind("swmm_checkpoint_start_session", "number", ["number", "number"]);
+  bind("swmm_checkpoint_capabilities", "number", ["number", "number"]);
+  bind("swmm_checkpoint_session_status", "number", ["number", "number"]);
+  bind("swmm_checkpoint_inspect", "number", ["number", "string", "number"]);
+  bind("swmm_checkpoint_inspection_json", "number", ["number", "number", "number", "number"]);
+  bind("swmm_checkpoint_inspection_destroy", null, ["number"]);
+  bind("swmm_checkpoint_save", "number", ["number", "string"]);
+  bind("swmm_checkpoint_restore", "number", ["number", "string"]);
+  bind("swmm_checkpoint_export_bundle", "number", ["string", "string"]);
+  bind("swmm_checkpoint_last_error_msg", "string", []);
   bind("swmm_climate_get_temp_source", "number", ["number", "number"]);
   bind("swmm_climate_set_temp_source", "number", ["number", "number"]);
   bind("swmm_climate_get_temp_timeseries", "number", ["number", "number", "number"]);
@@ -2646,6 +2988,8 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_climate_set_evap_monthly", "number", ["number", "number", "number"]);
   bind("swmm_climate_get_evap_timeseries", "number", ["number", "number", "number"]);
   bind("swmm_climate_set_evap_timeseries", "number", ["number", "string"]);
+  bind("swmm_climate_preview_evaporation", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_climate_preview_evaporation_with_config", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_climate_get_pan_coeff", "number", ["number", "number", "number"]);
   bind("swmm_climate_set_pan_coeff", "number", ["number", "number", "number"]);
   bind("swmm_climate_get_evap_recovery", "number", ["number", "number", "number"]);
@@ -2757,6 +3101,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_inlet_junction_fuse", "number", ["number", "number", "number"]);
   bind("swmm_engine_create", "number", []);
   bind("swmm_engine_open", "number", ["number", "string", "string", "string", "string"]);
+  bind("swmm_engine_open_metadata", "number", ["number", "string"]);
   bind("swmm_engine_initialize", "number", ["number"]);
   bind("swmm_engine_start", "number", ["number", "number"]);
   bind("swmm_engine_advance_to", "number", ["number", "number", "number"]);
@@ -2785,6 +3130,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_get_thread_info", "number", ["number"]);
   bind("swmm_get_effective_threads", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_get_transport_matrix", "number", ["number", "number"]);
+  bind("swmm_preview_transport_matrix", "number", ["number", "number", "number"]);
   bind("swmm_transport_domain_name", "string", ["number"]);
   bind("swmm_transport_class_name", "string", ["number"]);
   bind("swmm_get_start_time", "number", ["number", "number"]);
@@ -2892,9 +3238,16 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_gpkg_read_observed_values", "number", ["number", "number", "number", "number", "number", "number"]);
   bind("swmm_gpkg_query_int", "number", ["number", "string"]);
   bind("swmm_gpkg_query_double", "number", ["number", "string", "number"]);
+  bind("swmm_gw2d_boundary_count", "number", ["number"]);
+  bind("swmm_gw2d_boundary_get", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_gw2d_boundary_set", "number", ["number", "number", "string"]);
+  bind("swmm_gw2d_boundary_remove", "number", ["number", "number"]);
+  bind("swmm_gw2d_boundary_water", "number", ["number", "number", "number", "number", "number", "number"]);
+  bind("swmm_gw2d_boundary_species", "number", ["number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_gw2d_species_count", "number", ["number", "number"]);
   bind("swmm_gw2d_species_name", "number", ["number", "number", "number", "number"]);
   bind("swmm_gw2d_get_cell_conc", "number", ["number", "number", "number", "number", "number", "number"]);
+  bind("swmm_gw2d_get_layer_quality", "number", ["number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_gw2d_get_species_ledger", "number", ["number", "number", "number", "number"]);
   bind("swmm_gw2d_option_get", "number", ["number", "string", "number", "number"]);
   bind("swmm_gw2d_process_options_set", "number", ["number", "string", "string", "string", "number"]);
@@ -2911,6 +3264,11 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_gw2d_node_remove", "number", ["number", "number"]);
   bind("swmm_gw2d_node_get_flags", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_gw2d_node_set_exchange", "number", ["number", "number", "number"]);
+  bind("swmm_gw2d_node_replace", "number", ["number", "number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_gw2d_link_count", "number", ["number", "number"]);
+  bind("swmm_gw2d_link_add", "number", ["number", "string", "number", "number", "number"]);
+  bind("swmm_gw2d_link_get", "number", ["number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_gw2d_link_remove", "number", ["number", "number"]);
   bind("swmm_gw2d_is_active", "number", ["number", "number"]);
   bind("swmm_gw2d_get_dimensions", "number", ["number", "number", "number"]);
   bind("swmm_gw2d_get_cell", "number", ["number", "number", "number", "number"]);
@@ -2919,6 +3277,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_gw2d_get_ledger", "number", ["number", "number", "number"]);
   bind("swmm_gw2d_get_continuity_error", "number", ["number", "number"]);
   bind("swmm_gw2d_get_tier_histogram", "number", ["number", "number", "number", "number"]);
+  bind("swmm_gw2d_get_execution_status", "number", ["number", "number"]);
   bind("swmm_gw_transport_option_get", "number", ["number", "string", "number", "number"]);
   bind("swmm_gw_transport_option_set", "number", ["number", "string", "string"]);
   bind("swmm_gw_transport_authored", "number", ["number"]);
@@ -2950,6 +3309,20 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_gw_source_species_get", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_gw_source_species_set", "number", ["number", "number", "string", "string", "number", "string"]);
   bind("swmm_gw_source_species_remove", "number", ["number", "number", "number"]);
+  bind("swmm_hydrothermal_edit_atomic", "number", ["number", "number", "number"]);
+  bind("swmm_heat_get_dry_policy", "number", ["number", "number"]);
+  bind("swmm_heat_set_dry_policy", "number", ["number", "number"]);
+  bind("swmm_heat_get_lid_material", "number", ["number", "number"]);
+  bind("swmm_heat_clear_solar_site", "number", ["number"]);
+  bind("swmm_heat_get_authoring_flags", "number", ["number", "number"]);
+  bind("swmm_heat_snapshot_create", "number", ["number"]);
+  bind("swmm_heat_snapshot_restore", "number", ["number", "number"]);
+  bind("swmm_heat_snapshot_destroy", null, ["number"]);
+  bind("swmm_config_snapshot_create", "number", ["number"]);
+  bind("swmm_config_snapshot_restore", "number", ["number", "number"]);
+  bind("swmm_config_snapshot_destroy", null, ["number"]);
+  bind("swmm_heat_sediment_temperature_configured", "number", ["number", "number", "number"]);
+  bind("swmm_heat_clear_sediment_temperature", "number", ["number", "number"]);
   bind("swmm_heat_get_enabled", "number", ["number", "number"]);
   bind("swmm_heat_get_module", "number", ["number", "number", "number"]);
   bind("swmm_heat_set_module", "number", ["number", "number", "number"]);
@@ -2980,11 +3353,36 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_heat_set_node_override", "number", ["number", "number", "number", "number"]);
   bind("swmm_heat_remove_node_override", "number", ["number", "number"]);
   bind("swmm_heat_get_effective_source_temp", "number", ["number", "number", "number", "number"]);
+  bind("swmm_heat_get_sediment", "number", ["number", "number", "number"]);
+  bind("swmm_heat_set_sediment", "number", ["number", "number", "number"]);
+  bind("swmm_heat_get_sediment_ground_timeseries", "number", ["number", "number", "number"]);
+  bind("swmm_heat_set_sediment_ground_timeseries", "number", ["number", "string"]);
+  bind("swmm_heat_element_override_count", "number", ["number", "number"]);
+  bind("swmm_heat_get_element_override", "number", ["number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_heat_set_element_override", "number", ["number", "number", "number", "string", "number"]);
+  bind("swmm_heat_remove_element_override", "number", ["number", "number"]);
+  bind("swmm_heat_get_effective_element", "number", ["number", "number", "number", "string", "number", "number", "number", "number"]);
+  bind("swmm_heat_get_2d_status", "number", ["number", "number"]);
+  bind("swmm_heat_get_2d_values", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_heat_ground_source_configured", "number", ["number", "number"]);
+  bind("swmm_heat_clear_ground_source", "number", ["number"]);
+  bind("swmm_heat_get_ground_status", "number", ["number", "number"]);
+  bind("swmm_heat_get_ground_values", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_heat_get_ground_layers", "number", ["number", "number", "number", "number", "number", "number"]);
+  bind("swmm_heat_get_channel_ground_status", "number", ["number", "number"]);
+  bind("swmm_heat_get_channel_ground_values", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_heat_get_channel_ground_contact", "number", ["number", "number", "number"]);
+  bind("swmm_heat_preview_channel_ground_map", "number", ["number", "number", "number", "number", "number", "number"]);
+  bind("swmm_heat_preview_channel_ground_map_with_progress", "number", ["number", "number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_heat_preview_channel_ground_map_page", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_hotstart_saves_count", "number", ["number", "number"]);
   bind("swmm_hotstart_saves_get_path", "number", ["number", "number", "number", "number"]);
   bind("swmm_hotstart_saves_get_datetime", "number", ["number", "number", "number"]);
   bind("swmm_hotstart_saves_set_path", "number", ["number", "number", "string"]);
   bind("swmm_hotstart_saves_set_datetime", "number", ["number", "number", "number"]);
+  bind("swmm_hotstart_saves_get_format", "number", ["number", "number", "number"]);
+  bind("swmm_hotstart_saves_set_format", "number", ["number", "number", "number"]);
+  bind("swmm_hotstart_legacy_omits", "number", ["number", "number"]);
   bind("swmm_hotstart_saves_add", "number", ["number", "string", "number"]);
   bind("swmm_hotstart_saves_remove", "number", ["number", "number"]);
   bind("swmm_hotstart_saves_clear", "number", ["number"]);
@@ -3114,6 +3512,10 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_lid_node_layers_set", "number", ["number", "number", "number", "number"]);
   bind("swmm_node_get_lid", "number", ["number", "number", "number", "number"]);
   bind("swmm_node_set_lid", "number", ["number", "number", "number", "number"]);
+  bind("swmm_node_get_lid_bottom", "number", ["number", "number", "number"]);
+  bind("swmm_node_set_lid_bottom", "number", ["number", "number", "number"]);
+  bind("swmm_lid_node_base_area", "number", ["number", "number", "number"]);
+  bind("swmm_lid_node_bottom_state_get", "number", ["number", "number", "number"]);
   bind("swmm_lid_node_outlet_get", "number", ["number", "number", "number", "number"]);
   bind("swmm_lid_node_outlet_set", "number", ["number", "number", "number", "number"]);
   bind("swmm_lid_node_state_count", "number", ["number", "number"]);
@@ -3125,6 +3527,8 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_lid_set_soil", "number", ["number", "number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_lid_set_storage", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_lid_set_drain", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_lid_get_removal", "number", ["number", "number", "number", "number"]);
+  bind("swmm_lid_set_removal", "number", ["number", "number", "number", "number"]);
   bind("swmm_lid_set_pavement", "number", ["number", "number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_lid_set_drainmat", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_lid_count", "number", ["number"]);
@@ -3303,6 +3707,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_node_count", "number", ["number"]);
   bind("swmm_node_index", "number", ["number", "string"]);
   bind("swmm_node_id", "string", ["number", "number"]);
+  bind("swmm_node_get_export_receipt", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_node_add", "number", ["number", "string", "number"]);
   bind("swmm_node_pop_last", "number", ["number", "string"]);
   bind("swmm_node_set_invert_elev", "number", ["number", "number", "number"]);
@@ -3386,6 +3791,8 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_node_rename", "number", ["number", "number", "string"]);
   bind("swmm_node_get_tag", "number", ["number", "number", "number", "number"]);
   bind("swmm_node_set_tag", "number", ["number", "number", "string"]);
+  bind("swmm_output_get_pollut_units", "number", ["number", "number"]);
+  bind("swmm_output_has_subcatch_variable", "number", ["number", "number"]);
   bind("swmm_output_open", "number", ["string"]);
   bind("swmm_output_open_live", "number", ["string"]);
   bind("swmm_output_refresh", "number", ["number", "number"]);
@@ -3421,6 +3828,17 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_output_get_node_stat_vol_flooded", "number", ["number", "number", "number"]);
   bind("swmm_output_get_node_stat_time_flooded", "number", ["number", "number", "number"]);
   bind("swmm_output_get_error_code", "number", ["number"]);
+  bind("swmm_output2d_available", "number", []);
+  bind("swmm_output2d_open", "number", ["string", "number"]);
+  bind("swmm_output2d_close", null, ["number"]);
+  bind("swmm_output2d_error", "string", []);
+  bind("swmm_output2d_datasets", "number", ["number", "number", "number", "number"]);
+  bind("swmm_output2d_shape", "number", ["number", "string", "number", "number", "number", "number"]);
+  bind("swmm_output2d_attributes", "number", ["number", "string", "number", "number", "number"]);
+  bind("swmm_output2d_attribute", "number", ["number", "string", "string", "number", "number", "number"]);
+  bind("swmm_output2d_strings", "number", ["number", "string", "number", "number", "number"]);
+  bind("swmm_output2d_read_double", "number", ["number", "string", "number", "number", "number", "number", "number"]);
+  bind("swmm_output2d_read_int64", "number", ["number", "string", "number", "number", "number", "number", "number"]);
   bind("swmm_pollutant_count", "number", ["number"]);
   bind("swmm_pollutant_index", "number", ["number", "string"]);
   bind("swmm_pollutant_id", "string", ["number", "number"]);
@@ -3496,6 +3914,8 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_reaction_option_set", "number", ["number", "string", "string"]);
   bind("swmm_reaction_init_global_get", "number", ["number", "number", "number"]);
   bind("swmm_reaction_init_global_set", "number", ["number", "number", "number"]);
+  bind("swmm_reaction_rain_conc_get", "number", ["number", "number", "number"]);
+  bind("swmm_reaction_rain_conc_set", "number", ["number", "number", "number"]);
   bind("swmm_reaction_init_elem_count", "number", ["number"]);
   bind("swmm_reaction_init_elem_get", "number", ["number", "number", "number", "number", "number", "number"]);
   bind("swmm_reaction_init_elem_set", "number", ["number", "number", "number", "number", "number"]);
@@ -3508,9 +3928,40 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_reaction_hydvar_get", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_reaction_function_count", "number", []);
   bind("swmm_reaction_function_get", "number", ["number", "number", "number", "number"]);
+  bind("swmm_snow_get_model", "number", ["number", "number"]);
+  bind("swmm_snow_set_model", "number", ["number", "number"]);
+  bind("swmm_snow_get_step", "number", ["number", "number"]);
+  bind("swmm_snow_set_step", "number", ["number", "number"]);
+  bind("swmm_ueb_option_get", "number", ["number", "string", "number", "number"]);
+  bind("swmm_ueb_option_set", "number", ["number", "string", "string"]);
+  bind("swmm_ueb_get_monthly_ranges", "number", ["number", "number"]);
+  bind("swmm_ueb_set_monthly_ranges", "number", ["number", "number"]);
+  bind("swmm_snowpack_get_ueb", "number", ["number", "number", "number"]);
+  bind("swmm_snowpack_set_ueb", "number", ["number", "number", "number"]);
+  bind("swmm_snowpack_apply", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_subcatch_get_snow_process_state", "number", ["number", "number", "number", "number"]);
+  bind("swmm_snow_get_ueb_ledger", "number", ["number", "number"]);
+  bind("swmm_climate_get_radiation", "number", ["number", "number"]);
+  bind("swmm_climate_set_radiation", "number", ["number", "number"]);
+  bind("swmm_climate_get_radiation_source", "number", ["number", "number", "number", "number"]);
+  bind("swmm_climate_set_radiation_source", "number", ["number", "number", "string"]);
+  bind("swmm_snow_apply_configuration", "number", ["number", "string", "string", "number", "number"]);
+  bind("swmm_climate_get_cloud", "number", ["number", "number", "number", "number"]);
+  bind("swmm_climate_preview_meteorology", "number", ["number", "string", "number", "number", "number"]);
+  bind("swmm_snow_apply_configuration_with_cloud", "number", ["number", "string", "string", "number", "string", "number", "number"]);
+  bind("swmm_snow2d_get_options", "number", ["number", "number", "number"]);
+  bind("swmm_snow2d_defaults_count", "number", ["number"]);
+  bind("swmm_snow2d_cells_count", "number", ["number"]);
+  bind("swmm_snow2d_get_configuration", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_snow2d_get_row", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_snow2d_get_states", "number", ["number", "number", "number", "number"]);
+  bind("swmm_snow2d_get_ledgers", "number", ["number", "number", "number", "number"]);
+  bind("swmm_snow2d_get_geometry_energy", "number", ["number", "number", "number", "number"]);
+  bind("swmm_snow2d_apply_configuration", "number", ["number", "string", "string", "string", "number", "number"]);
   bind("swmm_spatial_set_crs", "number", ["number", "string"]);
   bind("swmm_spatial_get_crs", "number", ["number", "number", "number"]);
   bind("swmm_spatial_set_node_coord", "number", ["number", "number", "number", "number"]);
+  bind("swmm_spatial_node_has_coord", "number", ["number", "number", "number"]);
   bind("swmm_spatial_get_node_coord", "number", ["number", "number", "number", "number"]);
   bind("swmm_spatial_get_node_coords_bulk", "number", ["number", "number", "number", "number"]);
   bind("swmm_spatial_set_node_coords_bulk", "number", ["number", "number", "number", "number"]);
@@ -3526,6 +3977,12 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_spatial_get_subcatch_polygon", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_spatial_set_gage_coord", "number", ["number", "number", "number", "number"]);
   bind("swmm_spatial_get_gage_coord", "number", ["number", "number", "number", "number"]);
+  bind("swmm_spatial_get_map_dimensions", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_spatial_set_map_dimensions", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_spatial_get_map_units", "number", ["number", "number", "number"]);
+  bind("swmm_spatial_set_map_units", "number", ["number", "string"]);
+  bind("swmm_spatial_get_annotation", "number", ["number", "string", "number", "number", "number"]);
+  bind("swmm_spatial_set_annotation", "number", ["number", "string", "string"]);
   bind("swmm_2d_coverage_count", "number", ["number", "number"]);
   bind("swmm_2d_coverage_set", "number", ["number", "number", "string", "number", "number", "number", "number"]);
   bind("swmm_2d_coverage_row_size", "number", ["number", "number", "number"]);
@@ -3701,11 +4158,14 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_pattern_get_factor", "number", ["number", "number", "number", "number"]);
   bind("swmm_pattern_remove", "number", ["number", "number"]);
   bind("swmm_pattern_rename", "number", ["number", "number", "string"]);
+  bind("swmm_table_rename", "number", ["number", "number", "string"]);
+  bind("swmm_table_set_type", "number", ["number", "number", "number"]);
   bind("swmm_trace_default_options", null, ["number"]);
   bind("swmm_trace_create", "number", ["number", "number", "number", "number", "number", "number"]);
   bind("swmm_trace_close", null, ["number"]);
   bind("swmm_trace_error", "string", ["number"]);
   bind("swmm_trace_prepare", "number", ["number", "string", "string", "string", "number", "number"]);
+  bind("swmm_trace_prepare_live", "number", ["number", "string", "number", "number"]);
   bind("swmm_trace_set_averages", "number", ["number", "number", "number", "number", "number", "number"]);
   bind("swmm_trace_get_info", "number", ["number", "number"]);
   bind("swmm_trace_get_averages", "number", ["number", "number", "number", "number", "number"]);
@@ -3726,6 +4186,14 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_transport_get_boundary", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]);
   bind("swmm_transport_source_count", "number", ["number", "number"]);
   bind("swmm_transport_get_source", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]);
+  bind("swmm_transport_get_detailed_output", "number", ["number", "number", "number"]);
+  bind("swmm_transport_set_detailed_output", "number", ["number", "string"]);
+  bind("swmm_transport_set_conduit_disp", "number", ["number", "number", "number"]);
+  bind("swmm_transport_remove_conduit_disp", "number", ["number", "number"]);
+  bind("swmm_transport_set_boundary", "number", ["number", "string", "string", "number", "number", "string"]);
+  bind("swmm_transport_remove_boundary", "number", ["number", "number"]);
+  bind("swmm_transport_set_source", "number", ["number", "string", "string", "number", "number", "string"]);
+  bind("swmm_transport_remove_source", "number", ["number", "number"]);
   bind("swmm_water_age_get_enabled", "number", ["number", "number"]);
   bind("swmm_water_age_get_global_source", "number", ["number", "number", "number"]);
   bind("swmm_water_age_set_global_source", "number", ["number", "number", "number"]);
@@ -4043,6 +4511,8 @@ export const STRUCTS = {
 export const CALLBACK_SIGNATURES = {
   /** `void (*)(SWMM_Engine, double, double, void*)` */
   SWMM_ProgressCallback: "viddi",
+  /** `int (*)(SWMM_Engine, int, int, void*)` */
+  SWMM_CancelCallback: "iiiii",
   /** `void (*)(SWMM_Engine, int, const char*, void*)` */
   SWMM_WarningCallback: "viiii",
   /** `void (*)(SWMM_Engine, double, double, void*)` */
@@ -4056,4 +4526,4 @@ export const CALLBACK_SIGNATURES = {
 } as const;
 
 /** Number of C functions in this layer. */
-export const RAW_FUNCTION_COUNT = 1244;
+export const RAW_FUNCTION_COUNT = 1400;

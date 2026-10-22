@@ -2,7 +2,7 @@
 import { TransportDispersionMode } from "./enums.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw, withDouble, withInt } from "./mem.js";
+import { guardedRaw, withCStrings, withDouble, withInt } from "./mem.js";
 import { raiseForCode } from "./errors.js";
 
 export interface TransportRow {
@@ -83,30 +83,23 @@ export class Transport {
         : this.raw.swmm_transport_boundary_count(this.handle, p),
     );
     const read = source ? this.raw.swmm_transport_get_source : this.raw.swmm_transport_get_boundary;
-    const size = 1024;
-    const p = this.mod._malloc(3 * size + 16);
+    const p = this.mod._malloc(16);
+    if (!p) throw new RangeError("Cannot allocate transport row buffer");
     try {
       return Array.from({ length: count }, (_, i) => {
-        raiseForCode(
-          read(
-            this.handle,
-            i,
-            p,
-            size,
-            p + size,
-            size,
-            p + 3 * size,
-            p + 3 * size + 8,
-            p + 2 * size,
-            size,
-          ),
+        const [element, species, timeseries] = withCStrings(
+          this.mod,
+          1024,
+          3,
+          ([elementBuf, speciesBuf, timeseriesBuf], size) =>
+            read(this.handle, i, elementBuf, size, speciesBuf, size, p, p + 8, timeseriesBuf, size),
         );
         return {
-          element: this.mod.UTF8ToString(p, size),
-          species: this.mod.UTF8ToString(p + size, size),
-          isTimeseries: Boolean(this.mod.getValue(p + 3 * size, "i32")),
-          value: this.mod.getValue(p + 3 * size + 8, "double"),
-          timeseries: this.mod.UTF8ToString(p + 2 * size, size),
+          element,
+          species,
+          isTimeseries: Boolean(this.mod.getValue(p, "i32")),
+          value: this.mod.getValue(p + 8, "double"),
+          timeseries,
         };
       });
     } finally {

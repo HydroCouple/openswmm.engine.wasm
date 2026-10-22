@@ -123,7 +123,7 @@ jobs:
       - name: Build TypeScript wrappers
         run: npm ci && npm run build
 
-      - name: Smoke tests (1D and 2D, Node)
+      - name: Smoke tests (exports, 1D, rain/snow file I/O, and 2D, Node)
         run: npm run smoke
 
       - name: Upload WASM artefacts

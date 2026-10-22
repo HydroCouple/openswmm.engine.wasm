@@ -309,6 +309,7 @@ describe("oadateToDate / dateToOadate", () => {
  */
 function makeMockModule(): OpenSwmmWasmModule {
   const heap: Record<number, number> = {};
+  const memory = new ArrayBuffer(1024 * 1024);
   let nextPtr = 1000;
 
   const mod = {
@@ -597,12 +598,12 @@ function makeMockModule(): OpenSwmmWasmModule {
     UTF8ToString: (_ptr: number) => "",
     stringToUTF8: () => {},
     lengthBytesUTF8: (s: string) => s.length,
-    HEAP8: new Int8Array(0),
-    HEAPU8: new Uint8Array(0),
-    HEAP32: new Int32Array(0),
-    HEAPU32: new Uint32Array(0),
-    HEAPF32: new Float32Array(0),
-    HEAPF64: new Float64Array(0),
+    HEAP8: new Int8Array(memory),
+    HEAPU8: new Uint8Array(memory),
+    HEAP32: new Int32Array(memory),
+    HEAPU32: new Uint32Array(memory),
+    HEAPF32: new Float32Array(memory),
+    HEAPF64: new Float64Array(memory),
     // The raw layer uses cwrap only for string-carrying functions; the mock
     // takes/returns JS strings directly, so cwrap just resolves the export.
     cwrap: (name: string) =>
@@ -860,6 +861,65 @@ describe("Gages", () => {
     const solver = new Solver(mod);
     expect(solver.gages.get("G1").rainfall).toBe(5.0);
   });
+
+  it("sets rainfall scale and snow catch independently", () => {
+    const mod = makeMockModule();
+    let scale = 1;
+    let snow = 1;
+    mod._swmm_gage_set_scale_factor = (_h: number, _i: number, value: number) => {
+      scale = value;
+      return 0;
+    };
+    mod._swmm_gage_set_snow_factor = (_h: number, _i: number, value: number) => {
+      snow = value;
+      return 0;
+    };
+    mod._swmm_gage_get_scale_factor = (_h: number, _i: number, ptr: number) => {
+      mod.setValue(ptr, scale, "double");
+      return 0;
+    };
+    mod._swmm_gage_get_snow_factor = (_h: number, _i: number, ptr: number) => {
+      mod.setValue(ptr, snow, "double");
+      return 0;
+    };
+    const gage = new Solver(mod).gages.get("G1");
+    gage.scaleFactor = 10;
+    gage.snowFactor = 1.4;
+    expect(gage.scaleFactor).toBe(10);
+    expect(gage.snowFactor).toBe(1.4);
+  });
+});
+
+describe("Solver output failures", () => {
+  it("reports the writer path diagnostic", () => {
+    const mod = makeMockModule();
+    mod._swmm_model_write = () => ErrorCode.IO;
+    mod._swmm_get_last_error_msg = () => "Cannot open /missing/model.inp for writing";
+    const solver = new Solver(mod);
+    expect(() => solver.writeModel("/missing/model.inp")).toThrow(
+      "Cannot open /missing/model.inp for writing",
+    );
+    solver.destroy();
+  });
+
+  it("reports a failed summary and releases the engine", () => {
+    const mod = makeMockModule();
+    const calls: string[] = [];
+    mod._swmm_engine_report = () => ErrorCode.IO;
+    mod._swmm_get_last_error_msg = () => "Cannot write report summary: disk failed";
+    mod._swmm_engine_close = () => {
+      calls.push("close");
+      return 0;
+    };
+    mod._swmm_engine_destroy = () => {
+      calls.push("destroy");
+    };
+    const solver = new Solver(mod);
+    expect(() => solver.run("/m.inp", "/m.rpt", "/m.out")).toThrow(
+      "Cannot write report summary: disk failed",
+    );
+    expect(calls).toEqual(["close", "destroy"]);
+  });
 });
 
 describe("Controls", () => {
@@ -1027,7 +1087,7 @@ describe("new binding regression cases", () => {
     const before = freed;
     fail = true;
     expect(() => s.transport.boundaries).toThrow(BadParamError);
-    expect(freed - before).toBe(2); // count out-pointer and row buffers
+    expect(freed - before).toBe(5); // count, numeric row, and three string buffers
     expect(rows[0].element).toBe("J0");
   });
 });

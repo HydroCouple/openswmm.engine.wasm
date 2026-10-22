@@ -107,7 +107,7 @@
                            Precip      Runon       Evap      Infil     Runoff     Runoff     Runoff      Runoff   Runoff   Coeff
   Subcatchment                 in         in         in         in         in         in         in    10^6 gal      CFS
   ------------------------------------------------------------------------------------------------------------------------------
-  S1                         0.75       0.00       0.00       0.37       0.36       0.00       0.36        0.10     4.38   0.475
+  S1                         0.75       0.00       0.00       0.38       0.36       0.00       0.36        0.10     4.38   0.475
   S2                         0.75       0.00       0.00       0.56       0.18       0.00       0.18        0.02     1.23   0.239
   
   
@@ -208,6 +208,6 @@
   
   
 
-  Analysis begun on:  Sun Oct 11 12:15:29 2026
-  Analysis ended on:  Sun Oct 11 12:15:29 2026
+  Analysis begun on:  Thu Oct 22 16:58:48 2026
+  Analysis ended on:  Thu Oct 22 16:58:48 2026
   Total elapsed time: < 1 sec

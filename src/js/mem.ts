@@ -32,13 +32,38 @@ export function withCString(
   size: number,
   call: (buf: number, len: number) => number,
 ): string {
-  const buf = mod._malloc(size);
-  try {
-    raiseForCode(call(buf, size));
-    return mod.UTF8ToString(buf, size);
-  } finally {
-    mod._free(buf);
+  return withCStrings(mod, size, 1, ([buf], len) => call(buf, len))[0];
+}
+
+/** Read one or more success-on-truncation native strings without splitting UTF-8. */
+export function withCStrings(
+  mod: OpenSwmmWasmModule,
+  initialSize: number,
+  count: number,
+  call: (buffers: number[], len: number) => number,
+): string[] {
+  if (!Number.isInteger(count) || count < 1)
+    throw new RangeError("String buffer count must be positive");
+  const limit = 64 * 1024 * 1024;
+  for (let size = Math.max(256, initialSize); size <= limit; size *= 2) {
+    const buffers: number[] = [];
+    try {
+      for (let i = 0; i < count; i++) {
+        const ptr = mod._malloc(size);
+        if (!ptr) throw new RangeError("Cannot allocate engine string buffer");
+        buffers.push(ptr);
+        mod.HEAPU8.fill(0, ptr, ptr + size);
+      }
+      raiseForCode(call(buffers, size));
+      // Legacy getters report success for truncated strings. A value reaching
+      // the penultimate byte is ambiguous, so retry before UTF-8 decoding.
+      if (buffers.some((ptr) => mod.HEAPU8[ptr + size - 2] !== 0)) continue;
+      return buffers.map((ptr) => mod.UTF8ToString(ptr, size));
+    } finally {
+      for (const ptr of buffers) mod._free(ptr);
+    }
   }
+  throw new RangeError("Engine string exceeds 64 MiB");
 }
 
 /** Call a C function with a `double*` out-parameter and return the value. */

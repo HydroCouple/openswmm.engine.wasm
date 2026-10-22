@@ -14,7 +14,7 @@
 import { raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw } from "./mem.js";
+import { guardedRaw, withCString } from "./mem.js";
 
 // Maximum buffer size for reading rule text from the engine.
 const RULE_BUF_SIZE = 4096;
@@ -97,19 +97,13 @@ export class Controls implements Iterable<ControlRule> {
    * @throws {@link BadIndexError} if `index` is out of range.
    */
   get(index: number): ControlRule {
-    const textBuf = this._mod._malloc(RULE_BUF_SIZE);
-    const idBuf = this._mod._malloc(256);
-    try {
-      raiseForCode(this._raw.swmm_control_get_rule(this._engine, index, textBuf, RULE_BUF_SIZE));
-      raiseForCode(this._raw.swmm_control_get_id(this._engine, index, idBuf, 256));
-      return {
-        id: this._mod.UTF8ToString(idBuf),
-        text: this._mod.UTF8ToString(textBuf),
-      };
-    } finally {
-      this._mod._free(textBuf);
-      this._mod._free(idBuf);
-    }
+    const text = withCString(this._mod, RULE_BUF_SIZE, (buf, len) =>
+      this._raw.swmm_control_get_rule(this._engine, index, buf, len),
+    );
+    const id = withCString(this._mod, 256, (buf, len) =>
+      this._raw.swmm_control_get_id(this._engine, index, buf, len),
+    );
+    return { id, text };
   }
 
   // -------------------------------------------------------------------------

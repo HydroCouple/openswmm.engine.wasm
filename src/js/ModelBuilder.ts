@@ -51,10 +51,9 @@ import { Transport } from "./Transport.js";
 import { Solver } from "./Solver.js";
 import { type OpenSwmmWasmModule, oadateToDate, dateToOadate } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { rawOf, withCString } from "./mem.js";
+import { rawOf, withCString, withCStrings } from "./mem.js";
 
 // Buffer sizes used when reading variable-length strings from the engine.
-const BUF_SMALL = 256;
 const BUF_MEDIUM = 1024;
 const BUF_LARGE = 4096;
 
@@ -445,7 +444,8 @@ export class ModelBuilder {
    */
   write(path: string): void {
     this._assertValid();
-    raiseForCode(this._raw.swmm_model_write(this._handle, path));
+    const code = this._raw.swmm_model_write(this._handle, path);
+    raiseForCode(code, code ? this._raw.swmm_get_last_error_msg(this._handle) : undefined);
   }
 
   /**
@@ -457,7 +457,8 @@ export class ModelBuilder {
    */
   writeWithPlugin(path: string, outputPluginId = ""): void {
     this._assertValid();
-    raiseForCode(this._raw.swmm_model_write_with_plugin(this._handle, path, outputPluginId));
+    const code = this._raw.swmm_model_write_with_plugin(this._handle, path, outputPluginId);
+    raiseForCode(code, code ? this._raw.swmm_get_last_error_msg(this._handle) : undefined);
   }
 
   // -------------------------------------------------------------------------
@@ -762,30 +763,23 @@ export class ModelBuilder {
    */
   getUserflagDef(index: number): UserFlagDef {
     this._assertValid();
-    const nameBuf = this._mod._malloc(BUF_SMALL);
     const typePtr = this._mod._malloc(4);
-    const descBuf = this._mod._malloc(BUF_MEDIUM);
+    if (!typePtr) throw new RangeError("Cannot allocate user flag type buffer");
     try {
-      raiseForCode(
-        this._raw.swmm_userflag_def_get(
-          this._handle,
-          index,
-          nameBuf,
-          BUF_SMALL,
-          typePtr,
-          descBuf,
-          BUF_MEDIUM,
-        ),
+      const [name, description] = withCStrings(
+        this._mod,
+        BUF_MEDIUM,
+        2,
+        ([nameBuf, descBuf], len) =>
+          this._raw.swmm_userflag_def_get(this._handle, index, nameBuf, len, typePtr, descBuf, len),
       );
       return {
-        name: this._mod.UTF8ToString(nameBuf),
+        name,
         type: this._mod.getValue(typePtr, "i32"),
-        description: this._mod.UTF8ToString(descBuf),
+        description,
       };
     } finally {
-      this._mod._free(nameBuf);
       this._mod._free(typePtr);
-      this._mod._free(descBuf);
     }
   }
 
@@ -826,24 +820,23 @@ export class ModelBuilder {
    */
   getUserflagValue(objType: string, objName: string, flagName: string): string | undefined {
     this._assertValid();
-    const buf = this._mod._malloc(BUF_MEDIUM);
     const foundPtr = this._mod._malloc(4);
+    if (!foundPtr) throw new RangeError("Cannot allocate user flag status buffer");
     try {
-      raiseForCode(
+      const [value] = withCStrings(this._mod, BUF_MEDIUM, 1, ([buf], len) =>
         this._raw.swmm_userflag_value_get(
           this._handle,
           objType,
           objName,
           flagName,
           buf,
-          BUF_MEDIUM,
+          len,
           foundPtr,
         ),
       );
       const found = this._mod.getValue(foundPtr, "i32");
-      return found ? this._mod.UTF8ToString(buf) : undefined;
+      return found ? value : undefined;
     } finally {
-      this._mod._free(buf);
       this._mod._free(foundPtr);
     }
   }
@@ -896,20 +889,10 @@ export class ModelBuilder {
    */
   pluginGet(idx: number): PluginEntry {
     this._assertValid();
-    const pathBuf = this._mod._malloc(BUF_MEDIUM);
-    const argsBuf = this._mod._malloc(BUF_MEDIUM);
-    try {
-      raiseForCode(
-        this._raw.swmm_plugin_get(this._handle, idx, pathBuf, BUF_MEDIUM, argsBuf, BUF_MEDIUM),
-      );
-      return {
-        path: this._mod.UTF8ToString(pathBuf),
-        args: this._mod.UTF8ToString(argsBuf),
-      };
-    } finally {
-      this._mod._free(pathBuf);
-      this._mod._free(argsBuf);
-    }
+    const [path, args] = withCStrings(this._mod, BUF_MEDIUM, 2, ([p, a], len) =>
+      this._raw.swmm_plugin_get(this._handle, idx, p, len, a, len),
+    );
+    return { path, args };
   }
 
   /**
@@ -976,28 +959,10 @@ export class ModelBuilder {
    */
   filePathGet(role: number, owner = ""): FilePaths {
     this._assertValid();
-    const absBuf = this._mod._malloc(BUF_LARGE);
-    const origBuf = this._mod._malloc(BUF_LARGE);
-    try {
-      raiseForCode(
-        this._raw.swmm_file_path_get(
-          this._handle,
-          role,
-          owner,
-          absBuf,
-          BUF_LARGE,
-          origBuf,
-          BUF_LARGE,
-        ),
-      );
-      return {
-        absolute: this._mod.UTF8ToString(absBuf),
-        original: this._mod.UTF8ToString(origBuf),
-      };
-    } finally {
-      this._mod._free(absBuf);
-      this._mod._free(origBuf);
-    }
+    const [absolute, original] = withCStrings(this._mod, BUF_LARGE, 2, ([a, o], len) =>
+      this._raw.swmm_file_path_get(this._handle, role, owner, a, len, o, len),
+    );
+    return { absolute, original };
   }
 
   /**
