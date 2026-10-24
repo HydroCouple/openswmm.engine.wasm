@@ -106,6 +106,10 @@ export {
 } from "./mem.js";
 
 export { Transport } from "./Transport.js";
+export { Fields } from "./Fields.js";
+export type { FieldValue } from "./Fields.js";
+export { CATALOG_REVISION, ELEMENTS, FIELDS } from "./fields.generated.js";
+export type { FieldKind, FieldSpec, ElementSpec } from "./fields.generated.js";
 export type { TransportRow, ConduitDispersion } from "./Transport.js";
 
 // ---------------------------------------------------------------------------
