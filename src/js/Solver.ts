@@ -59,6 +59,7 @@ import { Gages } from "./Gages.js";
 import { Controls } from "./Controls.js";
 import { Transport } from "./Transport.js";
 import { Forcing } from "./Forcing.js";
+import { Fields } from "./Fields.js";
 import { Surface2D } from "./Surface2D.js";
 import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
 import type { RawApi } from "./raw.js";
@@ -163,6 +164,12 @@ export class Solver {
    */
   readonly surface2d: Surface2D;
 
+  /**
+   * Engine fields by catalog path (`"node.max_depth"`, `"link.stats.max_flow"`, ...),
+   * the addressing the Python catalog, MCP server and gymnasium share.
+   */
+  readonly fields: Fields;
+
   // -------------------------------------------------------------------------
   // Constructor
   // -------------------------------------------------------------------------
@@ -195,6 +202,7 @@ export class Solver {
     this.transport = new Transport(mod, h, () => this._assertAlive());
     this.forcing = new Forcing(mod, h, () => this._assertAlive());
     this.surface2d = new Surface2D(mod, h, () => this._assertAlive());
+    this.fields = new Fields(mod, () => this.handle);
   }
 
   // -------------------------------------------------------------------------

@@ -95,7 +95,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Generated binding drift
-        run: python3 tools/gen_bindings.py --check
+        run: python3 tools/gen_bindings.py --check && python3 tools/gen_fields.py --check
 
       - name: Struct layouts under the wasm32 ABI
         run: |
