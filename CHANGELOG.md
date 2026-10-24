@@ -20,6 +20,15 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ### Added
 
+- **`solver.fields`: engine fields by catalog path.** `fields.get("node.max_depth", "J1")`,
+  `fields.set("link.roughness", "C1", 0.012)` and `fields.getAll("node.depth")`
+  use the dotted paths of the engine catalog, the same names the Python
+  bindings, the MCP server and the gymnasium use. The table is generated from
+  the catalog (`tools/gen_fields.py`, run by `npm run gen` and checked in CI):
+  181 of the catalog's 389 properties, every one that maps onto a single C
+  getter and setter. `tests/fixtures/facade_coverage.json` records that
+  coverage per target, and `tools/verify_fields_native.py` checks the table
+  against the native engine and the Python bindings.
 - **Trivial 2D example** (`examples/trivial_2d.inp`, `examples/trivial_2d.mjs`,
   shipped in the package): rain on a two-triangle sloped plane draining
   through one edge, with no 1D network. Featured in the README and run by
