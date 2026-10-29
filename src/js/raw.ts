@@ -121,6 +121,8 @@ export interface RawApi {
   /** `openswmm_2d.h` */
   swmm_2d_get_heads_bulk(engine: number, heads: number): number;
   /** `openswmm_2d.h` */
+  swmm_2d_get_velocities_bulk(engine: number, vx: number, vy: number): number;
+  /** `openswmm_2d.h` */
   swmm_2d_get_coupling_fluxes_bulk(engine: number, fluxes: number): number;
   /** `openswmm_2d.h` */
   swmm_2d_get_rainfall_bulk(engine: number, rainfall: number): number;
@@ -228,6 +230,12 @@ export interface RawApi {
   swmm_2d_get_edge_bc_head(engine: number, tri_idx: number, edge: number, head: number): number;
   /** `openswmm_2d.h` */
   swmm_2d_set_edge_bc_head(engine: number, tri_idx: number, edge: number, head: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_set_edge_bc_group(engine: number, tri_idx: number, edge: number, group: string | null): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_get_edge_wall_drag(engine: number, tri_idx: number, edge: number, cw: number): number;
+  /** `openswmm_2d.h` */
+  swmm_2d_set_edge_wall_drag(engine: number, tri_idx: number, edge: number, cw: number): number;
   /** `openswmm_2d.h` */
   swmm_2d_get_edge_bc_slope(engine: number, tri_idx: number, edge: number, slope: number): number;
   /** `openswmm_2d.h` */
@@ -554,6 +562,8 @@ export interface RawApi {
   swmm_inlet_junction_fuse(engine: number, node_idx: number, surviving_link_idx: number): number;
   /** `openswmm_engine.h` */
   swmm_engine_create(): number;
+  /** `openswmm_engine.h` */
+  swmm_engine_abi_tag(): string;
   /** `openswmm_engine.h` */
   swmm_engine_open(engine: number, inp: string | null, rpt: string | null, out: string | null, input_plugin_lib: string | null): number;
   /** `openswmm_engine.h` */
@@ -1723,6 +1733,14 @@ export interface RawApi {
   /** `openswmm_model.h` */
   swmm_options_set_ext(engine: number, key: string | null, value: string | null): number;
   /** `openswmm_model.h` */
+  swmm_options_key_count(): number;
+  /** `openswmm_model.h` */
+  swmm_options_key_at(index: number, buf: number, buflen: number): number;
+  /** `openswmm_model.h` */
+  swmm_options_ext_key_count(engine: number, count: number): number;
+  /** `openswmm_model.h` */
+  swmm_options_ext_key_at(engine: number, index: number, buf: number, buflen: number): number;
+  /** `openswmm_model.h` */
   swmm_get_crs(engine: number, buf: number, buflen: number): number;
   /** `openswmm_model.h` */
   swmm_options_get_start_date(engine: number, value: number): number;
@@ -1780,6 +1798,10 @@ export interface RawApi {
   swmm_node_set_max_depth(engine: number, idx: number, depth: number): number;
   /** `openswmm_nodes.h` */
   swmm_node_set_surcharge_depth(engine: number, idx: number, depth: number): number;
+  /** `openswmm_nodes.h` */
+  swmm_node_set_storage_area(engine: number, idx: number, area: number): number;
+  /** `openswmm_nodes.h` */
+  swmm_node_get_storage_area(engine: number, idx: number, area: number): number;
   /** `openswmm_nodes.h` */
   swmm_node_set_pond_area(engine: number, idx: number, area: number): number;
   /** `openswmm_nodes.h` */
@@ -2883,6 +2905,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_2d_get_net_source", "number", ["number", "number", "number"]);
   bind("swmm_2d_get_depths_bulk", "number", ["number", "number"]);
   bind("swmm_2d_get_heads_bulk", "number", ["number", "number"]);
+  bind("swmm_2d_get_velocities_bulk", "number", ["number", "number", "number"]);
   bind("swmm_2d_get_coupling_fluxes_bulk", "number", ["number", "number"]);
   bind("swmm_2d_get_rainfall_bulk", "number", ["number", "number"]);
   bind("swmm_2d_get_report_rainfall_bulk", "number", ["number", "number", "number"]);
@@ -2937,6 +2960,9 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_2d_set_edge_bc_type", "number", ["number", "number", "number", "number"]);
   bind("swmm_2d_get_edge_bc_head", "number", ["number", "number", "number", "number"]);
   bind("swmm_2d_set_edge_bc_head", "number", ["number", "number", "number", "number"]);
+  bind("swmm_2d_set_edge_bc_group", "number", ["number", "number", "number", "string"]);
+  bind("swmm_2d_get_edge_wall_drag", "number", ["number", "number", "number", "number"]);
+  bind("swmm_2d_set_edge_wall_drag", "number", ["number", "number", "number", "number"]);
   bind("swmm_2d_get_edge_bc_slope", "number", ["number", "number", "number", "number"]);
   bind("swmm_2d_set_edge_bc_slope", "number", ["number", "number", "number", "number"]);
   bind("swmm_2d_set_edge_bc_tseries_name", "number", ["number", "number", "number", "string"]);
@@ -3100,6 +3126,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_conduit_split_inlet", "number", ["number", "number", "number", "string", "string", "string", "string", "number", "number"]);
   bind("swmm_inlet_junction_fuse", "number", ["number", "number", "number"]);
   bind("swmm_engine_create", "number", []);
+  bind("swmm_engine_abi_tag", "string", []);
   bind("swmm_engine_open", "number", ["number", "string", "string", "string", "string"]);
   bind("swmm_engine_open_metadata", "number", ["number", "string"]);
   bind("swmm_engine_initialize", "number", ["number"]);
@@ -3684,6 +3711,10 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_options_set", "number", ["number", "string", "string"]);
   bind("swmm_options_get_ext", "number", ["number", "string", "number", "number"]);
   bind("swmm_options_set_ext", "number", ["number", "string", "string"]);
+  bind("swmm_options_key_count", "number", []);
+  bind("swmm_options_key_at", "number", ["number", "number", "number"]);
+  bind("swmm_options_ext_key_count", "number", ["number", "number"]);
+  bind("swmm_options_ext_key_at", "number", ["number", "number", "number", "number"]);
   bind("swmm_get_crs", "number", ["number", "number", "number"]);
   bind("swmm_options_get_start_date", "number", ["number", "number"]);
   bind("swmm_options_set_start_date", "number", ["number", "number"]);
@@ -3713,6 +3744,8 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_node_set_invert_elev", "number", ["number", "number", "number"]);
   bind("swmm_node_set_max_depth", "number", ["number", "number", "number"]);
   bind("swmm_node_set_surcharge_depth", "number", ["number", "number", "number"]);
+  bind("swmm_node_set_storage_area", "number", ["number", "number", "number"]);
+  bind("swmm_node_get_storage_area", "number", ["number", "number", "number"]);
   bind("swmm_node_set_pond_area", "number", ["number", "number", "number"]);
   bind("swmm_node_set_initial_depth", "number", ["number", "number", "number"]);
   bind("swmm_node_set_rim_depth", "number", ["number", "number", "number"]);
@@ -4526,4 +4559,4 @@ export const CALLBACK_SIGNATURES = {
 } as const;
 
 /** Number of C functions in this layer. */
-export const RAW_FUNCTION_COUNT = 1400;
+export const RAW_FUNCTION_COUNT = 1411;

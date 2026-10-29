@@ -2,15 +2,14 @@
   OPENSWMM ENGINE - VERSION 6.0.0-alpha.4
   ------------------------------------------------------------
 
-  2D Surface Routing — Complete Example 
-  Demonstrates every implemented [2D_*] input section. 
-  [2D_OPTIONS] OUTPUT_FILE 2d_complete_example.h5 ignored: this engine was built without the 2D HDF5 results writer; read 2D results through the swmm_2d_* API
+  2D Surface Routing — Complete Example
+  Demonstrates every implemented [2D_*] input section.
   2D rainfall gages: 1 without a location (0,0), 0 invalid coordinates, 0 duplicate locations (first gage retained).
   2D rainfall: no located gages; using the uniform system mean.
   WARNING: 2D-coupled node 'J1' has exchange AREA 2.000 m² — 28x the largest connected conduit area (0.0707 m²). The orifice can inject far more than the pipe can convey; expect the node to fill and spill back each window. Consider AREA ~ the inlet/barrel area.
   WARNING: 2D-coupled node 'ST1' has exchange AREA 10.000 m² — 318x the largest connected conduit area (0.0314 m²). The orifice can inject far more than the pipe can convey; expect the node to fill and spill back each window. Consider AREA ~ the inlet/barrel area.
   2D solver: cpu (explicit marcher); MOMENTUM_EQUATION LOCAL_INERTIAL; LTS_TIERS 4; 8 cells (0 quads)
-  
+
   ****************
   Analysis Options
   ****************
@@ -34,8 +33,8 @@
   Maximum Trials ........... 8
   Number of Threads ........ 1
   Head Tolerance ........... 0.001524 m
-  
-  
+
+
   **************************        Volume        Volume
   Flow Routing Continuity        hectare-m      10^6 ltr
   **************************     ---------     ---------
@@ -43,98 +42,98 @@
   Wet Weather Inflow .......         0.000         0.000
   Groundwater Inflow .......         0.000         0.000
   RDII Inflow ..............         0.000         0.000
-  External Inflow ..........         0.466         4.657
-  External Outflow .........         0.191         1.914
+  External Inflow ..........         0.021         0.213
+  External Outflow .........         0.022         0.219
   Flooding Loss ............         0.000         0.000
-  2D Coupling Outflow ......         0.288         2.883
+  2D Coupling Outflow ......         0.000         0.004
   Evaporation Loss .........         0.000         0.000
   Exfiltration Loss ........         0.000         0.000
   Initial Stored Volume ....         0.000         0.000
-  Final Stored Volume ......         0.001         0.007
-  Continuity Error (%) .....        -3.164
-  
-  
+  Final Stored Volume ......         0.000         0.000
+  Continuity Error (%) .....        -4.523
+
+
   **************************        Volume        Volume
   2D Surface Routing Continuity  cubic meters      10^6 ltr
   **************************     ---------     ---------
   Initial Stored Volume ....         0.000         0.000
   Rainfall Inflow ..........         0.333         0.000
-  1D -> 2D Spill Inflow ....      2883.123         2.883
+  1D -> 2D Spill Inflow ....         3.557         0.004
   Outfall Inflow ...........         0.000         0.000
-  Boundary Inflow ..........    512866.497       512.866
-  2D -> 1D Drain Outflow ...      4658.976         4.659
+  Boundary Inflow ..........    503436.518       503.437
+  2D -> 1D Drain Outflow ...       213.478         0.213
   Outfall Withdrawal .......         0.000         0.000
-  Boundary Outflow .........    510980.013       510.980
+  Boundary Outflow .........    503119.888       503.120
   Evaporation Loss .........         0.000         0.000
   Infiltration Loss ........         0.000         0.000
-  Final Stored Volume ......       110.963         0.111
+  Final Stored Volume ......       107.042         0.107
   Continuity Error (%) .....        -0.000
-  
-  
+
+
   *************************
   2D Solver Statistics
   *************************
-  Internal Steps ...........         38489
-  Face-Kernel Evals ........        307912
-  Avg Internal Step (s) ....        0.5612
-  Last Internal Step (s) ...        0.3758
+  Internal Steps ...........         35235
+  Face-Kernel Evals ........        281880
+  Avg Internal Step (s) ....        0.6130
+  Last Internal Step (s) ...        0.6728
   Active Cells min/mean/max    100.0 /100.0 /100.0  (%)
-  LTS Tier 0 Occupancy (%) .          87.5
-  LTS Tier 1 Occupancy (%) .          12.5
-  LTS Tier 2 Occupancy (%) .           0.0
+  LTS Tier 0 Occupancy (%) .          88.9
+  LTS Tier 1 Occupancy (%) .           6.4
+  LTS Tier 2 Occupancy (%) .           4.7
   LTS Tier 3 Occupancy (%) .           0.0
-  
-  
+
+
   **************************        Volume        Volume
   1D <-> 2D Exchange Reconcil.   hectare-m      10^6 ltr
   **************************     ---------     ---------
-  1D -> 2D Spill ...........         0.288         2.883
-  2D -> 1D Drain ...........         0.466         4.659
-  Net 1D -> 2D .............        -0.178        -1.776
-  Flow Continuity w/ Exchange Internal (%)    0.000
-  
-  
-  
-  
+  1D -> 2D Spill ...........         0.000         0.004
+  2D -> 1D Drain ...........         0.021         0.213
+  Net 1D -> 2D .............        -0.021        -0.210
+  Flow Continuity w/ Exchange Internal (%) -167774681.314
+
+
+
+
   ***************************
   Time-Step Critical Elements
   ***************************
   None
-  
-  
+
+
   ********************************
   Highest Flow Instability Indexes
   ********************************
   All links are stable.
-  
-  
+
+
   *********************************
   Most Frequent Nonconverging Nodes
   *********************************
   Convergence obtained at all time steps.
-  
-  
+
+
   *************************
   Routing Time Step Summary
   *************************
-  Minimum Time Step           :     6.47 sec
+  Minimum Time Step           :     4.04 sec
   Average Time Step           :    14.97 sec
   Maximum Time Step           :    15.00 sec
   % of Time in Steady State   :     0.00
-  Average Iterations per Step :     4.45
-  % of Steps Not Converging   :    30.01
+  Average Iterations per Step :     2.26
+  % of Steps Not Converging   :     3.40
   Time Step Frequencies       :
-     15.000 -  7.597 sec      :    99.93 %
-      7.597 -  3.848 sec      :     0.07 %
+     15.000 -  7.597 sec      :    99.86 %
+      7.597 -  3.848 sec      :     0.14 %
       3.848 -  1.949 sec      :     0.00 %
       1.949 -  0.987 sec      :     0.00 %
       0.987 -  0.500 sec      :     0.00 %
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
   ******************
   Node Depth Summary
   ******************
@@ -144,12 +143,12 @@
                                    Depth    Depth      HGL   Occurrence   Max Depth
   Node                 Type       Meters   Meters   Meters  days hr:min      Meters
   ---------------------------------------------------------------------------------
-  J1                   JUNCTION     0.72     1.96   100.96     0  03:01        1.50
-  OUT1                 OUTFALL      0.19     0.28    98.28     0  03:01        0.28
+  J1                   JUNCTION     0.10     1.53   100.53     0  03:02        1.52
+  OUT1                 OUTFALL      0.02     0.28    98.28     0  03:00        0.28
   OUT2                 OUTFALL      0.00     0.00    98.00     0  00:00        0.00
   ST1                  STORAGE      0.00     0.00    99.50     0  00:00        0.00
-  
-  
+
+
   *******************
   Node Inflow Summary
   *******************
@@ -160,25 +159,25 @@
                                    Inflow   Inflow   Occurrence      Volume      Volume       Error
   Node                 Type           CMS      CMS  days hr:min    10^6 ltr    10^6 ltr     Percent
   -------------------------------------------------------------------------------------------------
-  J1                   JUNCTION     4.532    4.532     0  03:01        1.77        4.66      -2.965
-  OUT1                 OUTFALL      0.000    0.158     0  03:01           0        1.91       0.000
+  J1                   JUNCTION     0.395    0.395     0  03:02        0.21       0.213      -5.844
+  OUT1                 OUTFALL      0.000    0.147     0  03:00           0       0.219       0.000
   OUT2                 OUTFALL      0.000    0.000     0  00:00           0           0       0.000 ltr
   ST1                  STORAGE      0.000    0.000     0  00:00           0           0       0.000 ltr
-  
-  
+
+
   **********************
   Node Surcharge Summary
   **********************
-  
+
   Surcharging occurs when water rises above the top of the highest conduit.
   ---------------------------------------------------------------------
                                                Max. Height   Min. Depth
                                    Hours       Above Crown    Below Rim
   Node                 Type      Surcharged         Meters       Meters
   ---------------------------------------------------------------------
-  J1                   JUNCTION        3.83          1.657        0.000
-  
-  
+  J1                   JUNCTION        0.41          1.226        0.000
+
+
   *********************
   Node Flooding Summary
   *********************
@@ -190,9 +189,9 @@
                         Hours       Rate    Occurrence      Volume     Depth
   Node                 Flooded       CMS   days hr:min    10^6 ltr    Meters
   --------------------------------------------------------------------------
-  J1                      0.58     3.249      0  03:01       1.615     0.457
-  
-  
+  J1                      0.07     0.189      0  03:02       0.015     0.026
+
+
   **********************
   Storage Volume Summary
   **********************
@@ -200,26 +199,26 @@
   ------------------------------------------------------------------------------------------------
                          Average    Avg   Evap  Exfil     Maximum    Max    Time of Max    Maximum
                           Volume   Pcnt   Pcnt   Pcnt      Volume   Pcnt     Occurrence    Outflow
-  Storage Unit           1000 m�   Full   Loss   Loss     1000 m�   Full    days hr:min        CMS
+  Storage Unit           1000 m³   Full   Loss   Loss     1000 m³   Full    days hr:min        CMS
   ------------------------------------------------------------------------------------------------
   ST1                      0.000    0.0    0.0    0.0       0.000    0.0       0  00:00      0.000
-  
-  
+
+
   ***********************
   Outfall Loading Summary
   ***********************
- 
-  ----------------------------------------------------------- 
-                         Flow       Avg       Max       Total 
-                         Freq      Flow      Flow      Volume 
-  Outfall Node           Pcnt       CMS       CMS    10^6 ltr 
+
   -----------------------------------------------------------
-  OUT1                  78.45     0.113     0.158       1.914
-  OUT2                   0.00     0.000     0.000       0.000 
+                         Flow       Avg       Max       Total
+                         Freq      Flow      Flow      Volume
+  Outfall Node           Pcnt       CMS       CMS    10^6 ltr
   -----------------------------------------------------------
-  System                39.22     0.113     0.158       1.914
-  
-  
+  OUT1                  14.48     0.071     0.147       0.219
+  OUT2                   0.00     0.000     0.000       0.000
+  -----------------------------------------------------------
+  System                 7.24     0.071     0.147       0.219
+
+
   ********************
   Link Flow Summary
   ********************
@@ -229,35 +228,35 @@
                                   |Flow|   Occurrence   |Veloc|    Full    Full
   Link                 Type          CMS  days hr:min     m/sec    Flow   Depth
   -----------------------------------------------------------------------------
-  C1                   CONDUIT     0.158     0  03:01      2.26    1.64    0.98
+  C1                   CONDUIT     0.147     0  03:00      2.11    1.52    0.97
   C2                   CONDUIT     0.000     0  00:00      0.00    0.00    0.00
-  
-  
+
+
   ***************************
   Flow Classification Summary
   ***************************
 
   -------------------------------------------------------------------------------------
-                      Adjusted    ---------- Fraction of Time in Flow Class ---------- 
-                       /Actual         Up    Down  Sub   Sup   Up    Down  Norm  Inlet 
-  Conduit               Length    Dry  Dry   Dry   Crit  Crit  Crit  Crit  Ltd   Ctrl  
+                      Adjusted    ---------- Fraction of Time in Flow Class ----------
+                       /Actual         Up    Down  Sub   Sup   Up    Down  Norm  Inlet
+  Conduit               Length    Dry  Dry   Dry   Crit  Crit  Crit  Crit  Ltd   Ctrl
   -------------------------------------------------------------------------------------
-  C1                      1.00   0.00  0.00  0.00  0.84  0.15  0.00  0.00  0.03  0.00
+  C1                      1.00   0.44  0.00  0.00  0.46  0.10  0.00  0.00  0.01  0.00
   C2                      1.00   1.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
-  
+
   *************************
   Conduit Surcharge Summary
   *************************
-  
+
   ----------------------------------------------------------------------------
-                                                           Hours        Hours 
+                                                           Hours        Hours
                          --------- Hours Full --------   Above Full   Capacity
   Conduit                Both Ends  Upstream  Dnstream   Normal Flow   Limited
   ----------------------------------------------------------------------------
-  C1                          0.01      3.76      0.01      3.89         0.01
-  
-  
+  C1                          0.01      0.40      0.01      0.41         0.01
 
-  Analysis begun on:  Thu Oct 22 16:58:48 2026
-  Analysis ended on:  Thu Oct 22 16:58:48 2026
+
+
+  Analysis begun on:  Thu Oct 29 03:54:32 2026
+  Analysis ended on:  Thu Oct 29 03:54:32 2026
   Total elapsed time: < 1 sec

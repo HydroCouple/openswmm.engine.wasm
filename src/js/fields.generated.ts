@@ -32,7 +32,7 @@ export interface ElementSpec {
 }
 
 /** Catalog revision these tables were generated from. */
-export const CATALOG_REVISION = 1;
+export const CATALOG_REVISION = 2;
 
 export const ELEMENTS: Readonly<Record<string, ElementSpec>> = {
   "gage": { count: "swmm_gage_count", index: "swmm_gage_index" },
@@ -166,6 +166,7 @@ export const FIELDS: Readonly<Record<string, FieldSpec>> = {
   "node.storage.curve": { get: "swmm_node_get_storage_curve", kind: "int", type: "int", set: "swmm_node_set_storage_curve", element: "node", doc: "Index of the storage curve (or -1 if functional)." },
   "node.storage.seep_rate": { get: "swmm_node_get_storage_seep_rate", kind: "num", type: "float", set: "swmm_node_set_storage_seep_rate", element: "node", units: "rain_rate", doc: "Constant seepage (exfiltration) rate, in/hr or mm/hr." },
   "node.storage.shape": { get: "swmm_node_get_storage_shape", kind: "int", type: "StorageShape", set: "swmm_node_set_storage_shape", element: "node", doc: "The surface-area relation as a StorageShape." },
+  "node.storage_area": { get: "swmm_node_get_storage_area", kind: "num", type: "float", set: "swmm_node_set_storage_area", element: "node", units: "area", doc: "Physical junction chamber area (ft2/m2); zero retains legacy behavior." },
   "node.surcharge_depth": { get: "swmm_node_get_surcharge_depth", kind: "num", type: "float", set: "swmm_node_set_surcharge_depth", element: "node", units: "length", doc: "Get the surcharge depth above the node's crown." },
   "node.tag": { get: "swmm_node_get_tag", kind: "str", type: "str", set: "swmm_node_set_tag", element: "node", doc: "The node's free-form tag string (from the INP [TAGS] section)." },
   "node.type": { get: "swmm_node_get_type", kind: "int", type: "NodeType", element: "node", doc: "Get the type of a node." },
