@@ -267,6 +267,24 @@ export class Node {
     raiseForCode(this._raw.swmm_node_set_max_depth(this._engine, this.index, value));
   }
 
+  /** Physical junction chamber area (ft2/m2); zero retains legacy behavior. */
+  get storageArea(): number {
+    this._checkStale();
+    const ptr = this._mod._malloc(8);
+    try {
+      raiseForCode(this._raw.swmm_node_get_storage_area(this._engine, this.index, ptr));
+      return this._mod.getValue(ptr, "double");
+    } finally {
+      this._mod._free(ptr);
+    }
+  }
+
+  /** Set chamber area before initialization (ordinary junctions only). */
+  set storageArea(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_node_set_storage_area(this._engine, this.index, value));
+  }
+
   // -------------------------------------------------------------------------
   // Boundary conditions
   // -------------------------------------------------------------------------

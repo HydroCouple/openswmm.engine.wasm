@@ -19,6 +19,7 @@ export enum ErrorCode {
   NUMERICAL = 14,
   DEPENDENCY = 15,
   CANCELLED = 16,
+  BUFSIZE = 17,
   INTERNAL = 99,
 }
 

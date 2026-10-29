@@ -262,6 +262,25 @@ The main lifecycle controller.
 
 ### Nodes / Node
 
+An ordinary junction's `storageArea` is writable before initialization, in
+project ft²/m². Zero retains legacy behavior; a positive value supplies real
+constant-area chamber storage through pipe surcharge up to the rim. It is
+separate from surface ponding and the `MIN_SURFAREA` numerical stability setting.
+Kinematic/steady routing refuses positive chamber areas; supported dynamic-wave
+and qualified finite-volume paths retain them. Use EXTRAN, SLOT or TPA for
+dynamic wave; DYNAMIC_SLOT refuses positive chambers. Finite-volume chambers
+require the CPU backend and zero surcharge-depth allowance. If a dynamic-wave
+chamber cannot close its water budget, the engine stops with guidance to reduce
+`ROUTING_STEP` or increase `MAX_TRIALS`.
+
+```ts
+solver.open("/model.inp", "/model.rpt", "/model.out");
+solver.nodes.get("J1").storageArea = 12.566; // ft² in a US-unit model
+solver.fields.set("node.storage_area", "J1", 12.566); // same C API property
+console.log(solver.nodes.get("J1").storageArea);
+// Initialize/start only after geometry edits.
+```
+
 ```ts
 const nodes = solver.nodes;
 

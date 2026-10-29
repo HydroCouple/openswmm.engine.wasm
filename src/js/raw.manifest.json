@@ -968,6 +968,24 @@
     ]
    ]
   },
+  "swmm_2d_get_velocities_bulk": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double*",
+     "vx"
+    ],
+    [
+     "double*",
+     "vy"
+    ]
+   ]
+  },
   "swmm_2d_get_coupling_fluxes_bulk": {
    "header": "openswmm_2d.h",
    "ret": "int",
@@ -2013,6 +2031,72 @@
     [
      "double",
      "head"
+    ]
+   ]
+  },
+  "swmm_2d_set_edge_bc_group": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "tri_idx"
+    ],
+    [
+     "int",
+     "edge"
+    ],
+    [
+     "const char*",
+     "group"
+    ]
+   ]
+  },
+  "swmm_2d_get_edge_wall_drag": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "tri_idx"
+    ],
+    [
+     "int",
+     "edge"
+    ],
+    [
+     "double*",
+     "cw"
+    ]
+   ]
+  },
+  "swmm_2d_set_edge_wall_drag": {
+   "header": "openswmm_2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "tri_idx"
+    ],
+    [
+     "int",
+     "edge"
+    ],
+    [
+     "double",
+     "cw"
     ]
    ]
   },
@@ -5073,6 +5157,11 @@
   "swmm_engine_create": {
    "header": "openswmm_engine.h",
    "ret": "SWMM_Engine",
+   "params": []
+  },
+  "swmm_engine_abi_tag": {
+   "header": "openswmm_engine.h",
+   "ret": "const char*",
    "params": []
   },
   "swmm_engine_open": {
@@ -16512,6 +16601,65 @@
     ]
    ]
   },
+  "swmm_options_key_count": {
+   "header": "openswmm_model.h",
+   "ret": "int",
+   "params": []
+  },
+  "swmm_options_key_at": {
+   "header": "openswmm_model.h",
+   "ret": "int",
+   "params": [
+    [
+     "int",
+     "index"
+    ],
+    [
+     "char*",
+     "buf"
+    ],
+    [
+     "int",
+     "buflen"
+    ]
+   ]
+  },
+  "swmm_options_ext_key_count": {
+   "header": "openswmm_model.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int*",
+     "count"
+    ]
+   ]
+  },
+  "swmm_options_ext_key_at": {
+   "header": "openswmm_model.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "index"
+    ],
+    [
+     "char*",
+     "buf"
+    ],
+    [
+     "int",
+     "buflen"
+    ]
+   ]
+  },
   "swmm_get_crs": {
    "header": "openswmm_model.h",
    "ret": "int",
@@ -17035,6 +17183,42 @@
     [
      "double",
      "depth"
+    ]
+   ]
+  },
+  "swmm_node_set_storage_area": {
+   "header": "openswmm_nodes.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "double",
+     "area"
+    ]
+   ]
+  },
+  "swmm_node_get_storage_area": {
+   "header": "openswmm_nodes.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "double*",
+     "area"
     ]
    ]
   },
