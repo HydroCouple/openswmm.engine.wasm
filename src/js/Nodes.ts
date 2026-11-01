@@ -17,7 +17,7 @@ import { NodeType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw } from "./mem.js";
+import { checkedAlloc, guardedRaw } from "./mem.js";
 
 // =============================================================================
 // Node statistics snapshot
@@ -106,7 +106,7 @@ export class Node {
   /** Node classification. */
   get type(): NodeType {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_node_get_type(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as NodeType;
@@ -122,7 +122,7 @@ export class Node {
   /** Current water depth above the invert elevation (m or ft). */
   get depth(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_depth(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -140,7 +140,7 @@ export class Node {
   /** Hydraulic head (invert elevation + depth, m or ft). */
   get head(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_head(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -152,7 +152,7 @@ export class Node {
   /** Current stored volume (m³ or ft³). */
   get volume(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_volume(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -164,7 +164,7 @@ export class Node {
   /** Lateral inflow rate (flow units). */
   get lateralInflow(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_lateral_inflow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -182,7 +182,7 @@ export class Node {
   /** Total overflow / flooding rate leaving this node (flow units). */
   get overflow(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_overflow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -194,7 +194,7 @@ export class Node {
   /** Total inflow rate entering this node (flow units). */
   get inflow(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_inflow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -206,7 +206,7 @@ export class Node {
   /** Evaporation + exfiltration losses from this node (flow units). */
   get losses(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_losses(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -218,7 +218,7 @@ export class Node {
   /** Total outflow rate leaving this node via downstream links (flow units). */
   get outflow(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_outflow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -234,7 +234,7 @@ export class Node {
   /** Invert elevation (m or ft). */
   get invertElev(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_invert_elev(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -252,7 +252,7 @@ export class Node {
   /** Maximum design depth (m or ft). */
   get maxDepth(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_max_depth(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -270,7 +270,7 @@ export class Node {
   /** Physical junction chamber area (ft2/m2); zero retains legacy behavior. */
   get storageArea(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_storage_area(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -309,7 +309,7 @@ export class Node {
    */
   get stats(): NodeStats {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_node_get_stat_max_depth(this._engine, this.index, ptr));
       const maxDepth = this._mod.getValue(ptr, "double");
@@ -439,7 +439,7 @@ export class Nodes implements Iterable<Node> {
   get depths(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_node_get_depth(this._engine, i, ptr));
@@ -457,7 +457,7 @@ export class Nodes implements Iterable<Node> {
   get heads(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_node_get_head(this._engine, i, ptr));
@@ -475,7 +475,7 @@ export class Nodes implements Iterable<Node> {
   get volumes(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_node_get_volume(this._engine, i, ptr));
@@ -493,7 +493,7 @@ export class Nodes implements Iterable<Node> {
   get lateralInflows(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_node_get_lateral_inflow(this._engine, i, ptr));
@@ -511,7 +511,7 @@ export class Nodes implements Iterable<Node> {
   get overflows(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_node_get_overflow(this._engine, i, ptr));

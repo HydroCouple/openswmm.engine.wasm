@@ -12,7 +12,7 @@
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw } from "./mem.js";
+import { checkedAlloc, guardedRaw } from "./mem.js";
 
 // =============================================================================
 // Subcatchment
@@ -77,7 +77,7 @@ export class Subcatchment {
   /** Current surface runoff rate (flow units). */
   get runoff(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_subcatch_get_runoff(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -93,7 +93,7 @@ export class Subcatchment {
   /** Subcatchment drainage area (ha or acres). */
   get area(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_subcatch_get_area(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -105,7 +105,7 @@ export class Subcatchment {
   /** Percent impervious (0–100). */
   get impervPct(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_subcatch_get_imperv_pct(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -117,7 +117,7 @@ export class Subcatchment {
   /** Representative width used for overland flow routing (m or ft). */
   get width(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_subcatch_get_width(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -129,7 +129,7 @@ export class Subcatchment {
   /** Land surface slope (%). */
   get slope(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_subcatch_get_slope(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -145,7 +145,7 @@ export class Subcatchment {
   /** Zero-based index of the outlet node, or -1 if draining to another subcatchment. */
   get outletNodeIndex(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_subcatch_get_outlet(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -157,7 +157,7 @@ export class Subcatchment {
   /** Zero-based index of the assigned rain gage. */
   get gageIndex(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_subcatch_get_gage(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -259,7 +259,7 @@ export class Subcatchments implements Iterable<Subcatchment> {
   get runoffs(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_subcatch_get_runoff(this._engine, i, ptr));

@@ -919,6 +919,8 @@ export interface RawApi {
   /** `openswmm_gw2d.h` */
   swmm_gw2d_get_tier_histogram(engine: number, out: number, len: number, written: number): number;
   /** `openswmm_gw2d.h` */
+  swmm_gw2d_get_clock_stats(engine: number, stats: number): number;
+  /** `openswmm_gw2d.h` */
   swmm_gw2d_get_execution_status(engine: number, status: number): number;
   /** `openswmm_gw_transport.h` */
   swmm_gw_transport_option_get(engine: number, key: string | null, buf: number, buflen: number): number;
@@ -972,6 +974,10 @@ export interface RawApi {
   swmm_gw_source_scale_get(engine: number, idx: number, value: number): number;
   /** `openswmm_gw_transport.h` */
   swmm_gw_source_scale_set(engine: number, idx: number, value: number): number;
+  /** `openswmm_gw_transport.h` */
+  swmm_gw_source_xy_get(engine: number, idx: number, by_xy: number, x: number, y: number): number;
+  /** `openswmm_gw_transport.h` */
+  swmm_gw_source_xy_set(engine: number, idx: number, x: number, y: number): number;
   /** `openswmm_gw_transport.h` */
   swmm_gw_source_remove(engine: number, idx: number): number;
   /** `openswmm_gw_transport.h` */
@@ -3304,6 +3310,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_gw2d_get_ledger", "number", ["number", "number", "number"]);
   bind("swmm_gw2d_get_continuity_error", "number", ["number", "number"]);
   bind("swmm_gw2d_get_tier_histogram", "number", ["number", "number", "number", "number"]);
+  bind("swmm_gw2d_get_clock_stats", "number", ["number", "number"]);
   bind("swmm_gw2d_get_execution_status", "number", ["number", "number"]);
   bind("swmm_gw_transport_option_get", "number", ["number", "string", "number", "number"]);
   bind("swmm_gw_transport_option_set", "number", ["number", "string", "string"]);
@@ -3331,6 +3338,8 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_gw_source_set", "number", ["number", "string", "number", "string", "number", "number", "string"]);
   bind("swmm_gw_source_scale_get", "number", ["number", "number", "number"]);
   bind("swmm_gw_source_scale_set", "number", ["number", "number", "number"]);
+  bind("swmm_gw_source_xy_get", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_gw_source_xy_set", "number", ["number", "number", "number", "number"]);
   bind("swmm_gw_source_remove", "number", ["number", "number"]);
   bind("swmm_gw_source_species_count", "number", ["number", "number"]);
   bind("swmm_gw_source_species_get", "number", ["number", "number", "number", "number", "number", "number", "number", "number", "number", "number"]);
@@ -4404,6 +4413,76 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_GwClockStats": {
+    "size": 336,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "uint32_t"
+      },
+      "independent": {
+        "offset": 4,
+        "type": "int"
+      },
+      "first_rung": {
+        "offset": 8,
+        "type": "int"
+      },
+      "last_rung": {
+        "offset": 12,
+        "type": "int"
+      },
+      "occupied_rungs": {
+        "offset": 16,
+        "type": "int"
+      },
+      "firings": {
+        "offset": 24,
+        "type": "uint64_t[3]",
+        "count": 3
+      },
+      "subcycled_firings": {
+        "offset": 48,
+        "type": "uint64_t[3]",
+        "count": 3
+      },
+      "budget_firings": {
+        "offset": 72,
+        "type": "uint64_t[3]",
+        "count": 3
+      },
+      "mean_elapsed": {
+        "offset": 96,
+        "type": "double[3]",
+        "count": 3
+      },
+      "max_elapsed": {
+        "offset": 120,
+        "type": "double[3]",
+        "count": 3
+      },
+      "max_budget_excess_in": {
+        "offset": 144,
+        "type": "double[3]",
+        "count": 3
+      },
+      "max_budget_excess_out": {
+        "offset": 168,
+        "type": "double[3]",
+        "count": 3
+      },
+      "budget_exceedance": {
+        "offset": 192,
+        "type": "uint64_t[15]",
+        "count": 15
+      },
+      "max_return_depth": {
+        "offset": 312,
+        "type": "double[3]",
+        "count": 3
+      }
+    }
+  },
   "SWMM_Infil2DOptions": {
     "size": 8,
     "fields": {
@@ -4559,4 +4638,4 @@ export const CALLBACK_SIGNATURES = {
 } as const;
 
 /** Number of C functions in this layer. */
-export const RAW_FUNCTION_COUNT = 1411;
+export const RAW_FUNCTION_COUNT = 1414;
