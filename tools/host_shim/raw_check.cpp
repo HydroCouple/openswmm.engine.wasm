@@ -500,6 +500,7 @@ static_assert(std::is_same_v<decltype(&swmm_gw2d_get_column), int (*)(SWMM_Engin
 static_assert(std::is_same_v<decltype(&swmm_gw2d_get_ledger), int (*)(SWMM_Engine, int, double*)>, "swmm_gw2d_get_ledger: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw2d_get_continuity_error), int (*)(SWMM_Engine, double*)>, "swmm_gw2d_get_continuity_error: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw2d_get_tier_histogram), int (*)(SWMM_Engine, long*, int, int*)>, "swmm_gw2d_get_tier_histogram: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_gw2d_get_clock_stats), int (*)(SWMM_Engine, SWMM_GwClockStats*)>, "swmm_gw2d_get_clock_stats: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw2d_get_execution_status), int (*)(SWMM_Engine, SWMM_GwExecutionStatus*)>, "swmm_gw2d_get_execution_status: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw_transport_option_get), int (*)(SWMM_Engine, const char*, char*, int)>, "swmm_gw_transport_option_get: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw_transport_option_set), int (*)(SWMM_Engine, const char*, const char*)>, "swmm_gw_transport_option_set: prototype drift");
@@ -527,6 +528,8 @@ static_assert(std::is_same_v<decltype(&swmm_gw_source_get), int (*)(SWMM_Engine,
 static_assert(std::is_same_v<decltype(&swmm_gw_source_set), int (*)(SWMM_Engine, const char*, int, const char*, int, double, const char*)>, "swmm_gw_source_set: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw_source_scale_get), int (*)(SWMM_Engine, int, double*)>, "swmm_gw_source_scale_get: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw_source_scale_set), int (*)(SWMM_Engine, int, double)>, "swmm_gw_source_scale_set: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_gw_source_xy_get), int (*)(SWMM_Engine, int, int*, double*, double*)>, "swmm_gw_source_xy_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_gw_source_xy_set), int (*)(SWMM_Engine, int, double, double)>, "swmm_gw_source_xy_set: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw_source_remove), int (*)(SWMM_Engine, int)>, "swmm_gw_source_remove: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw_source_species_count), int (*)(SWMM_Engine, int)>, "swmm_gw_source_species_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_gw_source_species_get), int (*)(SWMM_Engine, int, int, char*, int, char*, int, double*, char*, int)>, "swmm_gw_source_species_get: prototype drift");
@@ -1504,6 +1507,21 @@ static_assert(offsetof(SWMM_ThreadInfo, omp_max_threads) == 4, "SWMM_ThreadInfo.
 static_assert(offsetof(SWMM_ThreadInfo, omp_available) == 8, "SWMM_ThreadInfo.omp_available: offset");
 static_assert(offsetof(SWMM_ThreadInfo, perf_cores) == 12, "SWMM_ThreadInfo.perf_cores: offset");
 static_assert(offsetof(SWMM_ThreadInfo, kokkos_omp_threads) == 16, "SWMM_ThreadInfo.kokkos_omp_threads: offset");
+static_assert(sizeof(SWMM_GwClockStats) == 336, "SWMM_GwClockStats: size");
+static_assert(offsetof(SWMM_GwClockStats, struct_size) == 0, "SWMM_GwClockStats.struct_size: offset");
+static_assert(offsetof(SWMM_GwClockStats, independent) == 4, "SWMM_GwClockStats.independent: offset");
+static_assert(offsetof(SWMM_GwClockStats, first_rung) == 8, "SWMM_GwClockStats.first_rung: offset");
+static_assert(offsetof(SWMM_GwClockStats, last_rung) == 12, "SWMM_GwClockStats.last_rung: offset");
+static_assert(offsetof(SWMM_GwClockStats, occupied_rungs) == 16, "SWMM_GwClockStats.occupied_rungs: offset");
+static_assert(offsetof(SWMM_GwClockStats, firings) == 24, "SWMM_GwClockStats.firings: offset");
+static_assert(offsetof(SWMM_GwClockStats, subcycled_firings) == 48, "SWMM_GwClockStats.subcycled_firings: offset");
+static_assert(offsetof(SWMM_GwClockStats, budget_firings) == 72, "SWMM_GwClockStats.budget_firings: offset");
+static_assert(offsetof(SWMM_GwClockStats, mean_elapsed) == 96, "SWMM_GwClockStats.mean_elapsed: offset");
+static_assert(offsetof(SWMM_GwClockStats, max_elapsed) == 120, "SWMM_GwClockStats.max_elapsed: offset");
+static_assert(offsetof(SWMM_GwClockStats, max_budget_excess_in) == 144, "SWMM_GwClockStats.max_budget_excess_in: offset");
+static_assert(offsetof(SWMM_GwClockStats, max_budget_excess_out) == 168, "SWMM_GwClockStats.max_budget_excess_out: offset");
+static_assert(offsetof(SWMM_GwClockStats, budget_exceedance) == 192, "SWMM_GwClockStats.budget_exceedance: offset");
+static_assert(offsetof(SWMM_GwClockStats, max_return_depth) == 312, "SWMM_GwClockStats.max_return_depth: offset");
 static_assert(sizeof(SWMM_Infil2DOptions) == 8, "SWMM_Infil2DOptions: size");
 static_assert(offsetof(SWMM_Infil2DOptions, infil_step) == 0, "SWMM_Infil2DOptions.infil_step: offset");
 static_assert(sizeof(SWMM_Infil2DRow) == 56, "SWMM_Infil2DRow: size");

@@ -126,3 +126,12 @@ export type {
   Infil2DRow,
   Infil2DCell,
 } from "./Surface2D.js";
+
+export { Groundwater, GroundwaterTransport, GroundwaterOptions } from "./Groundwater.js";
+export type {
+  AquiferRow,
+  GroundwaterSource,
+  GroundwaterSourceTerm,
+  GroundwaterClockStats,
+  GroundwaterClosureStats,
+} from "./Groundwater.js";

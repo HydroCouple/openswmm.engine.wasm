@@ -40,10 +40,12 @@ import {
   SurfaceInfilDest,
   SurfaceInfilMethod,
 } from "./enums.js";
+import { Groundwater } from "./Groundwater.js";
 import { BadParamError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import { STRUCTS, type RawApi } from "./raw.js";
 import {
+  checkedAlloc,
   guardedRaw,
   withCString,
   withDouble,
@@ -141,7 +143,7 @@ const TAG_BYTES = 256;
 
 /** Scratch block for C out-parameters; freed after `use` returns. */
 function scratch<T>(mod: OpenSwmmWasmModule, bytes: number, use: (p: number) => T): T {
-  const p = mod._malloc(Math.max(bytes, 8));
+  const p = checkedAlloc(mod, Math.max(bytes, 8));
   try {
     return use(p);
   } finally {
@@ -172,6 +174,7 @@ function scratch<T>(mod: OpenSwmmWasmModule, bytes: number, use: (p: number) => 
 export class Surface2D {
   private readonly raw: RawApi;
   private _infiltration?: Infiltration2D;
+  readonly groundwater: Groundwater;
 
   /** @internal Obtain through {@link Solver.surface2d}. */
   constructor(
@@ -180,6 +183,7 @@ export class Surface2D {
     checkOwner: () => void = () => {},
   ) {
     this.raw = guardedRaw(mod, checkOwner);
+    this.groundwater = new Groundwater(mod, handle, checkOwner);
   }
 
   // ---- availability & editing ----------------------------------------------
@@ -413,6 +417,18 @@ export class Surface2D {
   /** Water-surface elevation per cell (m). */
   getHeads(): Float64Array {
     return this.cellArray((p) => this.raw.swmm_2d_get_heads_bulk(this.handle, p));
+  }
+  /** Physical Cartesian X/Y velocities in m/s; owned arrays. Dry cells are zero;
+   * paired NaNs preserve the engine's indeterminate wet-cell diagnostic. */
+  getVelocities(): [Float64Array, Float64Array] {
+    const n = this.nCells;
+    return scratch(this.mod, 16 * n, (p) => {
+      raiseForCode(this.raw.swmm_2d_get_velocities_bulk(this.handle, p, p + 8 * n));
+      return [
+        new Float64Array(this.mod.HEAPF64.buffer, p, n).slice(),
+        new Float64Array(this.mod.HEAPF64.buffer, p + 8 * n, n).slice(),
+      ];
+    });
   }
   /** 1D coupling flux per cell (m/s per unit cell area, positive into the surface). */
   getCouplingFluxes(): Float64Array {

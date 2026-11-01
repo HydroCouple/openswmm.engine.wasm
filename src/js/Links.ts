@@ -15,7 +15,7 @@ import { LinkType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw } from "./mem.js";
+import { checkedAlloc, guardedRaw } from "./mem.js";
 
 // =============================================================================
 // Link
@@ -77,7 +77,7 @@ export class Link {
   /** Link classification. */
   get type(): LinkType {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_link_get_type(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as LinkType;
@@ -93,7 +93,7 @@ export class Link {
   /** Current flow rate through this link (flow units). */
   get flow(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_link_get_flow(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -111,7 +111,7 @@ export class Link {
   /** Water depth at the upstream end (m or ft). */
   get depth(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_link_get_depth(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -123,7 +123,7 @@ export class Link {
   /** Flow velocity (m/s or ft/s). */
   get velocity(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_link_get_velocity(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -138,7 +138,7 @@ export class Link {
    */
   get capacity(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_link_get_capacity(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -150,7 +150,7 @@ export class Link {
   /** Stored volume in this link (m³ or ft³). */
   get volume(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_link_get_volume(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -169,7 +169,7 @@ export class Link {
    */
   get controlSetting(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_link_get_control_setting(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -187,7 +187,7 @@ export class Link {
   /** Target control setting (value the real-time controller is converging to). */
   get targetSetting(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_link_get_target_setting(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -205,7 +205,7 @@ export class Link {
   /** Whether this link is currently closed (1) or open (0). */
   get isClosed(): boolean {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_link_get_closed(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") !== 0;
@@ -227,7 +227,7 @@ export class Link {
   /** Zero-based index of the upstream (from) node. */
   get fromNodeIndex(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_link_get_from_node(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -239,7 +239,7 @@ export class Link {
   /** Zero-based index of the downstream (to) node. */
   get toNodeIndex(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_link_get_to_node(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -350,7 +350,7 @@ export class Links implements Iterable<Link> {
   get flows(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_link_get_flow(this._engine, i, ptr));
@@ -366,7 +366,7 @@ export class Links implements Iterable<Link> {
   get depths(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_link_get_depth(this._engine, i, ptr));
@@ -382,7 +382,7 @@ export class Links implements Iterable<Link> {
   get velocities(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_link_get_velocity(this._engine, i, ptr));
@@ -398,7 +398,7 @@ export class Links implements Iterable<Link> {
   get capacities(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_link_get_capacity(this._engine, i, ptr));

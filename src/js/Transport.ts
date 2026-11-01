@@ -2,7 +2,7 @@
 import { TransportDispersionMode } from "./enums.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw, withCStrings, withDouble, withInt } from "./mem.js";
+import { checkedAlloc, guardedRaw, withCStrings, withDouble, withInt } from "./mem.js";
 import { raiseForCode } from "./errors.js";
 
 export interface TransportRow {
@@ -57,7 +57,7 @@ export class Transport {
     const count = withInt(this.mod, (p) =>
       this.raw.swmm_transport_conduit_disp_count(this.handle, p),
     );
-    const p = this.mod._malloc(16);
+    const p = checkedAlloc(this.mod, 16);
     try {
       return Array.from({ length: count }, (_, i) => {
         raiseForCode(this.raw.swmm_transport_get_conduit_disp(this.handle, i, p, p + 8));
@@ -83,8 +83,7 @@ export class Transport {
         : this.raw.swmm_transport_boundary_count(this.handle, p),
     );
     const read = source ? this.raw.swmm_transport_get_source : this.raw.swmm_transport_get_boundary;
-    const p = this.mod._malloc(16);
-    if (!p) throw new RangeError("Cannot allocate transport row buffer");
+    const p = checkedAlloc(this.mod, 16);
     try {
       return Array.from({ length: count }, (_, i) => {
         const [element, species, timeseries] = withCStrings(

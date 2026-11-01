@@ -110,7 +110,9 @@ LINKS ALL
     second = solver.nodes.get("J2");
   // Match the native balance test: account for initialized conduit inventory.
   const initial = first.volume + second.volume + solver.links.get("C1").volume;
-  while (solver.step() > 0) {}
+  while (solver.step() > 0) {
+    // Advance to the end before checking stored volume.
+  }
   const total = first.volume + second.volume + solver.links.get("C1").volume - initial;
   assert.ok(Math.abs(total - 0.6) < 0.0006, `${routing}: stored ${total} ft3, expected 0.6`);
   for (const node of [first, second]) assert.ok(Math.abs(node.volume - 0.125 * node.depth) < 1e-10);

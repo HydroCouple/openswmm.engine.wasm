@@ -68,10 +68,13 @@ STRUCTS_OF_INTEREST = [
     "SWMM_2DRunStats",
     "SWMM_Infil2DOptions",
     "SWMM_Infil2DRow",
+    "SWMM_GwClockStats",
 ]
 
 WASM32 = {
     "int": (4, 4),
+    "uint32_t": (4, 4),
+    "uint64_t": (8, 8),
     "double": (8, 8),
     "float": (4, 4),
     "long": (4, 4),
@@ -202,14 +205,16 @@ def parse_defines(header_dir: Path) -> dict[str, int]:
 
 def parse_struct_field(decl: str, defines: dict[str, int]) -> tuple[str, str, int]:
     """'double p[N]' -> ('double', 'p', N); scalars and pointers have count 1."""
-    m = re.match(r"^(.*?)(\w+)\s*\[\s*(\w+)\s*\]$", decl.strip())
+    m = re.match(r"^(.*?)(\w+)\s*((?:\[\s*\w+\s*\]\s*)+)$", decl.strip())
     if not m:
         typ, fname = split_param(decl)
         return typ, fname, 1
-    bound = m.group(3)
-    count = int(bound) if bound.isdigit() else defines.get(bound)
-    if count is None:
-        raise SystemExit(f"array bound {bound!r} is not an integer macro")
+    count = 1
+    for bound in re.findall(r"\[\s*(\w+)\s*\]", m.group(3)):
+        dimension = int(bound) if bound.isdigit() else defines.get(bound)
+        if dimension is None:
+            raise SystemExit(f"array bound {bound!r} is not an integer macro")
+        count *= dimension
     return norm(m.group(1)), m.group(2), count
 
 
@@ -228,7 +233,16 @@ def parse_structs(header_dir: Path):
             fields = []
             offset = 0
             max_align = 1
-            for decl in m.group(2).split(";"):
+            declarations = []
+            for group in m.group(2).split(";"):
+                parts = group.strip().split(",")
+                if not parts[0]:
+                    continue
+                declarations.append(parts[0])
+                if len(parts) > 1:
+                    typ, _, _ = parse_struct_field(parts[0], defines)
+                    declarations.extend(f"{typ} {part.strip()}" for part in parts[1:])
+            for decl in declarations:
                 decl = decl.strip()
                 if not decl:
                     continue

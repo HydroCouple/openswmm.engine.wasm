@@ -1,5 +1,5 @@
 dist/
-build/
+build*/
 coverage/
 extern/
 node_modules/

@@ -13,7 +13,7 @@ import { GageDataSource, GageRainType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw, withCString } from "./mem.js";
+import { checkedAlloc, guardedRaw, withCString } from "./mem.js";
 
 // =============================================================================
 // Gage
@@ -78,7 +78,7 @@ export class Gage {
   /** Rainfall data format ({@link GageRainType}). */
   get rainType(): GageRainType {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_gage_get_rain_type(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as GageRainType;
@@ -95,7 +95,7 @@ export class Gage {
   /** Data source ({@link GageDataSource}). */
   get dataSource(): GageDataSource {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_gage_get_data_source(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as GageDataSource;
@@ -112,7 +112,7 @@ export class Gage {
   /** Multiplier applied to all recorded rainfall values. */
   get scaleFactor(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_gage_get_scale_factor(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -130,7 +130,7 @@ export class Gage {
   /** Recording interval (seconds). */
   get rainInterval(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_gage_get_rain_interval(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -147,7 +147,7 @@ export class Gage {
   /** Snow catch correction factor. */
   get snowFactor(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_gage_get_snow_factor(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -164,7 +164,7 @@ export class Gage {
   /** Rain depth unit for a file source: 0 = inches, 1 = millimetres. */
   get rainUnits(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_gage_get_rain_units(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -217,7 +217,7 @@ export class Gage {
 
   get fileFormat(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_gage_get_file_format(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -244,7 +244,7 @@ export class Gage {
   /** Current rainfall rate at this gage (in/hr or mm/hr). */
   get rainfall(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_gage_get_rainfall(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -352,7 +352,7 @@ export class Gages implements Iterable<Gage> {
   get rainfalls(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_gage_get_rainfall(this._engine, i, ptr));

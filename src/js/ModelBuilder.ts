@@ -51,7 +51,7 @@ import { Transport } from "./Transport.js";
 import { Solver } from "./Solver.js";
 import { type OpenSwmmWasmModule, oadateToDate, dateToOadate } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { rawOf, withCString, withCStrings } from "./mem.js";
+import { checkedAlloc, rawOf, withCString, withCStrings } from "./mem.js";
 
 // Buffer sizes used when reading variable-length strings from the engine.
 const BUF_MEDIUM = 1024;
@@ -472,7 +472,7 @@ export class ModelBuilder {
    */
   getTitleCount(): number {
     this._assertValid();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_title_get_count(this._handle, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -603,7 +603,7 @@ export class ModelBuilder {
    */
   get startDatetime(): Date {
     this._assertValid();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_options_get_start_date(this._handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
@@ -622,7 +622,7 @@ export class ModelBuilder {
    */
   get endDatetime(): Date {
     this._assertValid();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_options_get_end_date(this._handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
@@ -641,7 +641,7 @@ export class ModelBuilder {
    */
   get reportStartDatetime(): Date {
     this._assertValid();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_options_get_report_start(this._handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
@@ -667,7 +667,7 @@ export class ModelBuilder {
    */
   getUserflagBool(name: string): boolean {
     this._assertValid();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_userflag_get_bool(this._handle, name, ptr));
       return this._mod.getValue(ptr, "i32") !== 0;
@@ -683,7 +683,7 @@ export class ModelBuilder {
    */
   getUserflagInt(name: string): number {
     this._assertValid();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_userflag_get_int(this._handle, name, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -699,7 +699,7 @@ export class ModelBuilder {
    */
   getUserflagReal(name: string): number {
     this._assertValid();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_userflag_get_real(this._handle, name, ptr));
       return this._mod.getValue(ptr, "double");
@@ -747,7 +747,7 @@ export class ModelBuilder {
    */
   getUserflagDefCount(): number {
     this._assertValid();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_userflag_def_count(this._handle, ptr));
       return this._mod.getValue(ptr, "i32");
@@ -763,7 +763,7 @@ export class ModelBuilder {
    */
   getUserflagDef(index: number): UserFlagDef {
     this._assertValid();
-    const typePtr = this._mod._malloc(4);
+    const typePtr = checkedAlloc(this._mod, 4);
     if (!typePtr) throw new RangeError("Cannot allocate user flag type buffer");
     try {
       const [name, description] = withCStrings(
@@ -820,7 +820,7 @@ export class ModelBuilder {
    */
   getUserflagValue(objType: string, objName: string, flagName: string): string | undefined {
     this._assertValid();
-    const foundPtr = this._mod._malloc(4);
+    const foundPtr = checkedAlloc(this._mod, 4);
     if (!foundPtr) throw new RangeError("Cannot allocate user flag status buffer");
     try {
       const [value] = withCStrings(this._mod, BUF_MEDIUM, 1, ([buf], len) =>
@@ -872,7 +872,7 @@ export class ModelBuilder {
    */
   pluginsCount(): number {
     this._assertValid();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_plugins_count(this._handle, ptr));
       return this._mod.getValue(ptr, "i32");

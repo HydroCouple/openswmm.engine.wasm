@@ -63,7 +63,7 @@ import { Fields } from "./Fields.js";
 import { Surface2D } from "./Surface2D.js";
 import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { rawOf } from "./mem.js";
+import { checkedAlloc, rawOf } from "./mem.js";
 
 // =============================================================================
 // Solver
@@ -324,7 +324,7 @@ export class Solver {
    * @throws {@link LifecycleError}  if not in `STARTED` or `RUNNING` state.
    */
   step(): number {
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       const rc = this._raw.swmm_engine_step(this.handle, ptr);
       if (rc !== 0) {
@@ -345,7 +345,7 @@ export class Solver {
    *          Returns `0` when the end time has been reached.
    */
   stride(nSteps: number): number {
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       const rc = this._raw.swmm_engine_stride(this.handle, nSteps, ptr);
       if (rc !== 0) {
@@ -453,7 +453,7 @@ export class Solver {
    * Current lifecycle state of the engine.
    */
   get state(): EngineState {
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_engine_get_state(this.handle, ptr));
       return this._mod.getValue(ptr, "i32") as EngineState;
@@ -467,7 +467,7 @@ export class Solver {
    * Only valid after {@link Solver.open}.
    */
   get startDatetime(): Date {
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_get_start_time(this.handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
@@ -481,7 +481,7 @@ export class Solver {
    * Only valid after {@link Solver.open}.
    */
   get endDatetime(): Date {
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_get_end_time(this.handle, ptr));
       return oadateToDate(this._mod.getValue(ptr, "double"));
@@ -497,7 +497,7 @@ export class Solver {
   get currentDatetime(): Date {
     // swmm_get_current_time reports ELAPSED SECONDS since the start, not an
     // OADate (Python's current_datetime makes the same correction).
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_get_current_time(this.handle, ptr));
       const elapsedSeconds = this._mod.getValue(ptr, "double");
@@ -512,7 +512,7 @@ export class Solver {
    * Only valid after {@link Solver.initialize}.
    */
   get routingStep(): number {
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_get_routing_step(this.handle, ptr));
       return this._mod.getValue(ptr, "double");
@@ -526,7 +526,7 @@ export class Solver {
    * Only valid after {@link Solver.open}.
    */
   get flowUnits(): FlowUnits {
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_get_flow_units(this.handle, ptr));
       return this._mod.getValue(ptr, "i32") as FlowUnits;

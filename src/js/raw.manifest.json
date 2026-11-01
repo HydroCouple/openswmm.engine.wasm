@@ -8485,6 +8485,20 @@
     ]
    ]
   },
+  "swmm_gw2d_get_clock_stats": {
+   "header": "openswmm_gw2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "SWMM_GwClockStats*",
+     "stats"
+    ]
+   ]
+  },
   "swmm_gw2d_get_execution_status": {
    "header": "openswmm_gw2d.h",
    "ret": "int",
@@ -9100,6 +9114,54 @@
     [
      "double",
      "value"
+    ]
+   ]
+  },
+  "swmm_gw_source_xy_get": {
+   "header": "openswmm_gw_transport.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "int*",
+     "by_xy"
+    ],
+    [
+     "double*",
+     "x"
+    ],
+    [
+     "double*",
+     "y"
+    ]
+   ]
+  },
+  "swmm_gw_source_xy_set": {
+   "header": "openswmm_gw_transport.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "double",
+     "x"
+    ],
+    [
+     "double",
+     "y"
     ]
    ]
   },
@@ -27770,6 +27832,106 @@
      "type": "int",
      "offset": 16,
      "size": 4
+    }
+   ]
+  },
+  "SWMM_GwClockStats": {
+   "header": "openswmm_gw2d.h",
+   "size": 336,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "uint32_t",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "independent",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "first_rung",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "last_rung",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "occupied_rungs",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "firings",
+     "type": "uint64_t[3]",
+     "offset": 24,
+     "size": 24,
+     "count": 3
+    },
+    {
+     "name": "subcycled_firings",
+     "type": "uint64_t[3]",
+     "offset": 48,
+     "size": 24,
+     "count": 3
+    },
+    {
+     "name": "budget_firings",
+     "type": "uint64_t[3]",
+     "offset": 72,
+     "size": 24,
+     "count": 3
+    },
+    {
+     "name": "mean_elapsed",
+     "type": "double[3]",
+     "offset": 96,
+     "size": 24,
+     "count": 3
+    },
+    {
+     "name": "max_elapsed",
+     "type": "double[3]",
+     "offset": 120,
+     "size": 24,
+     "count": 3
+    },
+    {
+     "name": "max_budget_excess_in",
+     "type": "double[3]",
+     "offset": 144,
+     "size": 24,
+     "count": 3
+    },
+    {
+     "name": "max_budget_excess_out",
+     "type": "double[3]",
+     "offset": 168,
+     "size": 24,
+     "count": 3
+    },
+    {
+     "name": "budget_exceedance",
+     "type": "uint64_t[15]",
+     "offset": 192,
+     "size": 120,
+     "count": 15
+    },
+    {
+     "name": "max_return_depth",
+     "type": "double[3]",
+     "offset": 312,
+     "size": 24,
+     "count": 3
     }
    ]
   },
