@@ -14,6 +14,9 @@ import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.j
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
 import { checkedAlloc, guardedRaw, withCString } from "./mem.js";
+import { oadateToDatetime } from "./dates.js";
+import type { ModelBuilder } from "./ModelBuilder.js";
+import type { Solver } from "./Solver.js";
 
 // =============================================================================
 // Gage
@@ -237,6 +240,62 @@ export class Gage {
     raiseForCode(this._raw.swmm_gage_set_filename(this._engine, this.index, path, stationId));
   }
 
+  /**
+   * Read rainfall from an external file (Python `set_file`). `column` picks a
+   * column of a multi-column CSV/TSV/TSF file (the `FILE "path:col"` form).
+   */
+  setFile(path: string, stationId: string, column?: string): void {
+    this.setFilename(path, stationId);
+    if (column !== undefined) {
+      raiseForCode(this._raw.swmm_gage_set_file_column(this._engine, this.index, column));
+    }
+  }
+
+  /** Read rainfall from a named time series (Python `set_timeseries`). */
+  setTimeseries(tsId: string): void {
+    this.timeseries = tsId;
+  }
+
+  /** Set the rain interval in seconds (Python `set_rain_interval`). */
+  setRainInterval(seconds: number): void {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_rain_interval(this._engine, this.index, seconds));
+  }
+
+  /** The gage's rainfall as `[time, value]` rows (times in whole seconds, UTC). */
+  get rainfallSeries(): [Date, number][] {
+    this._checkStale();
+    const n = (() => {
+      const p = checkedAlloc(this._mod, 4);
+      try {
+        raiseForCode(this._raw.swmm_gage_get_rainfall_series_count(this._engine, this.index, p));
+        return this._mod.HEAP32[p >> 2];
+      } finally {
+        this._mod._free(p);
+      }
+    })();
+    if (n === 0) return [];
+    const block = checkedAlloc(this._mod, 16 * n);
+    try {
+      raiseForCode(
+        this._raw.swmm_gage_get_rainfall_series(this._engine, this.index, block, block + 8 * n, n),
+      );
+      const base = block >> 3;
+      return Array.from({ length: n }, (_, i) => {
+        const t = oadateToDatetime(this._mod.HEAPF64[base + i]);
+        t.setUTCMilliseconds(0);
+        return [t, this._mod.HEAPF64[base + n + i]] as [Date, number];
+      });
+    } finally {
+      this._mod._free(block);
+    }
+  }
+
+  /** The solver (or model builder) this gage belongs to. */
+  get solver(): Solver | ModelBuilder | null {
+    return this._collection.solver;
+  }
+
   // -------------------------------------------------------------------------
   // Runtime state
   // -------------------------------------------------------------------------
@@ -296,6 +355,8 @@ export class Gages implements Iterable<Gage> {
     mod: OpenSwmmWasmModule,
     engine: number,
     private readonly _checkOwner: () => void = () => {},
+    /** The solver (or model builder) that owns the collection. */
+    readonly solver: Solver | ModelBuilder | null = null,
   ) {
     this._mod = mod;
     this._raw = guardedRaw(mod, this._checkOwner);
@@ -330,6 +391,37 @@ export class Gages implements Iterable<Gage> {
       );
     }
     return new Gage(this._mod, this._engine, this, this.generation, indexOrId);
+  }
+
+  /** True when a gage with this index or id exists. */
+  has(key: number | string): boolean {
+    if (typeof key === "string") return this.getIndex(key) >= 0;
+    return Number.isInteger(key) && key >= 0 && key < this.length;
+  }
+
+  /** Every gage id, in index order. */
+  get ids(): string[] {
+    return Array.from({ length: this.length }, (_, i) => this.getId(i));
+  }
+
+  /** Add a rain gage; earlier gage views become stale, as in Python. */
+  add(gageId: string): Gage {
+    raiseForCode(this._raw.swmm_gage_add(this._engine, gageId));
+    this.generation++;
+    return this.get(gageId);
+  }
+
+  /** Rename a gage; references follow. Earlier gage views become stale. */
+  rename(key: number | string, newId: string): void {
+    const idx = this.get(key).index;
+    raiseForCode(this._raw.swmm_gage_rename(this._engine, idx, newId));
+    this.generation++;
+  }
+
+  /** Re-read every gage's rain file. Earlier gage views become stale. */
+  reloadRainFiles(): void {
+    raiseForCode(this._raw.swmm_gage_reload_rain_files(this._engine));
+    this.generation++;
   }
 
   /** Return the zero-based index for a string gage ID, or -1. */

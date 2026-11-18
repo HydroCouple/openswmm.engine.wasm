@@ -67,6 +67,7 @@ import { CALLBACK_SIGNATURES, type RawApi } from "./raw.js";
 import { checkedAlloc, rawOf, withCString, withDouble, withInt } from "./mem.js";
 import { datetimeToOadate, oadateToDatetime } from "./dates.js";
 import { EventsView, SimulationOptions, UserFlags } from "./SolverViews.js";
+import { Snow } from "./Snow.js";
 
 // =============================================================================
 // Solver
@@ -222,10 +223,10 @@ export class Solver {
       if (!h) throw new EngineError(7, "swmm_engine_create() returned NULL");
     }
     this._handle = h;
-    this.nodes = new Nodes(mod, h, () => this._assertAlive());
-    this.links = new Links(mod, h, () => this._assertAlive());
-    this.subcatchments = new Subcatchments(mod, h, () => this._assertAlive());
-    this.gages = new Gages(mod, h, () => this._assertAlive());
+    this.nodes = new Nodes(mod, h, () => this._assertAlive(), this);
+    this.links = new Links(mod, h, () => this._assertAlive(), this);
+    this.subcatchments = new Subcatchments(mod, h, () => this._assertAlive(), this);
+    this.gages = new Gages(mod, h, () => this._assertAlive(), this);
     this.controls = new Controls(mod, h, () => this._assertAlive());
     this.transport = new Transport(mod, h, () => this._assertAlive());
     this.forcing = new Forcing(mod, h, () => this._assertAlive());
@@ -630,6 +631,21 @@ export class Solver {
   /** Model generation: bumped on open/close; views from an older generation are stale. */
   get generation(): number {
     return this._generation;
+  }
+
+  /** @internal The WASM module this solver runs in. */
+  get module(): OpenSwmmWasmModule {
+    return this._mod;
+  }
+
+  /** @internal A structural edit happened: invalidate views, as Python's `_bump_generation`. */
+  _bumpGeneration(): void {
+    this._invalidateViews();
+  }
+
+  /** Snow model, UEB packs, radiation and snow state (Python `solver.snow`). */
+  get snow(): Snow {
+    return new Snow(this);
   }
 
   /**

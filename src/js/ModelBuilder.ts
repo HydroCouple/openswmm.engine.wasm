@@ -991,7 +991,7 @@ export class ModelBuilder {
    */
   get nodes(): Nodes {
     this._assertValid();
-    return new Nodes(this._mod, this._handle, this._viewGuard());
+    return new Nodes(this._mod, this._handle, this._viewGuard(), this);
   }
 
   /**
@@ -999,7 +999,7 @@ export class ModelBuilder {
    */
   get links(): Links {
     this._assertValid();
-    return new Links(this._mod, this._handle, this._viewGuard());
+    return new Links(this._mod, this._handle, this._viewGuard(), this);
   }
 
   /**
@@ -1007,7 +1007,7 @@ export class ModelBuilder {
    */
   get subcatchments(): Subcatchments {
     this._assertValid();
-    return new Subcatchments(this._mod, this._handle, this._viewGuard());
+    return new Subcatchments(this._mod, this._handle, this._viewGuard(), this);
   }
 
   /**
@@ -1015,7 +1015,7 @@ export class ModelBuilder {
    */
   get gages(): Gages {
     this._assertValid();
-    return new Gages(this._mod, this._handle, this._viewGuard());
+    return new Gages(this._mod, this._handle, this._viewGuard(), this);
   }
 
   // -------------------------------------------------------------------------

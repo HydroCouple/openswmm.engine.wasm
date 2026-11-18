@@ -17,11 +17,11 @@
  * @license  Apache-2.0
  */
 
-import { ForcingMode, ForcingTarget } from "./enums.js";
-import { raiseForCode } from "./errors.js";
+import { ForcingMode, ForcingTarget, HeatElemKind } from "./enums.js";
+import { BadParamError, ElementNotFoundError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw } from "./mem.js";
+import { checkedAlloc, guardedRaw, withDouble, withInt } from "./mem.js";
 
 // Re-export for convenience when consumers import from "./Forcing.js"
 export { ForcingMode, ForcingTarget };
@@ -252,5 +252,181 @@ export class Forcing {
     raiseForCode(
       this._raw.swmm_forcing_link_seepage(this._engine, index, value, mode, persist ? 1 : 0),
     );
+  }
+  // -------------------------------------------------------------------------
+  // Python forcing members (by index or id)
+  // -------------------------------------------------------------------------
+
+  /** @internal Index of a node, link, subcatchment or pollutant given by index or id. */
+  private _resolve(kind: "node" | "link" | "subcatch" | "pollutant", key: number | string): number {
+    if (typeof key === "number") return key;
+    const i = this._raw[`swmm_${kind}_index`](this._engine, key);
+    if (i < 0) throw new ElementNotFoundError(key);
+    return i;
+  }
+
+  /** Force a subcatchment's rainfall (in/hr or mm/hr). */
+  subcatchmentRainfall(
+    sub: number | string,
+    value: number,
+    mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
+  ): void {
+    const i = this._resolve("subcatch", sub);
+    raiseForCode(
+      this._raw.swmm_forcing_subcatch_rainfall(this._engine, i, value, mode, persist ? 1 : 0),
+    );
+  }
+
+  /** Force a subcatchment's evaporation rate. */
+  subcatchmentEvap(
+    sub: number | string,
+    value: number,
+    mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
+  ): void {
+    const i = this._resolve("subcatch", sub);
+    raiseForCode(
+      this._raw.swmm_forcing_subcatch_evap(this._engine, i, value, mode, persist ? 1 : 0),
+    );
+  }
+
+  /** Force a subcatchment's snowfall. */
+  subcatchmentSnowfall(
+    sub: number | string,
+    value: number,
+    mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
+  ): void {
+    const i = this._resolve("subcatch", sub);
+    raiseForCode(
+      this._raw.swmm_forcing_subcatch_snowfall(this._engine, i, value, mode, persist ? 1 : 0),
+    );
+  }
+
+  /** Force a pollutant mass inflow at a node (mass/s in the model's units). */
+  nodeQuality(
+    node: number | string,
+    pollutant: number | string,
+    massRate: number,
+    mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
+  ): void {
+    const n = this._resolve("node", node);
+    const q = this._resolve("pollutant", pollutant);
+    raiseForCode(
+      this._raw.swmm_forcing_node_quality(this._engine, n, q, massRate, mode, persist ? 1 : 0),
+    );
+  }
+
+  /** Force a pollutant concentration in a link. */
+  linkQuality(
+    link: number | string,
+    pollutant: number | string,
+    value: number,
+    mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
+  ): void {
+    const l = this._resolve("link", link);
+    const q = this._resolve("pollutant", pollutant);
+    raiseForCode(
+      this._raw.swmm_forcing_link_quality(this._engine, l, q, value, mode, persist ? 1 : 0),
+    );
+  }
+
+  /** Force the air temperature. */
+  climateTemperature(
+    value: number,
+    mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
+  ): void {
+    raiseForCode(
+      this._raw.swmm_forcing_climate_temperature(this._engine, value, mode, persist ? 1 : 0),
+    );
+  }
+
+  /** Force the wind speed. */
+  climateWind(value: number, mode: ForcingMode = ForcingMode.REPLACE, persist = false): void {
+    raiseForCode(this._raw.swmm_forcing_climate_wind(this._engine, value, mode, persist ? 1 : 0));
+  }
+
+  /** Force the evaporation rate. */
+  climateEvap(value: number, mode: ForcingMode = ForcingMode.REPLACE, persist = false): void {
+    raiseForCode(this._raw.swmm_forcing_climate_evap(this._engine, value, mode, persist ? 1 : 0));
+  }
+
+  /** Evaporate only in dry periods (on/off). */
+  climateDryOnly(flag: boolean): void {
+    raiseForCode(this._raw.swmm_climate_set_dry_only(this._engine, flag ? 1 : 0));
+  }
+
+  /** Current evaporation rate. */
+  climateEvapRate(): number {
+    return withDouble(this._mod, (p) => this._raw.swmm_climate_get_evap_rate(this._engine, p));
+  }
+
+  /** Current air temperature. */
+  getClimateTemperature(): number {
+    return withDouble(this._mod, (p) => this._raw.swmm_climate_get_temperature(this._engine, p));
+  }
+
+  /** Current wind speed. */
+  getClimateWindSpeed(): number {
+    return withDouble(this._mod, (p) => this._raw.swmm_climate_get_wind_speed(this._engine, p));
+  }
+
+  /** Whether evaporation is limited to dry periods. */
+  getClimateDryOnly(): boolean {
+    return withInt(this._mod, (p) => this._raw.swmm_climate_get_dry_only(this._engine, p)) !== 0;
+  }
+
+  /** @internal */
+  private _element(kind: HeatElemKind, element: number | string): number {
+    if (kind !== HeatElemKind.NODE && kind !== HeatElemKind.LINK) {
+      throw new BadParamError("kind must be HeatElemKind.NODE or LINK");
+    }
+    return this._resolve(kind === HeatElemKind.NODE ? "node" : "link", element);
+  }
+
+  /** Force one climate variable on a single node or link (heat model). */
+  elementClimate(
+    kind: HeatElemKind,
+    element: number | string,
+    variable: number,
+    value: number,
+    mode: ForcingMode = ForcingMode.REPLACE,
+    persist = false,
+  ): void {
+    const i = this._element(kind, element);
+    raiseForCode(
+      this._raw.swmm_forcing_element_climate(
+        this._engine,
+        kind,
+        i,
+        variable,
+        value,
+        mode,
+        persist ? 1 : 0,
+      ),
+    );
+  }
+
+  /** `[value, mode]` of an element's climate forcing; `mode` is `null` when none is active. */
+  elementClimateGet(
+    kind: HeatElemKind,
+    element: number | string,
+    variable: number,
+  ): [number, ForcingMode | null] {
+    const i = this._element(kind, element);
+    const p = checkedAlloc(this._mod, 12);
+    try {
+      raiseForCode(
+        this._raw.swmm_forcing_element_climate_get(this._engine, kind, i, variable, p, p + 8),
+      );
+      const mode = this._mod.HEAP32[(p + 8) >> 2];
+      return [this._mod.HEAPF64[p >> 3], mode ? (mode as ForcingMode) : null];
+    } finally {
+      this._mod._free(p);
+    }
   }
 }

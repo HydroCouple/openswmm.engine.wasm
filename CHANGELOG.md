@@ -52,6 +52,20 @@ built from the pinned engine (`tools/check_version.py`): Python
   Python's `ModelBuilder.add_subcatch`, `get_file_path`, `set_file_path` and
   `userflag_def_count` onto the existing `addSubcatchment`, `filePathGet`,
   `filePathSet` and `getUserflagDefCount`.
+- **Gages, controls, forcing and snow** (wave B, part 1), mirroring Python:
+  `Gages.add/rename/ids/has/reloadRainFiles`, `Gage.setFile/setTimeseries/
+  setRainInterval/rainfallSeries/solver`; `Controls.append/insert/set/delete/
+  clear/replaceProgram/findReferences/validateMessage`; forcing by id or index
+  for subcatchment rainfall/evaporation/snowfall, node and link quality,
+  climate temperature/wind/evaporation/dry-only and element climate;
+  `solver.snow` (`Snow`: model, step, UEB options and monthly ranges, packs,
+  `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
+  As in Python, adding or renaming an element invalidates that collection's
+  earlier views.
+- **Structs by layout:** `readStruct`/`writeStruct`/`withStruct` read and write
+  engine structs through the generated wasm32 layouts; the generator now
+  handles nested structs and lays out the snow and radiation structs (all
+  checked by `static_assert` under wasm32).
 - **Solver members from Python's `_solver`** (wave A4): `options` (with
   `ext`), `userflags`, `events`; `openMetadata`, `openSimulationPeriod`,
   `advanceTo`, `until`, `steps()`, `elapsed`; `write`, `writeWithPlugin`,
