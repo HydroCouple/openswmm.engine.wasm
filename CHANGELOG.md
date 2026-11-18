@@ -62,6 +62,14 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Pollutants, quality, initial quality and mass balance** (wave C, part 1),
+  mirroring Python: `solver.pollutants` (`Pollutant` concentrations, decay,
+  units, snow-only, co-pollutant; add/rename, node and link quality),
+  `solver.quality` (land uses with sweeping, buildup and washoff per land use
+  and pollutant or reaction species, node treatment and its validator),
+  `solver.initialQuality` (`[INITIAL_QUALITY]` rows incl. water age and
+  temperature, file path) and `solver.massBalance` (continuity errors,
+  runoff/routing totals, routing diagnostics, Courant, quality losses).
 - **Subcatchments, aquifers and snowpacks** (wave B, part 3), mirroring
   Python: subcatchment roughness, depression storage, scale factors, tag,
   snowpack, gage, outlet (node or subcatchment), aquifer and groundwater node,

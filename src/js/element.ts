@@ -10,6 +10,7 @@ import { ElementNotFoundError, raiseForCode } from "./errors.js";
 import {
   checkedAlloc,
   withCString,
+  withCStrings,
   withDouble,
   withDoubleArray,
   withDoubleInput,
@@ -97,4 +98,52 @@ export function resolveIndex(
   const i = raw[`swmm_${kind}_index`](engine, key);
   if (i < 0) throw new ElementNotFoundError(key);
   return i;
+}
+
+/**
+ * A buildup/washoff/loading constituent: a pollutant (index or id) or a
+ * reaction species name, addressed after the pollutants (`np + m`) as the C
+ * API does. Indices may run over pollutants and species.
+ */
+export function resolveSurfaceSpecies(
+  mod: OpenSwmmWasmModule,
+  raw: RawApi,
+  engine: number,
+  key: number | string,
+): number {
+  const np = raw.swmm_pollutant_count(engine);
+  const nm = raw.swmm_reaction_species_count(engine);
+  if (typeof key === "number") {
+    if (!Number.isInteger(key) || key < 0 || key >= np + nm) {
+      throw new ElementNotFoundError(
+        key,
+        `Pollutant/species index ${key} out of range [0, ${np + nm})`,
+      );
+    }
+    return key;
+  }
+  const i = raw.swmm_pollutant_index(engine, key);
+  if (i >= 0) return i;
+  const scratch = checkedAlloc(mod, 24);
+  try {
+    for (let m = 0; m < nm; m++) {
+      const [name] = withCStrings(mod, 256, 2, ([n, u], len) =>
+        raw.swmm_reaction_species_get(
+          engine,
+          m,
+          n,
+          len,
+          scratch,
+          u,
+          len,
+          scratch + 8,
+          scratch + 16,
+        ),
+      );
+      if (name === key) return np + m;
+    }
+  } finally {
+    mod._free(scratch);
+  }
+  throw new ElementNotFoundError(key, `Pollutant or species '${key}' not found`);
 }

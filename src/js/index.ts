@@ -70,6 +70,13 @@ export {
 } from "./Subcatchments.js";
 export type { GroundwaterParams } from "./Subcatchments.js";
 export { Aquifers, Snowpacks } from "./NamedObjects.js";
+export { Pollutant, Pollutants } from "./Pollutants.js";
+export { Landuse, Landuses, Quality } from "./Quality.js";
+export type { Buildup, Washoff } from "./Quality.js";
+export { InitialQuality } from "./InitialQuality.js";
+export type { InitialQualityEntry } from "./InitialQuality.js";
+export { MassBalance } from "./MassBalance.js";
+export type { RoutingDiagnostics } from "./Report.js";
 export type { SnowSurface, SnowRemoval } from "./NamedObjects.js";
 
 export { Gages, Gage } from "./Gages.js";
