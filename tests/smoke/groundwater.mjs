@@ -42,7 +42,7 @@ for (const units of ["CMS", "CFS"]) {
   const terms = transport.sourceSpecies(0);
   transport.setSourceScale(0, 2.5);
   transport.setSourceXy(0, 5, 5);
-  assert.deepEqual(transport.sources[0], { ...before, cell: 1 });
+  assert.deepEqual(transport.sources[0], { ...before, cell: 1, x: 5, y: 5 });
   assert.deepEqual(transport.sourceSpecies(0), terms);
   assert.equal(transport.sourceScale(0), 2.5);
   assert.throws(() => transport.sourceXy(-1), BadIndexError);

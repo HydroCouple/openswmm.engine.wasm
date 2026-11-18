@@ -4996,6 +4996,81 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_GwBoundary": {
+    "size": 24,
+    "fields": {
+      "cell": {
+        "offset": 0,
+        "type": "int"
+      },
+      "edge": {
+        "offset": 4,
+        "type": "int"
+      },
+      "kind": {
+        "offset": 8,
+        "type": "int"
+      },
+      "value": {
+        "offset": 16,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_GwNodeBed": {
+    "size": 48,
+    "fields": {
+      "node": {
+        "offset": 0,
+        "type": "const char*"
+      },
+      "cell": {
+        "offset": 4,
+        "type": "int"
+      },
+      "locate": {
+        "offset": 8,
+        "type": "int"
+      },
+      "exchange": {
+        "offset": 12,
+        "type": "int"
+      },
+      "automatic": {
+        "offset": 16,
+        "type": "int"
+      },
+      "kc": {
+        "offset": 24,
+        "type": "double"
+      },
+      "dc": {
+        "offset": 32,
+        "type": "double"
+      },
+      "area": {
+        "offset": 40,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_LidNodeBottomEdit": {
+    "size": 12,
+    "fields": {
+      "node": {
+        "offset": 0,
+        "type": "int"
+      },
+      "expected_mode": {
+        "offset": 4,
+        "type": "int"
+      },
+      "mode": {
+        "offset": 8,
+        "type": "int"
+      }
+    }
+  },
   "SWMM_GwClockStats": {
     "size": 336,
     "fields": {
@@ -5063,6 +5138,107 @@ export const STRUCTS = {
         "offset": 312,
         "type": "double[3]",
         "count": 3
+      }
+    }
+  },
+  "SWMM_GwExecutionStatus": {
+    "size": 440,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned int"
+      },
+      "active": {
+        "offset": 4,
+        "type": "int"
+      },
+      "available_operators": {
+        "offset": 8,
+        "type": "unsigned int"
+      },
+      "executed_operators": {
+        "offset": 12,
+        "type": "unsigned int"
+      },
+      "host_owned_operations": {
+        "offset": 16,
+        "type": "unsigned int"
+      },
+      "effective_threads": {
+        "offset": 20,
+        "type": "int"
+      },
+      "accepted_batches": {
+        "offset": 24,
+        "type": "unsigned long long"
+      },
+      "accepted_cells": {
+        "offset": 32,
+        "type": "unsigned long long"
+      },
+      "recharge_backend": {
+        "offset": 40,
+        "type": "char[16]",
+        "count": 16
+      },
+      "profile": {
+        "offset": 56,
+        "type": "char[128]",
+        "count": 128
+      },
+      "detail": {
+        "offset": 184,
+        "type": "char[256]",
+        "count": 256
+      }
+    }
+  },
+  "SWMM_GwParams": {
+    "size": 80,
+    "fields": {
+      "scope": {
+        "offset": 0,
+        "type": "int"
+      },
+      "cell": {
+        "offset": 4,
+        "type": "int"
+      },
+      "rho_s": {
+        "offset": 8,
+        "type": "double"
+      },
+      "c_s": {
+        "offset": 16,
+        "type": "double"
+      },
+      "lambda_s": {
+        "offset": 24,
+        "type": "double"
+      },
+      "a_s": {
+        "offset": 32,
+        "type": "double"
+      },
+      "alpha_L": {
+        "offset": 40,
+        "type": "double"
+      },
+      "alpha_T": {
+        "offset": 48,
+        "type": "double"
+      },
+      "D_m": {
+        "offset": 56,
+        "type": "double"
+      },
+      "D_v": {
+        "offset": 64,
+        "type": "double"
+      },
+      "geo_flux": {
+        "offset": 72,
+        "type": "double"
       }
     }
   },

@@ -464,11 +464,17 @@ Notes:
   readers (`Output2DReader` in Python) open it; copy it out with
   `solver.readFile`. Live results come from `surface2d` (copy per call — keep
   the arrays you need).
-- **Groundwater** is available as `surface2d.groundwater`, with `options.get/set`,
-  aquifer rows, live SI cell arrays, tier histograms and `clockStats`. Its
-  `transport` view supports named source authoring, scale, species terms and
-  `sourceXy`/`setSourceXy`. Clock counters use `bigint` to preserve 64-bit values.
-  Surface quality and the remaining groundwater authoring tables use the raw layer.
+- **Groundwater** is available as `surface2d.groundwater` (also
+  `solver.groundwater2d`): `options` (`AquiferOptions`, with
+  `setProcessOptions`), aquifer rows, node and link beds (`replaceNodes` for
+  compare-and-replace), authored boundaries and their receipts, species,
+  concentrations, layer quality, species ledgers, execution status, live SI
+  cell arrays, tier histograms and `clockStats`. Its `transport` view covers
+  parameters, sorption, initial quality, boundary quality, named and XY
+  sources with scale and species terms, and the initial-quality file. Clock
+  counters use `bigint` to preserve 64-bit values. Runtime sources and
+  boundary forcing (`sources`, `setHeadBoundary`, ...) arrive with the
+  coupling wave; surface quality is `surface2d.quality`.
 - **Size.** 2D adds about 0.6 MB to the `.wasm`. Configure with
   `-DOPENSWMM_WASM_2D=OFF` for a 1D-only module; the 2D raw functions then
   throw "export … is not available".

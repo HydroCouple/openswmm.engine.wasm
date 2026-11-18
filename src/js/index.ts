@@ -326,9 +326,22 @@ export type {
   SurfaceOwnerPreview,
 } from "./Surface2D.js";
 
-export { Groundwater, GroundwaterTransport, GroundwaterOptions } from "./Groundwater.js";
+export {
+  Groundwater,
+  GroundwaterTransport,
+  GroundwaterOptions,
+  AquiferOptions,
+  GroundwaterTransportOptions,
+} from "./Groundwater.js";
 export type {
   AquiferRow,
+  AquiferNode,
+  AquiferLink,
+  AquiferBoundary,
+  GroundwaterParameters,
+  GroundwaterSorption,
+  GroundwaterInitialQuality,
+  GroundwaterBoundary,
   GroundwaterSource,
   GroundwaterSourceTerm,
   GroundwaterClockStats,

@@ -119,6 +119,12 @@ STRUCTS_OF_INTEREST = [
     "SWMM_NodeCoupling2DParam",
     "SWMM_SurfaceOwnerObject",
     "SWMM_SurfaceOwnerShare",
+    # Groundwater (wave E): openswmm_gw2d.h / openswmm_gw_transport.h
+    "SWMM_GwNodeBed",
+    "SWMM_LidNodeBottomEdit",
+    "SWMM_GwExecutionStatus",
+    "SWMM_GwBoundary",
+    "SWMM_GwParams",
 ]
 
 WASM32 = {
@@ -129,6 +135,7 @@ WASM32 = {
     "unsigned long": (4, 4),
     "size_t": (4, 4),
     "uint64_t": (8, 8),
+    "unsigned long long": (8, 8),
     "double": (8, 8),
     "float": (4, 4),
     "long": (4, 4),
