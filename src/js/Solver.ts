@@ -94,6 +94,7 @@ import { ProcessComponents } from "./ProcessComponents.js";
 import { WaterAge } from "./WaterAge.js";
 import { Reactions } from "./Reactions.js";
 import { Heat } from "./Heat.js";
+import type { Groundwater } from "./Groundwater.js";
 
 /** Plugin id of the built-in GeoPackage model writer. */
 const GEOPACKAGE_PLUGIN_ID = "org.hydrocouple.openswmm.plugins.geopackage";
@@ -778,6 +779,11 @@ export class Solver {
   /** The `[PROCESS_COMPONENTS]` registrations (Python `solver.process_components`). */
   get processComponents(): ProcessComponents {
     return new ProcessComponents(this);
+  }
+
+  /** Two-zone aquifer authoring and runtime snapshots (Python `solver.groundwater2d`; `surface2d.groundwater`). */
+  get groundwater2d(): Groundwater {
+    return this.surface2d.groundwater;
   }
 
   /** Heat-transport configuration and diagnostics (Python `solver.heat`). */

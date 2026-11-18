@@ -30532,6 +30532,117 @@
     }
    ]
   },
+  "SWMM_GwBoundary": {
+   "header": "openswmm_gw2d.h",
+   "size": 24,
+   "align": 8,
+   "fields": [
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "edge",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "kind",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "value",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_GwNodeBed": {
+   "header": "openswmm_gw2d.h",
+   "size": 48,
+   "align": 8,
+   "fields": [
+    {
+     "name": "node",
+     "type": "const char*",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "locate",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "exchange",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "automatic",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "kc",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "dc",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "area",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_LidNodeBottomEdit": {
+   "header": "openswmm_gw2d.h",
+   "size": 12,
+   "align": 4,
+   "fields": [
+    {
+     "name": "node",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "expected_mode",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "mode",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    }
+   ]
+  },
   "SWMM_GwClockStats": {
    "header": "openswmm_gw2d.h",
    "size": 336,
@@ -30629,6 +30740,155 @@
      "offset": 312,
      "size": 24,
      "count": 3
+    }
+   ]
+  },
+  "SWMM_GwExecutionStatus": {
+   "header": "openswmm_gw2d.h",
+   "size": 440,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "active",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "available_operators",
+     "type": "unsigned int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "executed_operators",
+     "type": "unsigned int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "host_owned_operations",
+     "type": "unsigned int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "effective_threads",
+     "type": "int",
+     "offset": 20,
+     "size": 4
+    },
+    {
+     "name": "accepted_batches",
+     "type": "unsigned long long",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "accepted_cells",
+     "type": "unsigned long long",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "recharge_backend",
+     "type": "char[16]",
+     "offset": 40,
+     "size": 16,
+     "count": 16
+    },
+    {
+     "name": "profile",
+     "type": "char[128]",
+     "offset": 56,
+     "size": 128,
+     "count": 128
+    },
+    {
+     "name": "detail",
+     "type": "char[256]",
+     "offset": 184,
+     "size": 256,
+     "count": 256
+    }
+   ]
+  },
+  "SWMM_GwParams": {
+   "header": "openswmm_gw_transport.h",
+   "size": 80,
+   "align": 8,
+   "fields": [
+    {
+     "name": "scope",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "rho_s",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "c_s",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "lambda_s",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "a_s",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "alpha_L",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "alpha_T",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "D_m",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "D_v",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "geo_flux",
+     "type": "double",
+     "offset": 72,
+     "size": 8
     }
    ]
   },

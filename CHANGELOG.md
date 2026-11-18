@@ -62,6 +62,14 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Groundwater** (wave E, part 6), mirroring Python: `solver.groundwater2d`;
+  `AquiferOptions` and `GroundwaterTransportOptions` (key iteration,
+  `setProcessOptions`), node and link beds with `replaceNodes`, authored
+  boundaries and receipts, species, concentrations, layer quality, species
+  ledgers and execution status; on `transport` the parameter, sorption,
+  initial-quality and boundary tables, XY sources (`sources` rows now carry
+  `byXy`, `x`, `y`) and the initial-quality file. The runtime source members
+  wait for the coupling wave.
 - **2D surface remainder** (wave E, part 5), mirroring Python: initial,
   initial-bed and boundary quality rows, species and per-cell
   concentrations, edge exterior test, boundary groups and concentrations,

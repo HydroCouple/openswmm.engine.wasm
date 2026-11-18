@@ -7,7 +7,8 @@
  * the real wasm32 ABI. These helpers turn a struct in the heap into a plain
  * object keyed by the C field names, and back:
  *
- * - `int`/`long` → number, `uint32_t` → number, `uint64_t` → number,
+ * - `int`/`long` → number, `uint32_t` → number, `uint64_t` and
+ *   `unsigned long long` → number,
  *   `float`/`double` → number, arrays → `number[]` (flattened row-major);
  * - `char[N]` and `const char*` → string (`""` for NULL);
  * - other pointers → number; a nested struct → object (arrays → object[]).
@@ -64,6 +65,7 @@ const SCALAR_SIZE: Record<string, number> = {
   "unsigned long": 4,
   size_t: 4,
   uint64_t: 8,
+  "unsigned long long": 8,
   float: 4,
   double: 8,
 };
@@ -81,6 +83,7 @@ function readScalar(mod: OpenSwmmWasmModule, base: string, at: number): number {
     case "size_t":
       return mod.HEAPU32[at >> 2];
     case "uint64_t":
+    case "unsigned long long":
       return mod.HEAPU32[at >> 2] + mod.HEAPU32[(at >> 2) + 1] * 2 ** 32;
     default:
       return mod.HEAP32[at >> 2];
@@ -103,6 +106,7 @@ function writeScalar(mod: OpenSwmmWasmModule, base: string, at: number, value: n
       mod.HEAPU32[at >> 2] = value;
       break;
     case "uint64_t":
+    case "unsigned long long":
       mod.HEAPU32[at >> 2] = value % 2 ** 32;
       mod.HEAPU32[(at >> 2) + 1] = Math.floor(value / 2 ** 32);
       break;
