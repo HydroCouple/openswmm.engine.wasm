@@ -62,6 +62,16 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Infrastructure** (wave D, part 3), mirroring Python:
+  `solver.infrastructure` with `transects` (stations, roughness, banks,
+  encroachment, modifiers, comments, remove/rename), `streets`, `inlets`
+  (parameters, full designs with `validateDesign`, comments), `inletUsages`
+  (conduit and inlet-junction placements) and `lids` (control layers,
+  removals, extra fields, storage-node stacks with treatments and Richards
+  flow options, node assignments, bottoms, outlet anchors, snapshots and
+  `[LID_USAGE]` records), plus `LidNodeLayer`, `LidNodeLayerKind` and
+  `LidLayerTreatment`. Nine more structs join the generated layouts. Checked
+  against native Python running the same edits.
 - **Spatial data and the model editor** (wave D, part 2), mirroring Python:
   `solver.spatial` (`Spatial`: CRS, `[MAP]` dimensions and units, annotation
   sections, node/link/subcatchment/gage coordinates, link polylines and

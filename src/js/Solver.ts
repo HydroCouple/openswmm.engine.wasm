@@ -81,6 +81,7 @@ import { SaveSchedule } from "./HotStart.js";
 import { Results } from "./Results.js";
 import { Spatial } from "./Spatial.js";
 import { ModelEditor } from "./Edit.js";
+import { Infrastructure } from "./Infrastructure.js";
 
 // =============================================================================
 // Solver
@@ -720,6 +721,11 @@ export class Solver {
   get editor(): ModelEditor {
     this._assertAlive();
     return (this._editor ??= new ModelEditor(this));
+  }
+
+  /** Transects, streets, inlets, inlet placements and LIDs (Python `solver.infrastructure`). */
+  get infrastructure(): Infrastructure {
+    return new Infrastructure(this);
   }
 
   /** Coordinates, polygons, `[MAP]` and the CRS (Python `solver.spatial`). */

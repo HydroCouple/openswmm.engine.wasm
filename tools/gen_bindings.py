@@ -89,6 +89,16 @@ STRUCTS_OF_INTEREST = [
     "SWMM_EvapPreviewConfig",
     # Checkpoints (wave C): openswmm_checkpoint.h
     "SWMM_CheckpointSessionOptions",
+    # Infrastructure (wave D): openswmm_infrastructure.h
+    "SWMM_LidNodeLayer",
+    "SWMM_LidLayerTreatment",
+    "SWMM_LidRichardsOptions",
+    "SWMM_LidRichardsMaterial",
+    "SWMM_LidRichardsStatistics",
+    "SWMM_LidBottomState",
+    "SWMM_StorageLidState",
+    "SWMM_StorageLidAnchor",
+    "SWMM_LidUsageRecord",
 ]
 
 WASM32 = {
