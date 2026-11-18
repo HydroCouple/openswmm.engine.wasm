@@ -76,6 +76,8 @@ import { Quality } from "./Quality.js";
 import { Climate } from "./Climate.js";
 import { Statistics } from "./Statistics.js";
 import { Inflows } from "./Inflows.js";
+import { Checkpoints } from "./Checkpoints.js";
+import { SaveSchedule } from "./HotStart.js";
 
 // =============================================================================
 // Solver
@@ -699,6 +701,16 @@ export class Solver {
   /** External, dry-weather and RDII inflows and unit hydrographs (Python `solver.inflows`). */
   get inflows(): Inflows {
     return new Inflows(this);
+  }
+
+  /** Engine checkpoint sessions (Python `solver.checkpoints`). */
+  get checkpoints(): Checkpoints {
+    return new Checkpoints(this);
+  }
+
+  /** The `[SAVE HOTSTART]` schedule (Python `solver.save_schedule`). */
+  get saveSchedule(): SaveSchedule {
+    return new SaveSchedule(this);
   }
 
   /**

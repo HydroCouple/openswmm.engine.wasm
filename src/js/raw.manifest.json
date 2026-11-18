@@ -30050,6 +30050,49 @@
     }
    ]
   },
+  "SWMM_CheckpointSessionOptions": {
+   "header": "openswmm_checkpoint.h",
+   "size": 24,
+   "align": 4,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "size_t",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "schema_version",
+     "type": "unsigned long",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "output",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "source_history",
+     "type": "const char*",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "detailed_source_intervals",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "ownership_token",
+     "type": "const char*",
+     "offset": 20,
+     "size": 4
+    }
+   ]
+  },
   "SWMM_EvapPreviewSample": {
    "header": "openswmm_climate.h",
    "size": 40,

@@ -62,6 +62,14 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Hot starts and checkpoints** (wave C, part 4), mirroring Python:
+  `HotStart` (save from a solver, open native or legacy files, metadata,
+  node/link/subcatchment records with species, state edits, apply;
+  `close()`/`using`), `solver.saveSchedule` (`[SAVE HOTSTART]` entries and
+  formats) and `solver.checkpoints` (capabilities, session start/status,
+  inspect, restore). Checkpoint saving and bundle export are refused in this
+  build: the engine compiles its atomic no-replace publication only for
+  Windows, macOS and Linux, so the capabilities omit SAVE_NEW/BUNDLE_EXPORT.
 - **Inflows** (wave C, part 3), mirroring Python: `solver.inflows` for
   external inflows (time series, scale, baseline, pattern), dry-weather
   inflows (average and four patterns), RDII rows, unit-hydrograph groups

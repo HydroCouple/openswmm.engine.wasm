@@ -1605,6 +1605,13 @@ static_assert(offsetof(SWMM_2DRunStats, active_frac_mean) == 96, "SWMM_2DRunStat
 static_assert(offsetof(SWMM_2DRunStats, active_frac_max) == 104, "SWMM_2DRunStats.active_frac_max: offset");
 static_assert(offsetof(SWMM_2DRunStats, n_tiers) == 112, "SWMM_2DRunStats.n_tiers: offset");
 static_assert(offsetof(SWMM_2DRunStats, tier_cells) == 116, "SWMM_2DRunStats.tier_cells: offset");
+static_assert(sizeof(SWMM_CheckpointSessionOptions) == 24, "SWMM_CheckpointSessionOptions: size");
+static_assert(offsetof(SWMM_CheckpointSessionOptions, struct_size) == 0, "SWMM_CheckpointSessionOptions.struct_size: offset");
+static_assert(offsetof(SWMM_CheckpointSessionOptions, schema_version) == 4, "SWMM_CheckpointSessionOptions.schema_version: offset");
+static_assert(offsetof(SWMM_CheckpointSessionOptions, output) == 8, "SWMM_CheckpointSessionOptions.output: offset");
+static_assert(offsetof(SWMM_CheckpointSessionOptions, source_history) == 12, "SWMM_CheckpointSessionOptions.source_history: offset");
+static_assert(offsetof(SWMM_CheckpointSessionOptions, detailed_source_intervals) == 16, "SWMM_CheckpointSessionOptions.detailed_source_intervals: offset");
+static_assert(offsetof(SWMM_CheckpointSessionOptions, ownership_token) == 20, "SWMM_CheckpointSessionOptions.ownership_token: offset");
 static_assert(sizeof(SWMM_EvapPreviewSample) == 40, "SWMM_EvapPreviewSample: size");
 static_assert(offsetof(SWMM_EvapPreviewSample, date) == 0, "SWMM_EvapPreviewSample.date: offset");
 static_assert(offsetof(SWMM_EvapPreviewSample, source_rate) == 8, "SWMM_EvapPreviewSample.source_rate: offset");
