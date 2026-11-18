@@ -47,9 +47,10 @@ OPTIONAL_2D_HEADERS = {
     "openswmm_gw_transport.h",
     "openswmm_sq2d.h",
 }
-# Non-API headers. The callbacks header declares no functions; its function-
-# pointer typedefs are parsed separately (parse_callbacks) so the TS layer gets
-# the wasm32 addFunction() signature of each callback.
+# Non-API headers. The callbacks header declares no functions. Function-pointer
+# typedefs (there and in the API headers) are parsed separately
+# (parse_callbacks) so the TS layer gets each callback's wasm32 addFunction()
+# signature.
 CALLBACK_HEADER = "openswmm_callbacks.h"
 SKIP_HEADERS = {"openswmm_engine_export.h", CALLBACK_HEADER}
 
@@ -107,6 +108,12 @@ STRUCTS_OF_INTEREST = [
     "SWMM_ComponentLibraryInfo",
     "SWMM_MeshSnowLedger",
     "SWMM_MeshSnowOverrides",
+    # Heat (wave E): openswmm_heat.h
+    "SWMM_Heat2DStatus",
+    "SWMM_GroundHeatStatus",
+    "SWMM_ChannelGroundStatus",
+    "SWMM_ChannelGroundContact",
+    "SWMM_ChannelGroundPreview",
 ]
 
 WASM32 = {
@@ -215,8 +222,15 @@ def wasm_sig_char(ctype: str, *, is_return: bool) -> str:
 
 
 def parse_callbacks(header_dir: Path):
-    """Function-pointer typedefs of openswmm_callbacks.h -> name, prototype, addFunction signature."""
-    text = strip_comments((header_dir / CALLBACK_HEADER).read_text(encoding="utf-8"))
+    """Function-pointer typedefs -> name, prototype, addFunction signature.
+
+    openswmm_callbacks.h comes first; typedefs declared next to the API that
+    takes them (heat edits, split and trace callbacks, ...) follow by header.
+    """
+    headers = [header_dir / CALLBACK_HEADER] + [
+        h for h in sorted(header_dir.glob("openswmm_*.h")) if h.name not in SKIP_HEADERS
+    ]
+    text = "\n".join(strip_comments(h.read_text(encoding="utf-8")) for h in headers)
     callbacks = []
     for m in CALLBACK_RE.finditer(text):
         ret = norm(m.group("ret"))

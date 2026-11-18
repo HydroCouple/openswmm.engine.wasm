@@ -710,8 +710,9 @@ See also: [CLA.md](CLA.md) · [CCLA.md](CCLA.md)
 
 The engine submodule is the reproducible source of truth for generation and
 compilation. Generation against the pinned engine yields **1,527 C functions**
-(1,265 without the 2D headers), **97 enum classes** and the eight callback
-typedefs with their `addFunction()` signatures; no header is excluded.
+(1,265 without the 2D headers), **97 enum classes** and the fourteen callback
+typedefs (`openswmm_callbacks.h` and those next to the API that takes them)
+with their `addFunction()` signatures; no header is excluded.
 The sibling engine working tree can contain newer uncommitted APIs; those are
 not automatically part of this package. Regenerate after deliberately advancing
 the submodule, and rebuild the binary as well as TypeScript.
@@ -724,6 +725,7 @@ the submodule, and rebuild the binary as well as TypeScript.
 | ARD transport | `solver.transport` and `builder.transport`: configuration, conduit overrides, boundary/source rows, detailed output, `previewMatrix`; `solver.transportMatrix`, `threadInfo`, `effectiveThreads()` | Persistence needs a process-component registration and config-file path. Boundary and source rows need a configured species. |
 | Runtime forcing | Existing flow/rainfall controls plus `nodeTemperature`, `nodeAge`, `linkSeepage` | Use native field units: temperature REPLACE is °C, age REPLACE is hours; ADD uses °C·ft³/s or hours·ft³/s. Both require the corresponding model option. |
 | 2D surface routing | `solver.surface2d` (`Surface2D`) and `surface2d.infiltration`, mirroring Python; all five 2D headers in the raw layer; the `OUTPUT_FILE` results file through `Output2DReader` and `Results.surface` | Groundwater options, aquifer rows, state arrays, clock diagnostics and named sources have typed wrappers; other groundwater tables, surface quality and mesh snow remain raw-only. |
+| Heat | `solver.heat`: flux modules, radiative, solar, cloud and sediment parameters, inlet temperatures with node and element overrides, effective values, mesh/ground/channel-ground status and values, channel-ground map preview (with progress), `HeatSnapshot` and `editAtomic` | Values the deck parser refuses are refused, never clamped. |
 | Reactions | `solver.reactions`: species, coefficients and terms (live views), PIPE/TANK expressions, initial quality rows, `[REACTION_OPTIONS]`, `validate`, and the `.rxn` text round trip (`serialize`, `checkText`, `applyText`, `save`); `Reactions.hydraulicVariables(mod)` and `Reactions.functions(mod)` need no model | Edits are BUILDING/OPENED only; a mutation that leaves any expression uncompilable is rolled back and refused. |
 | Build and process services | `capabilities(mod)` (the same JSON document as Python's `capabilities()`), `VERSION`, `solver.processComponents` (registrations, arguments, the known vocabulary), `solver.waterAge` (global ages, node overrides, `save`), `surface2d.snow` (mesh snow configuration, rows, states, ledgers) and `surface2d.quality` (coverages, loadings, curb lengths, buildup) | HydroCouple component libraries are not available in WASM: `ProcessComponents.libraries` is empty and `addSearchPath` throws. |
 | Catalog | `catalog` (Python `openswmm.engine.catalog`: `lookup`, `members`, `targets`, `resolve`, `canonical`, `unitLabel`, revisions), embedded from the engine's `catalog.json` | Paths stay the Python names; `resolve` walks them on a TypeScript solver in camelCase. Targets of facade waves not yet shipped do not resolve. |

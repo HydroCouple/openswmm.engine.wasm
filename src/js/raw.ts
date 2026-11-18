@@ -5053,6 +5053,223 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_Heat2DStatus": {
+    "size": 296,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned int"
+      },
+      "requested": {
+        "offset": 4,
+        "type": "int"
+      },
+      "initialized": {
+        "offset": 8,
+        "type": "int"
+      },
+      "surface_active": {
+        "offset": 12,
+        "type": "int"
+      },
+      "radiative_active": {
+        "offset": 16,
+        "type": "int"
+      },
+      "bed_active": {
+        "offset": 20,
+        "type": "int"
+      },
+      "bed_model": {
+        "offset": 24,
+        "type": "int"
+      },
+      "experimental": {
+        "offset": 28,
+        "type": "int"
+      },
+      "water_heat_capacity": {
+        "offset": 32,
+        "type": "double"
+      },
+      "reason": {
+        "offset": 40,
+        "type": "char[256]",
+        "count": 256
+      }
+    }
+  },
+  "SWMM_GroundHeatStatus": {
+    "size": 304,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned int"
+      },
+      "requested": {
+        "offset": 4,
+        "type": "int"
+      },
+      "initialized": {
+        "offset": 8,
+        "type": "int"
+      },
+      "aquifer_cells": {
+        "offset": 12,
+        "type": "int"
+      },
+      "standalone_cells": {
+        "offset": 16,
+        "type": "int"
+      },
+      "thermal_layers": {
+        "offset": 20,
+        "type": "int"
+      },
+      "conduction_active": {
+        "offset": 24,
+        "type": "int"
+      },
+      "lateral_active": {
+        "offset": 28,
+        "type": "int"
+      },
+      "experimental": {
+        "offset": 32,
+        "type": "int"
+      },
+      "water_heat_capacity": {
+        "offset": 40,
+        "type": "double"
+      },
+      "reason": {
+        "offset": 48,
+        "type": "char[256]",
+        "count": 256
+      }
+    }
+  },
+  "SWMM_ChannelGroundStatus": {
+    "size": 288,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned int"
+      },
+      "requested": {
+        "offset": 4,
+        "type": "int"
+      },
+      "initialized": {
+        "offset": 8,
+        "type": "int"
+      },
+      "exchange_active": {
+        "offset": 12,
+        "type": "int"
+      },
+      "mapped_links": {
+        "offset": 16,
+        "type": "int"
+      },
+      "contact_cells": {
+        "offset": 20,
+        "type": "int"
+      },
+      "contact_intervals": {
+        "offset": 24,
+        "type": "int"
+      },
+      "experimental": {
+        "offset": 28,
+        "type": "int"
+      },
+      "reason": {
+        "offset": 32,
+        "type": "char[256]",
+        "count": 256
+      }
+    }
+  },
+  "SWMM_ChannelGroundContact": {
+    "size": 48,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned int"
+      },
+      "link": {
+        "offset": 4,
+        "type": "int"
+      },
+      "cell": {
+        "offset": 8,
+        "type": "int"
+      },
+      "layer": {
+        "offset": 12,
+        "type": "int"
+      },
+      "begin_fraction": {
+        "offset": 16,
+        "type": "double"
+      },
+      "end_fraction": {
+        "offset": 24,
+        "type": "double"
+      },
+      "share": {
+        "offset": 32,
+        "type": "double"
+      },
+      "invert_m": {
+        "offset": 40,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_ChannelGroundPreview": {
+    "size": 304,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned int"
+      },
+      "link": {
+        "offset": 4,
+        "type": "int"
+      },
+      "valid": {
+        "offset": 8,
+        "type": "int"
+      },
+      "contact_cells": {
+        "offset": 12,
+        "type": "int"
+      },
+      "contact_intervals": {
+        "offset": 16,
+        "type": "int"
+      },
+      "length_m": {
+        "offset": 24,
+        "type": "double"
+      },
+      "covered_length_m": {
+        "offset": 32,
+        "type": "double"
+      },
+      "uncovered_length_m": {
+        "offset": 40,
+        "type": "double"
+      },
+      "reason": {
+        "offset": 48,
+        "type": "char[256]",
+        "count": 256
+      }
+    }
+  },
   "SWMM_Infil2DOptions": {
     "size": 8,
     "fields": {
@@ -5976,6 +6193,18 @@ export const CALLBACK_SIGNATURES = {
   SWMM_PluginStateCallback: "viiiii",
   /** `void (*)(SWMM_Engine, const char*, const char*, void*)` */
   SWMM_HotStartMissingCallback: "viiii",
+  /** `int (*)(SWMM_Engine, void*)` */
+  SWMM_HydrothermalEdit: "iii",
+  /** `const char* (*)(void*, const char*, int)` */
+  SWMM_StageOutputCallback: "iiii",
+  /** `int (*)(SWMM_Engine, int, SWMM_SplitFrame, SWMM_SplitFrame*, void*)` */
+  SWMM_SplitCallback: "iiiiii",
+  /** `int (*)(SWMM_Engine, int, const char*, size_t, const char**, size_t*, void*)` */
+  SWMM_MaterialTransport: "iiiiiiii",
+  /** `int (*)(int, int, void*)` */
+  SWMM_SurfaceOwnerProgress: "iiii",
+  /** `int (*)(double, const char*, void*)` */
+  SWMM_TraceProgress: "idii",
 } as const;
 
 /** Number of C functions in this layer. */
