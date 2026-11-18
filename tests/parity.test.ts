@@ -26,10 +26,12 @@ describe("raw layer", () => {
     expect(manifest.excludedFunctions).toEqual([]);
     expect(manifest.optionalHeaders["2d"]).toEqual([
       "openswmm_2d.h",
+      "openswmm_coupling.h",
       "openswmm_gw2d.h",
       "openswmm_gw_transport.h",
       "openswmm_infil2d.h",
       "openswmm_sq2d.h",
+      "openswmm_surface_ownership.h",
     ]);
     const headers = new Set(Object.values(manifest.functions).map((f) => f.header));
     for (const h of manifest.optionalHeaders["2d"]) expect(headers.has(h)).toBe(true);
@@ -41,6 +43,7 @@ describe("raw layer", () => {
       SWMM_WarningCallback: expect.objectContaining({ signature: "viiii" }),
       SWMM_StepBeginCallback: expect.objectContaining({ signature: "viddi" }),
       SWMM_StepEndCallback: expect.objectContaining({ signature: "viddi" }),
+      SWMM_PhaseCallback: expect.objectContaining({ signature: "viiddi" }),
       SWMM_PluginStateCallback: expect.objectContaining({ signature: "viiiii" }),
       SWMM_HotStartMissingCallback: expect.objectContaining({ signature: "viiii" }),
       SWMM_CancelCallback: expect.objectContaining({ signature: "iiiii" }),
