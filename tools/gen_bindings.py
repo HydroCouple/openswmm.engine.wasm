@@ -79,11 +79,17 @@ STRUCTS_OF_INTEREST = [
     "SWMM_ClimateMetSummary",
     "SWMM_SnowpackEdit",
     "SWMM_SnowState",
+    # Nodes (wave B): openswmm_nodes.h
+    "SWMM_OutfallExportReceipt",
+    "SWMM_DividerParams",
 ]
 
 WASM32 = {
     "int": (4, 4),
     "uint32_t": (4, 4),
+    "unsigned": (4, 4),
+    "unsigned int": (4, 4),
+    "unsigned long": (4, 4),
     "uint64_t": (8, 8),
     "double": (8, 8),
     "float": (4, 4),

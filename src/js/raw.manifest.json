@@ -30472,6 +30472,80 @@
     }
    ]
   },
+  "SWMM_OutfallExportReceipt": {
+   "header": "openswmm_nodes.h",
+   "size": 32,
+   "align": 8,
+   "fields": [
+    {
+     "name": "exported_m3",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "reversed_m3",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "exported_heat_j",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "flags",
+     "type": "unsigned",
+     "offset": 24,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_DividerParams": {
+   "header": "openswmm_nodes.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "method",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "diversion_link",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "curve",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "cutoff_flow",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "weir_height",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "weir_coefficient",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    }
+   ]
+  },
   "SWMM_UebSnowpack": {
    "header": "openswmm_snow.h",
    "size": 48,
