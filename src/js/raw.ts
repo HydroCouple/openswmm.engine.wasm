@@ -5129,6 +5129,332 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_LidNodeLayer": {
+    "size": 64,
+    "fields": {
+      "kind": {
+        "offset": 0,
+        "type": "int"
+      },
+      "params": {
+        "offset": 8,
+        "type": "double[7]",
+        "count": 7
+      }
+    }
+  },
+  "SWMM_LidRichardsOptions": {
+    "size": 32,
+    "fields": {
+      "model": {
+        "offset": 0,
+        "type": "int"
+      },
+      "cells_per_layer": {
+        "offset": 4,
+        "type": "int"
+      },
+      "atol": {
+        "offset": 8,
+        "type": "double"
+      },
+      "rtol": {
+        "offset": 16,
+        "type": "double"
+      },
+      "max_step": {
+        "offset": 24,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_LidRichardsMaterial": {
+    "size": 40,
+    "fields": {
+      "theta_r": {
+        "offset": 0,
+        "type": "double"
+      },
+      "alpha": {
+        "offset": 8,
+        "type": "double"
+      },
+      "n": {
+        "offset": 16,
+        "type": "double"
+      },
+      "l": {
+        "offset": 24,
+        "type": "double"
+      },
+      "specific_storage": {
+        "offset": 32,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_LidLayerTreatment": {
+    "size": 32,
+    "fields": {
+      "layer": {
+        "offset": 0,
+        "type": "int"
+      },
+      "pollutant": {
+        "offset": 4,
+        "type": "int"
+      },
+      "removal_percent": {
+        "offset": 8,
+        "type": "double"
+      },
+      "decay_per_day": {
+        "offset": 16,
+        "type": "double"
+      },
+      "expression": {
+        "offset": 24,
+        "type": "const char*"
+      }
+    }
+  },
+  "SWMM_StorageLidState": {
+    "size": 32,
+    "fields": {
+      "control": {
+        "offset": 0,
+        "type": "int"
+      },
+      "saturation": {
+        "offset": 8,
+        "type": "double"
+      },
+      "bottom": {
+        "offset": 16,
+        "type": "int"
+      },
+      "max_depth_ft": {
+        "offset": 24,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_StorageLidAnchor": {
+    "size": 40,
+    "fields": {
+      "link": {
+        "offset": 0,
+        "type": "int"
+      },
+      "layer": {
+        "offset": 4,
+        "type": "int"
+      },
+      "top": {
+        "offset": 8,
+        "type": "int"
+      },
+      "offset_up_ft": {
+        "offset": 16,
+        "type": "double"
+      },
+      "offset_down_ft": {
+        "offset": 24,
+        "type": "double"
+      },
+      "crest_ft": {
+        "offset": 32,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_LidBottomState": {
+    "size": 192,
+    "fields": {
+      "flow_model": {
+        "offset": 0,
+        "type": "int"
+      },
+      "cell": {
+        "offset": 4,
+        "type": "int"
+      },
+      "valid_sample": {
+        "offset": 8,
+        "type": "int"
+      },
+      "contact_area_m2": {
+        "offset": 16,
+        "type": "double"
+      },
+      "surface_head_m": {
+        "offset": 24,
+        "type": "double"
+      },
+      "aquifer_head_m": {
+        "offset": 32,
+        "type": "double"
+      },
+      "aquifer_time_s": {
+        "offset": 40,
+        "type": "double"
+      },
+      "down_cumulative_m3": {
+        "offset": 48,
+        "type": "double"
+      },
+      "up_cumulative_m3": {
+        "offset": 56,
+        "type": "double"
+      },
+      "net_cumulative_m3": {
+        "offset": 64,
+        "type": "double"
+      },
+      "pending_down_m3": {
+        "offset": 72,
+        "type": "double"
+      },
+      "pending_up_m3": {
+        "offset": 80,
+        "type": "double"
+      },
+      "groundwater_residual_m3": {
+        "offset": 88,
+        "type": "double"
+      },
+      "sample_start_s": {
+        "offset": 96,
+        "type": "double"
+      },
+      "sample_end_s": {
+        "offset": 104,
+        "type": "double"
+      },
+      "sampled_aquifer_time_s": {
+        "offset": 112,
+        "type": "double"
+      },
+      "sampled_lid_head_m": {
+        "offset": 120,
+        "type": "double"
+      },
+      "sampled_aquifer_head_m": {
+        "offset": 128,
+        "type": "double"
+      },
+      "requested_down_m3": {
+        "offset": 136,
+        "type": "double"
+      },
+      "requested_up_m3": {
+        "offset": 144,
+        "type": "double"
+      },
+      "reserved_down_m3": {
+        "offset": 152,
+        "type": "double"
+      },
+      "reserved_up_m3": {
+        "offset": 160,
+        "type": "double"
+      },
+      "accepted_down_m3": {
+        "offset": 168,
+        "type": "double"
+      },
+      "accepted_up_m3": {
+        "offset": 176,
+        "type": "double"
+      },
+      "net_rate_m3s": {
+        "offset": 184,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_LidRichardsStatistics": {
+    "size": 32,
+    "fields": {
+      "accepted": {
+        "offset": 0,
+        "type": "int"
+      },
+      "rejected": {
+        "offset": 4,
+        "type": "int"
+      },
+      "rhs": {
+        "offset": 8,
+        "type": "int"
+      },
+      "newton": {
+        "offset": 12,
+        "type": "int"
+      },
+      "min_step": {
+        "offset": 16,
+        "type": "double"
+      },
+      "balance_m3": {
+        "offset": 24,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_LidUsageRecord": {
+    "size": 80,
+    "fields": {
+      "subcatch_idx": {
+        "offset": 0,
+        "type": "int"
+      },
+      "control_idx": {
+        "offset": 4,
+        "type": "int"
+      },
+      "number": {
+        "offset": 8,
+        "type": "int"
+      },
+      "area": {
+        "offset": 16,
+        "type": "double"
+      },
+      "width": {
+        "offset": 24,
+        "type": "double"
+      },
+      "init_sat": {
+        "offset": 32,
+        "type": "double"
+      },
+      "from_imperv": {
+        "offset": 40,
+        "type": "double"
+      },
+      "to_perv": {
+        "offset": 48,
+        "type": "int"
+      },
+      "from_perv": {
+        "offset": 56,
+        "type": "double"
+      },
+      "report_file": {
+        "offset": 64,
+        "type": "const char*"
+      },
+      "report_file_resolved": {
+        "offset": 68,
+        "type": "const char*"
+      },
+      "drain_to": {
+        "offset": 72,
+        "type": "const char*"
+      }
+    }
+  },
   "SWMM_OutfallExportReceipt": {
     "size": 32,
     "fields": {

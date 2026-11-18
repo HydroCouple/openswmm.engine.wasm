@@ -30727,6 +30727,490 @@
     }
    ]
   },
+  "SWMM_LidNodeLayer": {
+   "header": "openswmm_infrastructure.h",
+   "size": 64,
+   "align": 8,
+   "fields": [
+    {
+     "name": "kind",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "params",
+     "type": "double[7]",
+     "offset": 8,
+     "size": 56,
+     "count": 7
+    }
+   ]
+  },
+  "SWMM_LidRichardsOptions": {
+   "header": "openswmm_infrastructure.h",
+   "size": 32,
+   "align": 8,
+   "fields": [
+    {
+     "name": "model",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "cells_per_layer",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "atol",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "rtol",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "max_step",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_LidRichardsMaterial": {
+   "header": "openswmm_infrastructure.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "theta_r",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "alpha",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "n",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "l",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "specific_storage",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_LidLayerTreatment": {
+   "header": "openswmm_infrastructure.h",
+   "size": 32,
+   "align": 8,
+   "fields": [
+    {
+     "name": "layer",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "pollutant",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "removal_percent",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "decay_per_day",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "expression",
+     "type": "const char*",
+     "offset": 24,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_StorageLidState": {
+   "header": "openswmm_infrastructure.h",
+   "size": 32,
+   "align": 8,
+   "fields": [
+    {
+     "name": "control",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "saturation",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "bottom",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "max_depth_ft",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_StorageLidAnchor": {
+   "header": "openswmm_infrastructure.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "link",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "layer",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "top",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "offset_up_ft",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "offset_down_ft",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "crest_ft",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_LidBottomState": {
+   "header": "openswmm_infrastructure.h",
+   "size": 192,
+   "align": 8,
+   "fields": [
+    {
+     "name": "flow_model",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "valid_sample",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "contact_area_m2",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "surface_head_m",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "aquifer_head_m",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "aquifer_time_s",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "down_cumulative_m3",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "up_cumulative_m3",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "net_cumulative_m3",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "pending_down_m3",
+     "type": "double",
+     "offset": 72,
+     "size": 8
+    },
+    {
+     "name": "pending_up_m3",
+     "type": "double",
+     "offset": 80,
+     "size": 8
+    },
+    {
+     "name": "groundwater_residual_m3",
+     "type": "double",
+     "offset": 88,
+     "size": 8
+    },
+    {
+     "name": "sample_start_s",
+     "type": "double",
+     "offset": 96,
+     "size": 8
+    },
+    {
+     "name": "sample_end_s",
+     "type": "double",
+     "offset": 104,
+     "size": 8
+    },
+    {
+     "name": "sampled_aquifer_time_s",
+     "type": "double",
+     "offset": 112,
+     "size": 8
+    },
+    {
+     "name": "sampled_lid_head_m",
+     "type": "double",
+     "offset": 120,
+     "size": 8
+    },
+    {
+     "name": "sampled_aquifer_head_m",
+     "type": "double",
+     "offset": 128,
+     "size": 8
+    },
+    {
+     "name": "requested_down_m3",
+     "type": "double",
+     "offset": 136,
+     "size": 8
+    },
+    {
+     "name": "requested_up_m3",
+     "type": "double",
+     "offset": 144,
+     "size": 8
+    },
+    {
+     "name": "reserved_down_m3",
+     "type": "double",
+     "offset": 152,
+     "size": 8
+    },
+    {
+     "name": "reserved_up_m3",
+     "type": "double",
+     "offset": 160,
+     "size": 8
+    },
+    {
+     "name": "accepted_down_m3",
+     "type": "double",
+     "offset": 168,
+     "size": 8
+    },
+    {
+     "name": "accepted_up_m3",
+     "type": "double",
+     "offset": 176,
+     "size": 8
+    },
+    {
+     "name": "net_rate_m3s",
+     "type": "double",
+     "offset": 184,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_LidRichardsStatistics": {
+   "header": "openswmm_infrastructure.h",
+   "size": 32,
+   "align": 8,
+   "fields": [
+    {
+     "name": "accepted",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "rejected",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "rhs",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "newton",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "min_step",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "balance_m3",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_LidUsageRecord": {
+   "header": "openswmm_infrastructure.h",
+   "size": 80,
+   "align": 8,
+   "fields": [
+    {
+     "name": "subcatch_idx",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "control_idx",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "number",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "area",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "width",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "init_sat",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "from_imperv",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "to_perv",
+     "type": "int",
+     "offset": 48,
+     "size": 4
+    },
+    {
+     "name": "from_perv",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "report_file",
+     "type": "const char*",
+     "offset": 64,
+     "size": 4
+    },
+    {
+     "name": "report_file_resolved",
+     "type": "const char*",
+     "offset": 68,
+     "size": 4
+    },
+    {
+     "name": "drain_to",
+     "type": "const char*",
+     "offset": 72,
+     "size": 4
+    }
+   ]
+  },
   "SWMM_OutfallExportReceipt": {
    "header": "openswmm_nodes.h",
    "size": 32,

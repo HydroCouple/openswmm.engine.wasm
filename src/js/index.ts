@@ -97,6 +97,21 @@ export { ELLIPSIS, slice } from "./ndarray.js";
 export { ModelEditor, DeleteRecord, ImpactEntry, ConversionResult, TypeChange } from "./Edit.js";
 export type { ConvertTypesOptions, EditorOwner } from "./Edit.js";
 export { Spatial } from "./Spatial.js";
+export { Infrastructure, Transects, Streets, Inlets, InletUsages, LIDs } from "./Infrastructure.js";
+export type {
+  StreetParams,
+  InletParams,
+  InletDesign,
+  InletUsageRecord,
+  LidFlowOptions,
+  LidMaterial,
+  StorageLidState,
+  StorageLidAnchor,
+  LidNodeSnapshot,
+  LidUsageRecord,
+  LidUsage,
+} from "./Infrastructure.js";
+export { LidNodeLayerKind, LidNodeLayer, LidLayerTreatment } from "./LidNodes.js";
 export type { XYArray } from "./Spatial.js";
 export type { AxisKey, NDArray, NumericData, Slice } from "./ndarray.js";
 export type {
