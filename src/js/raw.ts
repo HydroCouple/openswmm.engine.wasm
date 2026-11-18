@@ -4668,6 +4668,35 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_CheckpointSessionOptions": {
+    "size": 24,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "size_t"
+      },
+      "schema_version": {
+        "offset": 4,
+        "type": "unsigned long"
+      },
+      "output": {
+        "offset": 8,
+        "type": "int"
+      },
+      "source_history": {
+        "offset": 12,
+        "type": "const char*"
+      },
+      "detailed_source_intervals": {
+        "offset": 16,
+        "type": "int"
+      },
+      "ownership_token": {
+        "offset": 20,
+        "type": "const char*"
+      }
+    }
+  },
   "SWMM_EvapPreviewSample": {
     "size": 40,
     "fields": {

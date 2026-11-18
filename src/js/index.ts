@@ -82,6 +82,14 @@ export type { EvapPreview, EvapPreviewSample } from "./Climate.js";
 export { Statistics } from "./Statistics.js";
 export type { ReportTable, SummaryColumn, SummaryRow } from "./Statistics.js";
 export { Inflows } from "./Inflows.js";
+export { HotStart, SaveSchedule } from "./HotStart.js";
+export type {
+  HotStartNodeRecord,
+  HotStartLinkRecord,
+  HotStartSubcatchmentRecord,
+  SaveScheduleEntry,
+} from "./HotStart.js";
+export { Checkpoints } from "./Checkpoints.js";
 export type {
   RDIIEntry,
   HydrographEntry,

@@ -86,6 +86,8 @@ STRUCTS_OF_INTEREST = [
     "SWMM_EvapPreviewSample",
     "SWMM_EvapPreviewSummary",
     "SWMM_EvapPreviewConfig",
+    # Checkpoints (wave C): openswmm_checkpoint.h
+    "SWMM_CheckpointSessionOptions",
 ]
 
 WASM32 = {
@@ -94,6 +96,7 @@ WASM32 = {
     "unsigned": (4, 4),
     "unsigned int": (4, 4),
     "unsigned long": (4, 4),
+    "size_t": (4, 4),
     "uint64_t": (8, 8),
     "double": (8, 8),
     "float": (4, 4),
