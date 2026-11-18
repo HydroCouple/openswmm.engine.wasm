@@ -62,6 +62,15 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Saved results** (wave D, part 1), mirroring Python: `OutputReader` (binary
+  `.out`: metadata, ids, period times, per-period results, series, attribute
+  maps, node statistics; `live` reading with `refresh()`), `Output2DReader`
+  (2D HDF5 results: datasets, attributes, shapes, numpy-style selections) and
+  the `Results` facade (`ResultCollection`, `SeriesField`, `SurfaceResults`,
+  `SurfaceField`, mesh, species, 2D mass balance), opened from a run by
+  `solver.openResults()`. Reads return `NDArray` (`{ shape, data }`);
+  `slice()` and `ELLIPSIS` build selections. Checked against native Python
+  reading the same files.
 - **Report snapshot** (wave C, part 5), mirroring Python `_report.py`:
   `getReportSnapshot(solver)` returns runoff, routing and quality continuity
   (errors in percent), routing diagnostics, flooded nodes, storage, link flow,

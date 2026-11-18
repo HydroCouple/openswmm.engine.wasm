@@ -16,7 +16,11 @@
     "_PointTable": "PointTable",
     "_OptionsExtView": "OptionsExtView",
     "Event": "SimulationEvent",
-    "NodeStatsView": "NodeStats"
+    "NodeStatsView": "NodeStats",
+    "_OutputNodeStats": "OutputNodeStats",
+    "_ResultObject": "ResultObject",
+    "_SurfaceCell": "SurfaceCell",
+    "_SurfaceCells": "SurfaceCells"
   },
   "memberAliases": {
     "ModelBuilder.add_subcatch": "addSubcatchment",
@@ -26,13 +30,12 @@
     "Link.closed": "isClosed"
   },
   "excluded": {
-    "_access": "Python-internal owner registry and native-access locking; the TypeScript views use generation counters and guardedRaw (single-threaded WASM)."
+    "_access": "Python-internal owner registry and native-access locking; the TypeScript views use generation counters and guardedRaw (single-threaded WASM).",
+    "_results.ResultField.to_pandas": "Converts to a pandas/xarray object; those are Python libraries. read() returns the shaped array and the field carries its times, ids and units.",
+    "_results.ResultField.to_xarray": "Converts to a pandas/xarray object; those are Python libraries. read() returns the shaped array and the field carries its times, ids and units."
   },
   "pending": {
     "_capabilities": "E",
-    "_output_reader": "D",
-    "_output2d": "D",
-    "_results": "D",
     "_edit": "D",
     "_spatial": "D",
     "_infrastructure": "D",
@@ -56,7 +59,6 @@
     "_solver.Solver.editor": "D",
     "_solver.Solver.infrastructure": "D",
     "_solver.Solver.spatial": "D",
-    "_solver.Solver.open_results": "D",
     "_solver.Solver.write_geopackage": "D",
     "_solver.Solver.groundwater2d": "E",
     "_solver.Solver.heat": "E",
