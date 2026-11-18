@@ -30,7 +30,6 @@
   },
   "pending": {
     "_capabilities": "E",
-    "_subcatchments": "B",
     "_hotstart": "C",
     "_checkpoint": "C",
     "_climate": "C",
@@ -64,8 +63,6 @@
     "_split": "F",
     "_passive_exchange": "F",
     "_trace": "F",
-    "_solver.Solver.aquifers": "B",
-    "_solver.Solver.snowpacks": "B",
     "_solver.Solver.checkpoints": "C",
     "_solver.Solver.climate": "C",
     "_solver.Solver.inflows": "C",
