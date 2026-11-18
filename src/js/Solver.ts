@@ -159,8 +159,8 @@ export class Solver {
    * 2D surface routing (Python `solver.surface2d`).
    *
    * Active once the model has a 2D mesh and {@link Solver.initialize} has
-   * run; check {@link Surface2D.isActive}. Results are read here — the WASM
-   * build ignores `[2D_OPTIONS] OUTPUT_FILE`.
+   * run; check {@link Surface2D.isActive}. Live results are read here; a
+   * `[2D_OPTIONS] OUTPUT_FILE` is written to the virtual filesystem.
    */
   readonly surface2d: Surface2D;
 

@@ -30,6 +30,13 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ### Added
 
+- **HDF5 in the WASM build** (`-DOPENSWMM_WASM_HDF5=ON`, the default): HDF5
+  2.1.1, the native engine's vcpkg release, is downloaded and built during
+  configure. The 2D `[2D_OPTIONS] OUTPUT_FILE` results file is now written and
+  readable through `swmm_output2d_*`, and `.h5` model output and HDF5
+  checkpoints are available. Without zlib, like the native build, so the files
+  open in native readers. About 3.3 MB more `.wasm`. Smoke test:
+  `tests/smoke/hdf5.mjs`.
 - **Python API parity gate.** `tools/gen_python_surface.py` records the
   pinned engine's public Python surface (stubs and pure-Python modules) in
   `tests/fixtures/python_surface.json`; `tests/python_surface.test.ts` checks
