@@ -677,10 +677,12 @@ python3 tools/gen_bindings.py --check
 python3 tools/gen_fields.py --check
 python3 tools/verify_fields_native.py <model.inp> ...   # with a native openswmm of the same engine
 python3 tools/check_python_parity.py
+python3 tools/gen_python_surface.py --check
 npm run check:bindings
 npm run typecheck && npm test && npm run build
 npm run configure:wasm && npm run build:wasm
 npm run smoke
+npx vitest run tests/wasm      # real-module tests; skipped while dist/ lacks a build
 ```
 
 The parity check uses the engine’s Cython tokenizer: comments, strings and
@@ -690,6 +692,14 @@ TypeScript unit tests and a real WASM smoke run are separate checks; none alone
 establishes numerical parity for every transport process. Browser execution,
 worker integration, broader heap-allocation failure handling and complete high-level
 Python API parity still require dedicated validation/work.
+
+The high-level API is tracked against the Python bindings member by member:
+`tools/gen_python_surface.py` writes the pinned engine's public Python surface
+to `tests/fixtures/python_surface.json`, and `tests/python_surface.test.ts`
+requires a TypeScript counterpart (camelCase) for every entry of each module that
+`tools/python_surface_map.json` neither excludes (with a reason) nor lists as
+pending. Each run writes per-module coverage, pending modules included, to
+`tests/_work/python_parity_report.json`.
 
 ### Groundwater clock and source authoring
 

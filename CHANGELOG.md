@@ -30,6 +30,16 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ### Added
 
+- **Python API parity gate.** `tools/gen_python_surface.py` records the
+  pinned engine's public Python surface (stubs and pure-Python modules) in
+  `tests/fixtures/python_surface.json`; `tests/python_surface.test.ts` checks
+  every member against the TypeScript classes, module by module, with aliases,
+  reasoned exclusions and pending facade waves in `tools/python_surface_map.json`.
+  Coverage per module is written to `tests/_work/python_parity_report.json`.
+- **Real-module test tier** (`tests/wasm/`, vitest): runs the built
+  `dist/` module; skipped with the reason in the title when `dist/` has no
+  build. CI runs it after the Emscripten build. First test: the report summary
+  tables after a full run.
 - **`solver.fields`: engine fields by catalog path.** `fields.get("node.max_depth", "J1")`,
   `fields.set("link.roughness", "C1", 0.012)` and `fields.getAll("node.depth")`
   use the dotted paths of the engine catalog, the same names the Python

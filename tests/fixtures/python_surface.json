@@ -1,0 +1,4276 @@
+{
+ "_2d": {
+  "classes": {
+   "BoundaryQuality2D": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "cell": "property",
+     "conc": "property",
+     "edge": "property",
+     "species": "property"
+    }
+   },
+   "Infil2DCell": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "is_override": "property",
+     "row": "property"
+    }
+   },
+   "Infil2DDefaults": {
+    "bases": [
+     "MutableMapping[str, Infil2DRow]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder"
+    }
+   },
+   "Infil2DRow": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "dest": "property",
+     "method": "property",
+     "params": "property"
+    }
+   },
+   "Infiltration2DView": {
+    "bases": [],
+    "members": {
+     "authored_rows": "method",
+     "cell": "method",
+     "cumulative": "method",
+     "defaults": "property",
+     "infil_step": "property",
+     "ownership": "method",
+     "ownership_bulk": "method",
+     "rate": "method",
+     "replace_authored_rows": "method",
+     "set_cell": "method",
+     "set_cells": "method",
+     "total_volume": "property"
+    }
+   },
+   "InitialQuality2D": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "cell": "property",
+     "conc": "property",
+     "scope": "property",
+     "species": "property",
+     "tag": "property"
+    }
+   },
+   "Surface2D": {
+    "bases": [],
+    "members": {
+     "add_triangle_coupling": "method",
+     "boundary_edge_count": "property",
+     "boundary_flow": "method",
+     "boundary_quality": "property",
+     "boundary_receipt": "method",
+     "clear_boundary": "method",
+     "clear_edge_bc": "method",
+     "clear_source": "method",
+     "clear_triangle_couplings": "method",
+     "concentrations": "method",
+     "continuity_error": "property",
+     "dry_depth": "property",
+     "edge_is_exterior": "method",
+     "edge_stride": "property",
+     "force_clear_all": "method",
+     "force_coupling_flux": "method",
+     "force_evap": "method",
+     "force_evap_uniform": "method",
+     "force_rainfall": "method",
+     "force_rainfall_uniform": "method",
+     "geometry_scale_to_si": "property",
+     "get_cell_neighbours": "method",
+     "get_cell_vertex_count": "method",
+     "get_cell_vertices": "method",
+     "get_coupling_flux": "method",
+     "get_coupling_fluxes": "method",
+     "get_coupling_volume_bulk": "method",
+     "get_depth": "method",
+     "get_depths": "method",
+     "get_edge_bc_cum_flux": "method",
+     "get_edge_bc_flow": "method",
+     "get_edge_bc_flow_tseries_name": "method",
+     "get_edge_bc_head": "method",
+     "get_edge_bc_rating_curve_name": "method",
+     "get_edge_bc_slope": "method",
+     "get_edge_bc_tseries_name": "method",
+     "get_edge_bc_type": "method",
+     "get_edge_conveyance": "method",
+     "get_edge_conveyance_bulk": "method",
+     "get_edge_flux_bulk": "method",
+     "get_edge_geometry_bulk": "method",
+     "get_edge_wall_drag": "method",
+     "get_head": "method",
+     "get_heads": "method",
+     "get_mass_balance": "method",
+     "get_net_source": "method",
+     "get_node_coupling_default_type": "method",
+     "get_node_coupling_param": "method",
+     "get_node_coupling_type": "method",
+     "get_rain_volume_bulk": "method",
+     "get_rainfall": "method",
+     "get_rainfall_bulk": "method",
+     "get_report_rainfall_bulk": "method",
+     "get_stat_max_continuity_err": "method",
+     "get_stat_max_depths": "method",
+     "get_stat_max_velocities": "method",
+     "get_surface_owners": "method",
+     "get_triangle_area": "method",
+     "get_triangle_centroid": "method",
+     "get_triangle_coupled_node": "method",
+     "get_triangle_coupling_row": "method",
+     "get_triangle_init_depth": "method",
+     "get_triangle_init_hgl": "method",
+     "get_triangle_init_velocity": "method",
+     "get_triangle_mannings": "method",
+     "get_triangle_neighbours": "method",
+     "get_triangle_tag": "method",
+     "get_triangle_vertices": "method",
+     "get_velocities": "method",
+     "get_vertex_coords": "method",
+     "get_vertex_coupled_node": "method",
+     "get_vertex_coupling_area": "method",
+     "get_vertex_coupling_cd": "method",
+     "get_vertex_head": "method",
+     "get_vertex_heads": "method",
+     "get_vertex_render_depths": "method",
+     "get_vertex_tag": "method",
+     "get_vertex_xyz": "method",
+     "groundwater": "property",
+     "infiltration": "property",
+     "initial_bed_quality": "property",
+     "initial_quality": "property",
+     "is_active": "property",
+     "max_depth": "property",
+     "n_cells": "property",
+     "n_quads": "property",
+     "n_triangles": "property",
+     "n_vertices": "property",
+     "output_variable_mask": "method",
+     "output_variable_text": "method",
+     "output_variables": "method",
+     "prepare_for_edit": "method",
+     "preview_surface_owners": "method",
+     "quality": "property",
+     "rainfall_weights": "method",
+     "remove_boundary_quality": "method",
+     "remove_initial_bed_quality": "method",
+     "remove_initial_quality": "method",
+     "replace_node_coupling": "method",
+     "replace_surface_owners": "method",
+     "reset_edge_conveyance": "method",
+     "reset_node_coupling": "method",
+     "run_stats": "property",
+     "set_auto_backend_cpu": "method",
+     "set_boundary_quality": "method",
+     "set_edge_bc_concentrations": "method",
+     "set_edge_bc_flow": "method",
+     "set_edge_bc_flow_tseries_name": "method",
+     "set_edge_bc_group": "method",
+     "set_edge_bc_head": "method",
+     "set_edge_bc_rating_curve_name": "method",
+     "set_edge_bc_slope": "method",
+     "set_edge_bc_tseries_name": "method",
+     "set_edge_bc_type": "method",
+     "set_edge_conveyance": "method",
+     "set_edge_wall_drag": "method",
+     "set_flow_boundary": "method",
+     "set_head_boundary": "method",
+     "set_heat_source": "method",
+     "set_initial_bed_quality": "method",
+     "set_initial_quality": "method",
+     "set_node_coupling_param": "method",
+     "set_node_coupling_type": "method",
+     "set_results_file": "method",
+     "set_species_source": "method",
+     "set_triangle_init_depth": "method",
+     "set_triangle_init_hgl": "method",
+     "set_triangle_init_velocity": "method",
+     "set_triangle_mannings": "method",
+     "set_triangle_tag": "method",
+     "set_vertex_coupled_node": "method",
+     "set_vertex_coupling_area": "method",
+     "set_vertex_coupling_cd": "method",
+     "set_vertex_tag": "method",
+     "set_vertex_z": "method",
+     "set_vertex_z_bulk": "method",
+     "set_water_source": "method",
+     "snow": "property",
+     "solver_last_step": "property",
+     "solver_steps": "property",
+     "source_receipt": "method",
+     "sources": "property",
+     "species": "property",
+     "species_ledger": "method",
+     "total_exchange_flow": "property",
+     "total_volume": "property",
+     "triangle_coupling_count": "property",
+     "triangle_coupling_rows": "property",
+     "validate_node_coupling": "method",
+     "vertex_coupling_count": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_access": {
+  "classes": {
+   "Callback": {
+    "bases": [],
+    "members": {
+     "__call__": "dunder"
+    }
+   },
+   "EngineView": {
+    "bases": [],
+    "members": {}
+   },
+   "NativeAccess": {
+    "bases": [],
+    "members": {
+     "check": "method",
+     "operation": "method",
+     "raise_callback_error": "method",
+     "require_idle": "method"
+    }
+   },
+   "StageMapper": {
+    "bases": [],
+    "members": {
+     "map": "method"
+    }
+   }
+  },
+  "functions": [
+   "register_owner",
+   "resolve_owner"
+  ]
+ },
+ "_capabilities": {
+  "classes": {},
+  "functions": [
+   "capabilities"
+  ]
+ },
+ "_checkpoint": {
+  "classes": {
+   "Checkpoints": {
+    "bases": [],
+    "members": {
+     "capabilities": "property",
+     "export_bundle": "method",
+     "inspect": "method",
+     "restore": "method",
+     "save": "method",
+     "session_status": "property",
+     "start_session": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_climate": {
+  "classes": {
+   "Climate": {
+    "bases": [],
+    "members": {
+     "adc_impervious": "property",
+     "adc_pervious": "property",
+     "adjust_conductivity": "property",
+     "adjust_evaporation": "property",
+     "adjust_rainfall": "property",
+     "adjust_temperature": "property",
+     "ati_weight": "property",
+     "elevation": "property",
+     "evap_monthly": "property",
+     "evap_recovery": "property",
+     "evap_timeseries": "property",
+     "evap_type": "property",
+     "humidity_monthly": "property",
+     "humidity_timeseries": "property",
+     "humidity_type": "property",
+     "humidity_variable": "property",
+     "latitude": "property",
+     "longitude_correction": "property",
+     "neg_melt_ratio": "property",
+     "pan_coeff": "property",
+     "preview_evaporation": "method",
+     "snow_temp": "property",
+     "temp_file_start": "property",
+     "temp_source": "property",
+     "temp_timeseries": "property",
+     "temp_units": "property",
+     "wind_monthly": "property",
+     "wind_type": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_controls": {
+  "classes": {
+   "ControlRule": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "id": "property",
+     "text": "property"
+    }
+   },
+   "Controls": {
+    "bases": [
+     "MutableSequence[ControlRule]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "append": "method",
+     "clear": "method",
+     "find_references": "method",
+     "insert": "method",
+     "remove_rule": "method",
+     "replace_program": "method",
+     "set_link_setting": "method",
+     "set_link_status": "method",
+     "validate_message": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_coupling": {
+  "classes": {
+   "BoundaryReceipt": {
+    "bases": [
+     "SourceReceipt"
+    ],
+    "members": {
+     "limiter_reasons": "property"
+    }
+   },
+   "Coupling": {
+    "bases": [
+     "EngineView"
+    ],
+    "members": {
+     "advance_to": "method",
+     "apply_frame": "method",
+     "capabilities": "property",
+     "for_provider": "method",
+     "groundwater": "property",
+     "provider_id": "property",
+     "set_sources": "method",
+     "surface": "property"
+    }
+   },
+   "CouplingFrame": {
+    "bases": [],
+    "members": {
+     "boundaries": "property",
+     "clears": "property",
+     "forcings": "property",
+     "sources": "property"
+    }
+   },
+   "DomainSources": {
+    "bases": [
+     "EngineView"
+    ],
+    "members": {
+     "boundary_flow": "method",
+     "boundary_receipt": "method",
+     "clear_boundary": "method",
+     "clear_source": "method",
+     "infiltration_receipt": "method",
+     "set_boundaries": "method",
+     "set_boundary": "method",
+     "set_forcings": "method",
+     "set_source": "method",
+     "source_receipt": "method",
+     "source_receipts": "method",
+     "species_ledger": "method",
+     "water_totals": "property"
+    }
+   },
+   "RuntimeBoundary": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "concentrations": "property",
+     "domain": "property",
+     "edge": "property",
+     "kind": "property",
+     "value": "property"
+    }
+   },
+   "RuntimeClear": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "domain": "property",
+     "source_id": "property"
+    }
+   },
+   "RuntimeForcing": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "channel": "property",
+     "concentrations": "property",
+     "mode": "property",
+     "rate_m_s": "property",
+     "until_seconds": "property"
+    }
+   },
+   "RuntimeSource": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "concentrations": "property",
+     "domain": "property",
+     "flow_m3_s": "property",
+     "heat_w": "property",
+     "source_id": "property",
+     "species_rates": "property",
+     "until_seconds": "property"
+    }
+   },
+   "SourceReceipt": {
+    "bases": [],
+    "members": {
+     "applied_heat_j": "property",
+     "applied_m3": "property",
+     "applied_species": "property",
+     "last_applied_m3_s": "property",
+     "last_interval_seconds": "property",
+     "limiter_reasons": "property",
+     "rejected_heat_j": "property",
+     "rejected_m3": "property",
+     "rejected_species": "property",
+     "requested_heat_j": "property",
+     "requested_m3": "property",
+     "requested_species": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_dates": {
+  "classes": {},
+  "functions": [
+   "datetime_to_oadate",
+   "oadate_to_datetime"
+  ]
+ },
+ "_datetime": {
+  "classes": {},
+  "functions": [
+   "add_seconds",
+   "decode_date",
+   "decode_time",
+   "encode_date",
+   "encode_time",
+   "time_diff"
+  ]
+ },
+ "_edit": {
+  "classes": {
+   "ConversionResult": {
+    "bases": [],
+    "members": {
+     "cleared_fields": "property",
+     "new_type": "property",
+     "warnings": "property"
+    }
+   },
+   "DeleteRecord": {
+    "bases": [],
+    "members": {
+     "close": "method",
+     "restorable": "property",
+     "restore": "method"
+    }
+   },
+   "ImpactEntry": {
+    "bases": [],
+    "members": {
+     "cascaded": "property",
+     "field": "property",
+     "obj_idx": "property",
+     "obj_type": "property",
+     "obj_type_name": "property"
+    }
+   },
+   "ModelEditor": {
+    "bases": [],
+    "members": {
+     "analyze_aquifer_impact": "method",
+     "analyze_gage_impact": "method",
+     "analyze_hydrograph_impact": "method",
+     "analyze_inlet_impact": "method",
+     "analyze_landuse_impact": "method",
+     "analyze_lid_impact": "method",
+     "analyze_link_impact": "method",
+     "analyze_node_impact": "method",
+     "analyze_pattern_impact": "method",
+     "analyze_pollutant_impact": "method",
+     "analyze_snowpack_impact": "method",
+     "analyze_street_impact": "method",
+     "analyze_subcatch_impact": "method",
+     "analyze_table_impact": "method",
+     "analyze_transect_impact": "method",
+     "convert_link": "method",
+     "convert_node": "method",
+     "convert_types": "method",
+     "delete_aquifer": "method",
+     "delete_gage": "method",
+     "delete_gage_recorded": "method",
+     "delete_gages": "method",
+     "delete_gages_recorded": "method",
+     "delete_hydrograph": "method",
+     "delete_inlet": "method",
+     "delete_landuse": "method",
+     "delete_lid": "method",
+     "delete_link": "method",
+     "delete_link_recorded": "method",
+     "delete_links": "method",
+     "delete_links_recorded": "method",
+     "delete_node": "method",
+     "delete_node_recorded": "method",
+     "delete_nodes": "method",
+     "delete_nodes_recorded": "method",
+     "delete_pattern": "method",
+     "delete_pollutant": "method",
+     "delete_snowpack": "method",
+     "delete_street": "method",
+     "delete_subcatch": "method",
+     "delete_subcatch_recorded": "method",
+     "delete_subcatchments": "method",
+     "delete_subcatchments_recorded": "method",
+     "delete_table": "method",
+     "delete_transect": "method",
+     "end_datetime": "property",
+     "fuse_inlet_junction": "method",
+     "fuse_virtual_junction": "method",
+     "gage_count": "property",
+     "link_count": "property",
+     "node_count": "property",
+     "report_start_datetime": "property",
+     "set_node_inlet": "method",
+     "set_node_virtual": "method",
+     "split_conduit": "method",
+     "split_conduit_inlet": "method",
+     "start_datetime": "property",
+     "subcatch_count": "property",
+     "table_count": "property"
+    }
+   },
+   "TypeChange": {
+    "bases": [],
+    "members": {
+     "dependency_node": "property",
+     "details": "property",
+     "source_type": "property",
+     "status": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_enums": {
+  "classes": {
+   "AquiferParam": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "BuildupFunc": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "CellScope": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ChannelGroundValue": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ConcentrationUnits": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "DividerType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "EngineState": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ErrorCode": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "EvapPreviewStatus": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "EvapType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "FilePathRole": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "FlowUnits": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ForcingMode": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ForcingPersist": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ForcingTarget": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ForcingType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GageDataSource": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GageRainType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GrateType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundHeatLayerValue": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundHeatValue": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundwaterClosure": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundwaterLedger": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundwaterSoil": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundwaterSpeciesLedger": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundwaterTransportZone": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundwaterVariable": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GroundwaterZone": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "GwfType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "Heat2DValue": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatAttr": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatCloudParam": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatElemKind": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatFluxModule": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatOverrideScope": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatRadiativeParam": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatSedimentParam": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatShortwaveMode": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatSolarParam": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HeatSourceKind": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HumidityType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "HumidityVar": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "InfilModel": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "InletCurveKind": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "InletHostKind": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "InletPlacement": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "InletType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "InpProfile": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "LidExtraField": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "LidType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "LinkType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "NodeCoupling2DType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "NodeType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ObjectType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "OrificeType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "OutLinkVar": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "OutNodeVar": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "OutSubcatchVar": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "OutSystemVar": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "OutfallType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "OutletRatingType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "PatternType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ReactionExprForm": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ReactionScope": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "RefType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "RouteModel": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "RoutingTotal": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "RunoffTotal": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "SplitPhase": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "SplitRole": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "StorageShape": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "SummaryObject": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "SummaryTable": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "SurfaceBoundaryType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "SurfaceForcingMode": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "SurfaceInfilDest": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "SurfaceInfilMethod": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TableType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TempSource": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "ThroatType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TraceDirection": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TraceFlags": {
+    "bases": [
+     "IntFlag"
+    ],
+    "members": {}
+   },
+   "TraceNodeFlags": {
+    "bases": [
+     "IntFlag"
+    ],
+    "members": {}
+   },
+   "TraceStatus": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TraceTerminal": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TransportClass": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TransportDispersionMode": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TransportDomain": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "TransportState": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "UnitSystem": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "UserFlagType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "WarnCode": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "WashoffFunc": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "WaterAgeSource": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "WeirType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "WindType": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
+   "XSectShape": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   }
+  },
+  "functions": []
+ },
+ "_exceptions": {
+  "classes": {
+   "BadHandleError": {
+    "bases": [
+     "EngineError",
+     "RuntimeError"
+    ],
+    "members": {}
+   },
+   "BadIndexError": {
+    "bases": [
+     "EngineError",
+     "IndexError"
+    ],
+    "members": {}
+   },
+   "BadParamError": {
+    "bases": [
+     "EngineError",
+     "ValueError"
+    ],
+    "members": {}
+   },
+   "CRSError": {
+    "bases": [
+     "EngineError",
+     "ValueError"
+    ],
+    "members": {}
+   },
+   "DependencyError": {
+    "bases": [
+     "EngineError",
+     "RuntimeError"
+    ],
+    "members": {}
+   },
+   "EngineError": {
+    "bases": [
+     "Exception"
+    ],
+    "members": {
+     "code": "property",
+     "code_enum": "property",
+     "message": "property"
+    }
+   },
+   "FileError": {
+    "bases": [
+     "EngineError",
+     "IOError"
+    ],
+    "members": {}
+   },
+   "GeoPackageError": {
+    "bases": [
+     "EngineError",
+     "RuntimeError"
+    ],
+    "members": {}
+   },
+   "HotStartError": {
+    "bases": [
+     "EngineError",
+     "RuntimeError"
+    ],
+    "members": {}
+   },
+   "LifecycleError": {
+    "bases": [
+     "EngineError",
+     "RuntimeError"
+    ],
+    "members": {}
+   },
+   "NumericalError": {
+    "bases": [
+     "EngineError",
+     "RuntimeError"
+    ],
+    "members": {}
+   },
+   "ParseError": {
+    "bases": [
+     "EngineError",
+     "ValueError"
+    ],
+    "members": {}
+   },
+   "PluginError": {
+    "bases": [
+     "EngineError",
+     "RuntimeError"
+    ],
+    "members": {}
+   },
+   "StaleObjectError": {
+    "bases": [
+     "LifecycleError"
+    ],
+    "members": {}
+   }
+  },
+  "functions": [
+   "raise_for_code"
+  ]
+ },
+ "_forcing": {
+  "classes": {
+   "Forcing": {
+    "bases": [],
+    "members": {
+     "clear": "method",
+     "clear_all": "method",
+     "climate_dry_only": "method",
+     "climate_evap": "method",
+     "climate_evap_rate": "method",
+     "climate_temperature": "method",
+     "climate_wind": "method",
+     "element_climate": "method",
+     "element_climate_get": "method",
+     "gage_rainfall": "method",
+     "get_climate_dry_only": "method",
+     "get_climate_temperature": "method",
+     "get_climate_wind_speed": "method",
+     "link_flow": "method",
+     "link_quality": "method",
+     "link_seepage": "method",
+     "link_setting": "method",
+     "node_age": "method",
+     "node_head_boundary": "method",
+     "node_lat_inflow": "method",
+     "node_quality": "method",
+     "node_temperature": "method",
+     "subcatchment_evap": "method",
+     "subcatchment_rainfall": "method",
+     "subcatchment_snowfall": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_gages": {
+  "classes": {
+   "Gage": {
+    "bases": [],
+    "members": {
+     "data_source": "property",
+     "file_column": "property",
+     "file_format": "property",
+     "id": "property",
+     "index": "property",
+     "rain_interval": "property",
+     "rain_type": "property",
+     "rain_units": "property",
+     "rainfall": "property",
+     "rainfall_series": "property",
+     "scale_factor": "property",
+     "set_file": "method",
+     "set_rain_interval": "method",
+     "set_timeseries": "method",
+     "snow_factor": "property",
+     "solver": "property",
+     "station_id": "property",
+     "timeseries": "property"
+    }
+   },
+   "Gages": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "ids": "property",
+     "rainfalls": "property",
+     "reload_rain_files": "method",
+     "rename": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_geometry": {
+  "classes": {
+   "CrossSection": {
+    "bases": [],
+    "members": {
+     "from_raw": "method",
+     "geom1": "property",
+     "geom2": "property",
+     "geom3": "property",
+     "geom4": "property",
+     "geom_labels": "property",
+     "shape": "property",
+     "shape_name": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_geopackage": {
+  "classes": {
+   "GeoPackage": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "begin": "method",
+     "close": "method",
+     "commit": "method",
+     "create_observed_series": "method",
+     "last_error": "property",
+     "object_counts": "method",
+     "observed_series_count": "method",
+     "observed_value_count": "method",
+     "query_double": "method",
+     "query_int": "method",
+     "read_observed_values": "method",
+     "read_result_ts": "method",
+     "read_summary": "method",
+     "result_ts_count": "method",
+     "rollback": "method",
+     "simulation_count": "method",
+     "simulation_ids": "method",
+     "topology_edge_count": "method",
+     "variable_count": "method",
+     "write_observed_value": "method",
+     "write_observed_values": "method"
+    }
+   }
+  },
+  "functions": [
+   "is_registered",
+   "register"
+  ]
+ },
+ "_groundwater": {
+  "classes": {
+   "AquiferLink": {
+    "bases": [],
+    "members": {
+     "dc": "property",
+     "exchange": "property",
+     "kc": "property",
+     "link": "property"
+    }
+   },
+   "AquiferNode": {
+    "bases": [],
+    "members": {
+     "area": "property",
+     "automatic": "property",
+     "cell": "property",
+     "dc": "property",
+     "exchange": "property",
+     "kc": "property",
+     "locate": "property",
+     "node": "property"
+    }
+   },
+   "AquiferOptions": {
+    "bases": [
+     "MutableMapping[str, str]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "set_process_options": "method"
+    }
+   },
+   "AquiferRow": {
+    "bases": [],
+    "members": {
+     "alpha": "property",
+     "cell": "property",
+     "ks": "property",
+     "scope": "property",
+     "tag": "property",
+     "theta_r": "property",
+     "theta_s": "property",
+     "zs": "property"
+    }
+   },
+   "Groundwater": {
+    "bases": [],
+    "members": {
+     "active": "property",
+     "add_link": "method",
+     "add_node": "method",
+     "add_row": "method",
+     "authored_boundaries": "property",
+     "authored_boundary_receipt": "method",
+     "boundary_flow": "method",
+     "boundary_receipt": "method",
+     "cell": "method",
+     "cells": "method",
+     "clear_boundary": "method",
+     "clear_source": "method",
+     "clock_stats": "property",
+     "column": "method",
+     "concentrations": "method",
+     "continuity_error": "property",
+     "dimensions": "property",
+     "execution_status": "property",
+     "layer_quality": "method",
+     "ledger": "method",
+     "links": "property",
+     "nodes": "property",
+     "options": "property",
+     "remove_authored_boundary": "method",
+     "remove_link": "method",
+     "remove_node": "method",
+     "remove_row": "method",
+     "replace_nodes": "method",
+     "row_property": "method",
+     "rows": "property",
+     "set_authored_boundary": "method",
+     "set_flow_boundary": "method",
+     "set_head_boundary": "method",
+     "set_heat_source": "method",
+     "set_node_exchange": "method",
+     "set_row_property": "method",
+     "set_species_source": "method",
+     "set_water_source": "method",
+     "source_receipt": "method",
+     "sources": "property",
+     "species": "property",
+     "species_ledger": "method",
+     "tier_histogram": "property",
+     "transport": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_gw_transport": {
+  "classes": {
+   "GroundwaterBoundary": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "edge": "property",
+     "kind": "property",
+     "species": "property",
+     "timeseries": "property",
+     "value": "property"
+    }
+   },
+   "GroundwaterInitialQuality": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "layer": "property",
+     "scope": "property",
+     "species": "property",
+     "tag": "property",
+     "value": "property",
+     "zone": "property"
+    }
+   },
+   "GroundwaterParameters": {
+    "bases": [],
+    "members": {
+     "D_m": "property",
+     "D_v": "property",
+     "a_s": "property",
+     "alpha_L": "property",
+     "alpha_T": "property",
+     "c_s": "property",
+     "cell": "property",
+     "geo_flux": "property",
+     "lambda_s": "property",
+     "rho_s": "property",
+     "scope": "property",
+     "tag": "property"
+    }
+   },
+   "GroundwaterSorption": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "decay": "property",
+     "kd": "property",
+     "scope": "property",
+     "species": "property",
+     "tag": "property"
+    }
+   },
+   "GroundwaterSource": {
+    "bases": [],
+    "members": {
+     "by_xy": "property",
+     "cell": "property",
+     "flow": "property",
+     "flow_timeseries": "property",
+     "name": "property",
+     "scope": "property",
+     "tag": "property",
+     "x": "property",
+     "y": "property"
+    }
+   },
+   "GroundwaterSourceTerm": {
+    "bases": [],
+    "members": {
+     "kind": "property",
+     "species": "property",
+     "timeseries": "property",
+     "value": "property"
+    }
+   },
+   "GroundwaterTransport": {
+    "bases": [],
+    "members": {
+     "authored": "property",
+     "boundaries": "property",
+     "initial_quality": "property",
+     "initial_quality_file": "property",
+     "options": "property",
+     "parameters": "property",
+     "remove_boundary": "method",
+     "remove_initial_quality": "method",
+     "remove_parameters": "method",
+     "remove_sorption": "method",
+     "remove_source": "method",
+     "remove_source_species": "method",
+     "set_boundary": "method",
+     "set_initial_quality": "method",
+     "set_parameters": "method",
+     "set_sorption": "method",
+     "set_source": "method",
+     "set_source_scale": "method",
+     "set_source_species": "method",
+     "set_source_xy": "method",
+     "sorption": "property",
+     "source_scale": "method",
+     "source_species": "method",
+     "source_xy": "method",
+     "sources": "property"
+    }
+   },
+   "GroundwaterTransportOptions": {
+    "bases": [
+     "MutableMapping[str, str]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_heat": {
+  "classes": {
+   "Heat": {
+    "bases": [],
+    "members": {
+     "authoring_flags": "property",
+     "channel_ground_contact": "method",
+     "channel_ground_status": "method",
+     "channel_ground_values": "method",
+     "cloud": "property",
+     "current_shortwave": "property",
+     "dry_policy": "property",
+     "edit_atomic": "method",
+     "effective_element": "method",
+     "element_overrides": "property",
+     "enabled": "property",
+     "ground_layers": "method",
+     "ground_status": "method",
+     "ground_values": "method",
+     "lid_material": "property",
+     "mesh_status": "property",
+     "mesh_values": "method",
+     "modules": "property",
+     "node_overrides": "property",
+     "preview_channel_ground_map": "method",
+     "radiative": "property",
+     "sediment": "property",
+     "set_shortwave_timeseries": "method",
+     "shortwave_mode": "property",
+     "shortwave_timeseries": "property",
+     "snapshot": "method",
+     "solar": "property",
+     "solar_sited": "property",
+     "sources": "property"
+    }
+   },
+   "HeatElementOverride": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "attr": "property",
+     "name": "property",
+     "scope": "property",
+     "value": "property"
+    }
+   },
+   "HeatElementValue": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "source": "property",
+     "source_name": "property",
+     "value": "property"
+    }
+   },
+   "HeatLidMaterial": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "soil_conductivity": "property",
+     "soil_density": "property",
+     "soil_specific_heat": "property",
+     "water_conductivity": "property"
+    }
+   },
+   "HeatNodeOverride": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "node_index": "property",
+     "source": "property",
+     "temp_c": "property"
+    }
+   },
+   "HeatSnapshot": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "close": "method",
+     "restore": "method"
+    }
+   },
+   "_HeatCloud": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "clear": "method",
+     "configured": "property",
+     "current": "property",
+     "set_timeseries": "method",
+     "timeseries": "property"
+    }
+   },
+   "_HeatElementOverrides": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "remove": "method",
+     "set": "method"
+    }
+   },
+   "_HeatModules": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder"
+    }
+   },
+   "_HeatNodeOverrides": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "remove": "method",
+     "set": "method"
+    }
+   },
+   "_HeatRadiative": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder"
+    }
+   },
+   "_HeatSediment": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "clear": "method",
+     "clear_ground_source": "method",
+     "ground_source_configured": "property",
+     "ground_timeseries": "property",
+     "is_configured": "method"
+    }
+   },
+   "_HeatSolar": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "clear": "method"
+    }
+   },
+   "_HeatSources": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "clear": "method",
+     "effective": "method",
+     "is_configured": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_hotstart": {
+  "classes": {
+   "HotStart": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "apply": "method",
+     "close": "method",
+     "contents": "property",
+     "crs": "property",
+     "end_datetime": "property",
+     "link_count": "property",
+     "link_records": "method",
+     "node_count": "property",
+     "node_records": "method",
+     "open": "method",
+     "open_legacy": "method",
+     "save_from": "method",
+     "saved_at": "property",
+     "set_link_depth": "method",
+     "set_link_flow": "method",
+     "set_link_state": "method",
+     "set_node_depth": "method",
+     "set_node_head": "method",
+     "set_node_state": "method",
+     "set_subcatchment_runoff": "method",
+     "sim_datetime": "property",
+     "species": "property",
+     "start_datetime": "property",
+     "subcatchment_count": "property",
+     "subcatchment_records": "method",
+     "version": "property",
+     "warnings": "property"
+    }
+   },
+   "HotStartLinkRecord": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "age": "property",
+     "concentrations": "property",
+     "depth": "property",
+     "flow": "property",
+     "id": "property",
+     "volume": "property"
+    }
+   },
+   "HotStartNodeRecord": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "age": "property",
+     "concentrations": "property",
+     "depth": "property",
+     "head": "property",
+     "id": "property",
+     "volume": "property"
+    }
+   },
+   "HotStartSubcatchmentRecord": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "gw_flow": "property",
+     "gw_lower_depth": "property",
+     "gw_upper_moisture": "property",
+     "id": "property",
+     "runoff": "property"
+    }
+   },
+   "SaveSchedule": {
+    "bases": [
+     "MutableSequence[SaveScheduleEntry]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "append": "method",
+     "clear": "method",
+     "get_format": "method",
+     "insert": "method",
+     "legacy_omits": "method",
+     "set_format": "method"
+    }
+   },
+   "SaveScheduleEntry": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "path": "property",
+     "when": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_inflows": {
+  "classes": {
+   "HydrographEntry": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "dinit": "property",
+     "dmax": "property",
+     "drecov": "property",
+     "k": "property",
+     "month": "property",
+     "r": "property",
+     "response": "property",
+     "t": "property",
+     "uh_name": "property"
+    }
+   },
+   "HydrographGageEntry": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "gage_name": "property",
+     "uh_name": "property"
+    }
+   },
+   "Inflows": {
+    "bases": [],
+    "members": {
+     "add_dwf": "method",
+     "add_external": "method",
+     "add_hydrograph": "method",
+     "add_hydrograph_gage": "method",
+     "add_rdii": "method",
+     "add_rdii_decay": "method",
+     "clear_hydrograph_group_months": "method",
+     "dwf_count": "property",
+     "external_count": "property",
+     "get_dwf": "method",
+     "get_external": "method",
+     "get_hydrograph": "method",
+     "get_hydrograph_gage": "method",
+     "get_hydrograph_group_id": "method",
+     "get_rdii": "method",
+     "get_rdii_decay": "method",
+     "hydrograph_count": "property",
+     "hydrograph_gage_count": "property",
+     "hydrograph_group_count": "property",
+     "rdii_count": "property",
+     "rdii_decay_count": "property",
+     "remove_dwf": "method",
+     "remove_external": "method",
+     "remove_hydrograph_entry": "method",
+     "remove_hydrograph_group": "method",
+     "remove_rdii": "method",
+     "remove_rdii_decay": "method",
+     "rename_hydrograph_group": "method",
+     "set_dwf_baseline": "method",
+     "set_external_baseline": "method",
+     "set_external_scale": "method",
+     "set_hydrograph_gage": "method",
+     "set_hydrograph_ia": "method",
+     "set_hydrograph_rtk": "method",
+     "set_rdii_decay": "method"
+    }
+   },
+   "RDIIDecayEntry": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "T_freeze": "property",
+     "T_ref": "property",
+     "k_0": "property",
+     "k_T": "property",
+     "k_dep": "property",
+     "response": "property",
+     "snow_T": "property",
+     "snow_ddf": "property",
+     "snow_on": "property",
+     "theta_rec": "property",
+     "uh_name": "property"
+    }
+   },
+   "RDIIEntry": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "area": "property",
+     "node_index": "property",
+     "uh_name": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_infrastructure": {
+  "classes": {
+   "Infrastructure": {
+    "bases": [],
+    "members": {
+     "inlet_usages": "property",
+     "inlets": "property",
+     "lids": "property",
+     "streets": "property",
+     "transects": "property"
+    }
+   },
+   "InletUsages": {
+    "bases": [],
+    "members": {
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "find_link": "method",
+     "find_node": "method",
+     "get": "method",
+     "remove": "method",
+     "set": "method",
+     "validate": "method"
+    }
+   },
+   "Inlets": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_comment": "method",
+     "get_design": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "get_params": "method",
+     "get_type": "method",
+     "rename": "method",
+     "set_comment": "method",
+     "set_design": "method",
+     "set_params": "method",
+     "validate_design": "method"
+    }
+   },
+   "LIDs": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "assign_node": "method",
+     "get_drain": "method",
+     "get_drain_curve": "method",
+     "get_drainmat": "method",
+     "get_extra": "method",
+     "get_flow_options": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "get_layers": "method",
+     "get_materials": "method",
+     "get_outlet_anchor": "method",
+     "get_pavement": "method",
+     "get_removal": "method",
+     "get_soil": "method",
+     "get_storage": "method",
+     "get_surface": "method",
+     "get_treatments": "method",
+     "get_type": "method",
+     "node_assignment": "method",
+     "node_base_area": "method",
+     "node_bottom": "method",
+     "node_bottom_state": "method",
+     "node_profile": "method",
+     "node_snapshot": "method",
+     "prepare_node": "method",
+     "remove_node": "method",
+     "rename": "method",
+     "replace_node": "method",
+     "replace_usages": "method",
+     "richards_profile": "method",
+     "richards_statistics": "method",
+     "set_drain": "method",
+     "set_drainmat": "method",
+     "set_extra": "method",
+     "set_layers": "method",
+     "set_node_bottom": "method",
+     "set_outlet_anchor": "method",
+     "set_pavement": "method",
+     "set_removal": "method",
+     "set_soil": "method",
+     "set_storage": "method",
+     "set_surface": "method",
+     "set_type": "method",
+     "usage_add": "method",
+     "usage_count": "method",
+     "usage_get": "method",
+     "usage_record": "method",
+     "usage_remove": "method",
+     "validate_layers": "method",
+     "validate_node": "method",
+     "validate_type": "method",
+     "validate_usage": "method"
+    }
+   },
+   "Streets": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "get_params": "method",
+     "rename": "method",
+     "set_params": "method"
+    }
+   },
+   "Transects": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "add_station": "method",
+     "clear_stations": "method",
+     "get_bank_stations": "method",
+     "get_comments": "method",
+     "get_encroachment_stations": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "get_modifiers": "method",
+     "get_roughness": "method",
+     "get_station": "method",
+     "remove": "method",
+     "rename": "method",
+     "set_bank_stations": "method",
+     "set_comments": "method",
+     "set_encroachment_stations": "method",
+     "set_modifiers": "method",
+     "set_roughness": "method",
+     "station_count": "method",
+     "stations": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_initial_quality": {
+  "classes": {
+   "InitialQuality": {
+    "bases": [],
+    "members": {
+     "TEMPERATURE": "property",
+     "WATER_AGE": "property",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "file_path": "property",
+     "is_file": "method",
+     "remove": "method",
+     "set": "method"
+    }
+   },
+   "InitialQualityEntry": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "constituent": "property",
+     "elem_index": "property",
+     "is_link": "property",
+     "value": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_lid_nodes": {
+  "classes": {
+   "LidLayerTreatment": {
+    "bases": [],
+    "members": {
+     "decay_per_day": "property",
+     "expression": "property",
+     "layer": "property",
+     "pollutant": "property",
+     "removal_percent": "property"
+    }
+   },
+   "LidNodeLayer": {
+    "bases": [],
+    "members": {
+     "kind": "property",
+     "params": "property"
+    }
+   },
+   "LidNodeLayerKind": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   }
+  },
+  "functions": []
+ },
+ "_links": {
+  "classes": {
+   "Link": {
+    "bases": [],
+    "members": {
+     "barrels": "property",
+     "capacity": "property",
+     "closed": "property",
+     "control_setting": "property",
+     "culvert_code": "property",
+     "depth": "property",
+     "flap_gate": "property",
+     "flow": "property",
+     "from_node": "property",
+     "hyd_power": "property",
+     "id": "property",
+     "index": "property",
+     "initial_flow": "property",
+     "length": "property",
+     "loss_coeff": "property",
+     "max_flow": "property",
+     "offset_dn": "property",
+     "offset_up": "property",
+     "orifice": "property",
+     "outlet": "property",
+     "pump": "property",
+     "quality": "method",
+     "roughness": "property",
+     "seep_rate": "property",
+     "set_nodes": "method",
+     "slope": "property",
+     "slot_volume": "property",
+     "solver": "property",
+     "stats": "property",
+     "tag": "property",
+     "target_setting": "property",
+     "to_node": "property",
+     "type": "property",
+     "velocity": "property",
+     "volume": "property",
+     "weir": "property",
+     "xsect": "property"
+    }
+   },
+   "LinkStatsView": {
+    "bases": [],
+    "members": {
+     "max_filling": "property",
+     "max_flow": "property",
+     "max_velocity": "property",
+     "peak_slot_share": "property",
+     "pump_cycles": "property",
+     "pump_on_time": "property",
+     "pump_volume": "property",
+     "slot_share": "property",
+     "surcharge_time": "property",
+     "vol_flow": "property"
+    }
+   },
+   "Links": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "capacities": "property",
+     "control_settings": "property",
+     "depths": "property",
+     "flows": "property",
+     "get_id": "method",
+     "get_index": "method",
+     "get_xsect_info": "method",
+     "hyd_powers": "property",
+     "ids": "property",
+     "pop_last": "method",
+     "pump_stats": "method",
+     "qualities": "method",
+     "rename": "method",
+     "restore_authored_orientation": "method",
+     "target_settings": "property",
+     "velocities": "property",
+     "volumes": "property"
+    }
+   },
+   "OrificeView": {
+    "bases": [],
+    "members": {
+     "open_close_rate": "property",
+     "type": "property"
+    }
+   },
+   "OutletView": {
+    "bases": [],
+    "members": {
+     "expon": "property",
+     "rating_type": "property"
+    }
+   },
+   "PumpView": {
+    "bases": [],
+    "members": {
+     "curve": "property",
+     "init_state": "property",
+     "shutoff_depth": "property",
+     "startup_depth": "property"
+    }
+   },
+   "WeirView": {
+    "bases": [],
+    "members": {
+     "crest_height": "property",
+     "discharge_coeff": "property",
+     "end_contractions": "property",
+     "type": "property"
+    }
+   },
+   "XSection": {
+    "bases": [],
+    "members": {
+     "__iter__": "dunder",
+     "as_tuple": "method",
+     "g1": "property",
+     "g2": "property",
+     "g3": "property",
+     "g4": "property",
+     "geometry": "method",
+     "info": "method",
+     "shape": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_massbalance": {
+  "classes": {
+   "MassBalance": {
+    "bases": [],
+    "members": {
+     "max_courant": "property",
+     "quality_continuity_error": "method",
+     "quality_evap_loss": "method",
+     "quality_seep_loss": "method",
+     "routing_continuity_error": "property",
+     "routing_diagnostics": "property",
+     "routing_total": "method",
+     "runoff_continuity_error": "property",
+     "runoff_total": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_model": {
+  "classes": {
+   "ModelBuilder": {
+    "bases": [],
+    "members": {
+     "add_gage": "method",
+     "add_link": "method",
+     "add_node": "method",
+     "add_subcatch": "method",
+     "add_subcatchment": "method",
+     "add_title_line": "method",
+     "clear_title": "method",
+     "clear_userflag_value": "method",
+     "define_userflag": "method",
+     "end_datetime": "property",
+     "files_get": "method",
+     "files_set": "method",
+     "finalize": "method",
+     "generation": "property",
+     "get_crs": "method",
+     "get_file_path": "method",
+     "get_option": "method",
+     "get_option_ext": "method",
+     "get_title_count": "method",
+     "get_title_line": "method",
+     "get_userflag_bool": "method",
+     "get_userflag_def": "method",
+     "get_userflag_int": "method",
+     "get_userflag_real": "method",
+     "get_userflag_value": "method",
+     "handle": "property",
+     "plugin_get": "method",
+     "plugin_remove": "method",
+     "plugin_set": "method",
+     "plugins_count": "method",
+     "pop_last_link": "method",
+     "pop_last_node": "method",
+     "report_start_datetime": "property",
+     "set_file_path": "method",
+     "set_link_length": "method",
+     "set_link_nodes": "method",
+     "set_link_roughness": "method",
+     "set_link_xsect": "method",
+     "set_node_invert": "method",
+     "set_node_max_depth": "method",
+     "set_option": "method",
+     "set_option_ext": "method",
+     "set_title": "method",
+     "set_userflag_bool": "method",
+     "set_userflag_int": "method",
+     "set_userflag_real": "method",
+     "set_userflag_value": "method",
+     "start_datetime": "property",
+     "to_solver": "method",
+     "transport": "property",
+     "undefine_userflag": "method",
+     "userflag_def_count": "method",
+     "validate": "method",
+     "write": "method",
+     "write_with_plugin": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_nodes": {
+  "classes": {
+   "DividerView": {
+    "bases": [],
+    "members": {
+     "params": "property",
+     "type": "property"
+    }
+   },
+   "Node": {
+    "bases": [],
+    "members": {
+     "crown_elev": "property",
+     "degree": "property",
+     "depth": "property",
+     "depth_from_volume": "method",
+     "divider": "property",
+     "full_volume": "property",
+     "head": "property",
+     "id": "property",
+     "index": "property",
+     "inflow": "property",
+     "initial_depth": "property",
+     "inlet_rule_violation": "method",
+     "invert_elev": "property",
+     "is_inlet": "property",
+     "is_virtual": "property",
+     "lateral_inflow": "property",
+     "losses": "property",
+     "max_depth": "property",
+     "outfall": "property",
+     "outflow": "property",
+     "overflow": "property",
+     "ponded_area": "property",
+     "quality": "method",
+     "rim_depth": "property",
+     "set_head_boundary": "method",
+     "set_quality_mass_flux": "method",
+     "solver": "property",
+     "stats": "property",
+     "storage": "property",
+     "storage_area": "property",
+     "surcharge_depth": "property",
+     "tag": "property",
+     "type": "property",
+     "virtual_rule_violation": "property",
+     "volume": "property"
+    }
+   },
+   "NodeStatsView": {
+    "bases": [],
+    "members": {
+     "max_depth": "property",
+     "max_overflow": "property",
+     "time_flooded": "property",
+     "vol_flooded": "property"
+    }
+   },
+   "Nodes": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "depths": "property",
+     "get_id": "method",
+     "get_index": "method",
+     "heads": "property",
+     "ids": "property",
+     "inflows": "property",
+     "lateral_inflows": "property",
+     "losses": "property",
+     "outflows": "property",
+     "overflows": "property",
+     "pop_last": "method",
+     "qualities": "method",
+     "rename": "method",
+     "set_lateral_inflows": "method",
+     "volumes": "property"
+    }
+   },
+   "OutfallView": {
+    "bases": [],
+    "members": {
+     "export_receipt": "property",
+     "flap_gate": "property",
+     "get_tidal_curve": "method",
+     "get_timeseries": "method",
+     "param": "property",
+     "route_to": "property",
+     "set_stage": "method",
+     "set_tidal_curve": "method",
+     "set_timeseries": "method",
+     "type": "property"
+    }
+   },
+   "StorageView": {
+    "bases": [],
+    "members": {
+     "curve": "property",
+     "exfil_params": "property",
+     "functional": "property",
+     "geometry": "property",
+     "seep_rate": "property",
+     "shape": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_output2d": {
+  "classes": {
+   "Output2DReader": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "attributes": "method",
+     "available": "method",
+     "close": "method",
+     "datasets": "property",
+     "path": "property",
+     "read": "method",
+     "shape": "method",
+     "strings": "method",
+     "unlimited_axes": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_output_reader": {
+  "classes": {
+   "OutputReader": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "close": "method",
+     "error_code": "property",
+     "flow_units": "property",
+     "has_subcatch_variable": "method",
+     "is_live": "property",
+     "link_attributes": "method",
+     "link_count": "property",
+     "link_ids": "property",
+     "link_result": "method",
+     "link_series": "method",
+     "node_attributes": "method",
+     "node_count": "property",
+     "node_ids": "property",
+     "node_result": "method",
+     "node_series": "method",
+     "node_stats": "method",
+     "period_count": "property",
+     "period_times": "property",
+     "pollutant_count": "property",
+     "pollutant_ids": "property",
+     "pollutant_units": "property",
+     "refresh": "method",
+     "report_step": "property",
+     "start_datetime": "property",
+     "subcatchment_attributes": "method",
+     "subcatchment_count": "property",
+     "subcatchment_ids": "property",
+     "subcatchment_result": "method",
+     "subcatchment_series": "method",
+     "system_result": "method",
+     "system_series": "method",
+     "version": "property"
+    }
+   },
+   "_OutputNodeStats": {
+    "bases": [],
+    "members": {
+     "max_depth": "property",
+     "max_overflow": "property",
+     "time_flooded": "property",
+     "vol_flooded": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_passive_exchange": {
+  "classes": {
+   "PassiveAmount": {
+    "bases": [],
+    "members": {
+     "components": "property"
+    }
+   },
+   "PassiveExchange": {
+    "bases": [
+     "EngineView"
+    ],
+    "members": {
+     "attempt": "method",
+     "enable": "method",
+     "enable_checkpoint": "method",
+     "leg": "method",
+     "pool": "method",
+     "receipt": "method",
+     "row": "method",
+     "status": "method"
+    }
+   },
+   "PassiveLeg": {
+    "bases": [],
+    "members": {
+     "applied": "property",
+     "cell": "property",
+     "drain": "property",
+     "duration_seconds": "property",
+     "end_ms": "property",
+     "native_amount": "property",
+     "node": "property",
+     "offset_seconds": "property",
+     "phase": "property",
+     "point": "property",
+     "remaining_native_amount": "property",
+     "remaining_water_ft3": "property",
+     "sampled_concentration": "property",
+     "sealed": "property",
+     "source_after": "property",
+     "source_amount": "property",
+     "source_before": "property",
+     "stage": "property",
+     "start_ms": "property",
+     "volume_after_m3": "property",
+     "volume_before_m3": "property",
+     "water_ft3": "property",
+     "water_m3": "property"
+    }
+   },
+   "PassivePool": {
+    "bases": [],
+    "members": {
+     "hydraulic_volume_ft3": "property",
+     "node": "property",
+     "pending_drain": "property",
+     "pending_spill": "property",
+     "roundoff": "property",
+     "settled_concentration": "property",
+     "settled_depth_ft": "property",
+     "settled_physical_amount": "property",
+     "settled_volume_ft3": "property",
+     "units": "property"
+    }
+   },
+   "PassiveReceipt": {
+    "bases": [],
+    "members": {
+     "capture_ms": "property",
+     "eligible_ms": "property",
+     "end_ms": "property",
+     "first_leg": "property",
+     "generation": "property",
+     "id": "property",
+     "leg_count": "property",
+     "phase": "property",
+     "publication_delivery_seconds": "property",
+     "row_count": "property",
+     "start_ms": "property"
+    }
+   },
+   "PassiveRow": {
+    "bases": [],
+    "members": {
+     "drain_amount": "property",
+     "drain_water": "property",
+     "node": "property",
+     "point": "property",
+     "spill_amount": "property",
+     "spill_water": "property",
+     "units": "property"
+    }
+   },
+   "PassiveStatus": {
+    "bases": [],
+    "members": {
+     "checkpoint_attached": "property",
+     "delivery_frozen": "property",
+     "delivery_seconds": "property",
+     "elapsed_ms": "property",
+     "failed": "property",
+     "history_preflight": "property",
+     "history_refused": "property",
+     "leg_count": "property",
+     "pollutant": "property",
+     "receipt_count": "property",
+     "units": "property",
+     "unsealed_leg_count": "property",
+     "window_open": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_pollutants": {
+  "classes": {
+   "Pollutant": {
+    "bases": [],
+    "members": {
+     "co_pollutant": "property",
+     "dwf_conc": "property",
+     "gw_conc": "property",
+     "id": "property",
+     "index": "property",
+     "init_conc": "property",
+     "kdecay": "property",
+     "mwt": "property",
+     "rain_conc": "property",
+     "rdii_conc": "property",
+     "set_co_pollutant": "method",
+     "snow_only": "property",
+     "solver": "property",
+     "units": "property"
+    }
+   },
+   "Pollutants": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "rename": "method",
+     "set_link_quality": "method",
+     "set_node_quality": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_process_components": {
+  "classes": {
+   "ComponentLibrary": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "caption": "property",
+     "id": "property",
+     "kind": "property",
+     "load_error": "property",
+     "path": "property",
+     "stamp": "property",
+     "version": "property"
+    }
+   },
+   "KnownProcessComponent": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "description": "property",
+     "id": "property",
+     "implemented": "property"
+    }
+   },
+   "ProcessComponent": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "component_index": "property",
+     "config": "property",
+     "id": "property",
+     "resolved": "property"
+    }
+   },
+   "ProcessComponents": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add_search_path": "method",
+     "arguments": "method",
+     "get_index": "method",
+     "known": "method",
+     "libraries": "method",
+     "register": "method",
+     "remove": "method",
+     "set_argument": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_quality": {
+  "classes": {
+   "Landuse": {
+    "bases": [],
+    "members": {
+     "id": "property",
+     "index": "property",
+     "rename": "method",
+     "sweep_interval": "property",
+     "sweep_removal": "property"
+    }
+   },
+   "Landuses": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_id": "method",
+     "get_index": "method"
+    }
+   },
+   "Quality": {
+    "bases": [],
+    "members": {
+     "clear_treatment": "method",
+     "get_buildup": "method",
+     "get_treatment": "method",
+     "get_washoff": "method",
+     "landuses": "property",
+     "set_buildup": "method",
+     "set_treatment": "method",
+     "set_washoff": "method",
+     "validate_treatment_expression": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_reactions": {
+  "classes": {
+   "ExpressionDiagnostic": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "column": "property",
+     "message": "property",
+     "valid": "property"
+    }
+   },
+   "ReactionCoefficient": {
+    "bases": [],
+    "members": {
+     "index": "property",
+     "is_param": "property",
+     "name": "property",
+     "value": "property"
+    }
+   },
+   "ReactionFunction": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "arity": "property",
+     "name": "property"
+    }
+   },
+   "ReactionHydVar": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "description": "property",
+     "name": "property"
+    }
+   },
+   "ReactionInitialEntry": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "elem_index": "property",
+     "is_link": "property",
+     "species_index": "property",
+     "value": "property"
+    }
+   },
+   "ReactionSpecies": {
+    "bases": [],
+    "members": {
+     "atol": "property",
+     "get_expression": "method",
+     "index": "property",
+     "initial": "property",
+     "is_wall": "property",
+     "name": "property",
+     "pipe_expression": "property",
+     "rain_conc": "property",
+     "rtol": "property",
+     "set_expression": "method",
+     "tank_expression": "property",
+     "units": "property"
+    }
+   },
+   "ReactionTerm": {
+    "bases": [],
+    "members": {
+     "expression": "property",
+     "index": "property",
+     "name": "property"
+    }
+   },
+   "Reactions": {
+    "bases": [],
+    "members": {
+     "apply_text": "method",
+     "check_text": "method",
+     "coefficients": "property",
+     "functions": "method",
+     "get_option": "method",
+     "hydraulic_variables": "method",
+     "initial": "property",
+     "save": "method",
+     "serialize": "method",
+     "set_option": "method",
+     "species": "property",
+     "terms": "property",
+     "validate": "method"
+    }
+   },
+   "_CoefficientCollection": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_index": "method",
+     "remove": "method"
+    }
+   },
+   "_InitialQualityRows": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "remove": "method",
+     "set": "method"
+    }
+   },
+   "_SpeciesCollection": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_index": "method",
+     "remove": "method"
+    }
+   },
+   "_TermCollection": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_index": "method",
+     "remove": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_report": {
+  "classes": {
+   "LinkFlowEntry": {
+    "bases": [],
+    "members": {
+     "link_id": "property",
+     "link_type": "property",
+     "max_filling": "property",
+     "max_flow": "property",
+     "max_velocity": "property",
+     "surcharge_time": "property",
+     "total_volume": "property"
+    }
+   },
+   "NodeFloodingEntry": {
+    "bases": [],
+    "members": {
+     "max_depth": "property",
+     "max_overflow_rate": "property",
+     "node_id": "property",
+     "node_type": "property",
+     "time_flooded": "property",
+     "total_flood_volume": "property"
+    }
+   },
+   "PumpEntry": {
+    "bases": [],
+    "members": {
+     "link_id": "property",
+     "num_startups": "property",
+     "pct_time_on": "property",
+     "pump_curve_idx": "property",
+     "total_on_time": "property",
+     "total_volume": "property"
+    }
+   },
+   "QualityContinuity": {
+    "bases": [],
+    "members": {
+     "continuity_error_pct": "property",
+     "evap_loss": "property",
+     "pollutant_id": "property",
+     "seep_loss": "property"
+    }
+   },
+   "ReportSnapshot": {
+    "bases": [],
+    "members": {
+     "link_flow_summary": "property",
+     "node_flooding": "property",
+     "pump_summary": "property",
+     "quality_continuity": "property",
+     "routing_continuity": "property",
+     "routing_diagnostics": "property",
+     "runoff_continuity": "property",
+     "storage_summary": "property",
+     "subcatchment_summary": "property"
+    }
+   },
+   "RoutingContinuity": {
+    "bases": [],
+    "members": {
+     "continuity_error_pct": "property",
+     "coupling_outflow": "property",
+     "dry_weather_inflow": "property",
+     "evaporation_loss": "property",
+     "external_inflow": "property",
+     "final_storage": "property",
+     "forcing_inflow": "property",
+     "groundwater_inflow": "property",
+     "initial_storage": "property",
+     "link_groundwater_inflow": "property",
+     "rdii_inflow": "property",
+     "seepage_loss": "property",
+     "total_flooding": "property",
+     "total_outflow": "property",
+     "wet_weather_inflow": "property"
+    }
+   },
+   "RoutingDiagnostics": {
+    "bases": [],
+    "members": {
+     "avg_iterations": "property",
+     "avg_time_step": "property",
+     "max_courant": "property",
+     "max_time_step": "property",
+     "min_time_step": "property",
+     "n_steps": "property",
+     "n_steps_not_converged": "property",
+     "pct_not_converged": "property"
+    }
+   },
+   "RunoffContinuity": {
+    "bases": [],
+    "members": {
+     "continuity_error_pct": "property",
+     "final_snow": "property",
+     "final_storage": "property",
+     "initial_snow": "property",
+     "initial_storage": "property",
+     "total_evaporation": "property",
+     "total_infiltration": "property",
+     "total_rainfall": "property",
+     "total_runoff": "property",
+     "total_snow_removal": "property"
+    }
+   },
+   "SubcatchmentEntry": {
+    "bases": [],
+    "members": {
+     "max_runoff_rate": "property",
+     "runoff_coefficient": "property",
+     "subcatch_id": "property",
+     "total_precip": "property",
+     "total_runoff_vol": "property"
+    }
+   }
+  },
+  "functions": [
+   "get_report_snapshot"
+  ]
+ },
+ "_results": {
+  "classes": {
+   "ResultCollection": {
+    "bases": [
+     "Mapping[str, _ResultObject]"
+    ],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder"
+    }
+   },
+   "ResultField": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "dimensions": "property",
+     "name": "property",
+     "read": "method",
+     "shape": "property",
+     "times": "property",
+     "to_pandas": "method",
+     "to_xarray": "method",
+     "units": "property"
+    }
+   },
+   "ResultMesh": {
+    "bases": [],
+    "members": {
+     "cells": "property",
+     "coordinate_units": "property",
+     "crs": "property",
+     "metres_per_model_unit": "property",
+     "vertex_counts": "property",
+     "vertices": "property"
+    }
+   },
+   "Results": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "close": "method",
+     "open": "method",
+     "refresh": "method",
+     "times": "property"
+    }
+   },
+   "SeriesField": {
+    "bases": [
+     "ResultField"
+    ],
+    "members": {
+     "object_ids": "property",
+     "read": "method",
+     "shape": "property",
+     "times": "property"
+    }
+   },
+   "SurfaceField": {
+    "bases": [
+     "ResultField"
+    ],
+    "members": {
+     "bind": "method",
+     "read": "method",
+     "shape": "property",
+     "times": "property"
+    }
+   },
+   "SurfaceResults": {
+    "bases": [],
+    "members": {
+     "field": "method",
+     "mass_balance": "property",
+     "mesh": "property",
+     "period_times": "property",
+     "species": "property",
+     "variables": "property"
+    }
+   },
+   "_ResultObject": {
+    "bases": [],
+    "members": {
+     "id": "property",
+     "species": "property",
+     "variables": "property"
+    }
+   },
+   "_SurfaceCell": {
+    "bases": [],
+    "members": {
+     "species": "property"
+    }
+   },
+   "_SurfaceCells": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__len__": "dunder"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_snow": {
+  "classes": {
+   "Snow": {
+    "bases": [],
+    "members": {
+     "apply_configuration": "method",
+     "apply_packs": "method",
+     "cloud": "property",
+     "ledger": "method",
+     "model": "property",
+     "monthly_ranges": "property",
+     "option": "method",
+     "pack": "method",
+     "preview_meteorology": "method",
+     "radiation": "property",
+     "radiation_source": "method",
+     "set_option": "method",
+     "set_pack": "method",
+     "set_radiation_source": "method",
+     "state": "method",
+     "step_seconds": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_snow2d": {
+  "classes": {
+   "MeshSnow": {
+    "bases": [],
+    "members": {
+     "apply_configuration": "method",
+     "configuration": "method",
+     "ledgers": "method",
+     "options": "property",
+     "rows": "method",
+     "states": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_solver": {
+  "classes": {
+   "Event": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "end": "property",
+     "start": "property"
+    }
+   },
+   "EventsView": {
+    "bases": [
+     "MutableSequence[Event]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "append": "method",
+     "clear": "method",
+     "insert": "method"
+    }
+   },
+   "SimulationOptions": {
+    "bases": [
+     "MutableMapping[str, str]"
+    ],
+    "members": {
+     "__contains__": "dunder",
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "crs": "property",
+     "end_datetime": "property",
+     "ext": "property",
+     "report_start_datetime": "property",
+     "routing_step": "property",
+     "start_datetime": "property"
+    }
+   },
+   "Solver": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "advance_to": "method",
+     "aquifers": "property",
+     "checkpoints": "property",
+     "climate": "property",
+     "close": "method",
+     "close_runoff_interface": "method",
+     "controls": "property",
+     "coupling": "property",
+     "create": "method",
+     "crs": "property",
+     "current_datetime": "property",
+     "destroy": "method",
+     "editor": "property",
+     "effective_threads": "method",
+     "elapsed": "property",
+     "end": "method",
+     "end_datetime": "property",
+     "event_count": "property",
+     "events": "property",
+     "flow_units": "property",
+     "forcing": "property",
+     "gages": "property",
+     "generation": "property",
+     "groundwater2d": "property",
+     "handle": "property",
+     "heat": "property",
+     "inflows": "property",
+     "infrastructure": "property",
+     "initial_quality": "property",
+     "initialize": "method",
+     "is_between_events": "property",
+     "links": "property",
+     "mass_balance": "property",
+     "material_split": "property",
+     "nodes": "property",
+     "open": "method",
+     "open_errors": "property",
+     "open_metadata": "method",
+     "open_results": "method",
+     "open_runoff_interface_read": "method",
+     "open_runoff_interface_write": "method",
+     "open_simulation_period": "method",
+     "open_warnings": "property",
+     "options": "property",
+     "passive_exchange": "property",
+     "patterns": "property",
+     "pollutants": "property",
+     "process_components": "property",
+     "quality": "property",
+     "reactions": "property",
+     "read_runoff_step": "method",
+     "report": "method",
+     "report_start_datetime": "property",
+     "routing_step": "property",
+     "run": "method",
+     "save_runoff_step": "method",
+     "save_schedule": "property",
+     "set_lenient_open": "method",
+     "set_phase_callback": "method",
+     "set_progress_callback": "method",
+     "set_step_begin_callback": "method",
+     "set_step_end_callback": "method",
+     "set_warning_callback": "method",
+     "sim_end_time": "property",
+     "sim_start_time": "property",
+     "snow": "property",
+     "snowpacks": "property",
+     "spatial": "property",
+     "split": "property",
+     "start": "method",
+     "start_datetime": "property",
+     "state": "property",
+     "statistics": "property",
+     "steady_state_skip": "property",
+     "step": "method",
+     "steps": "method",
+     "stride": "method",
+     "subcatchments": "property",
+     "surface2d": "property",
+     "tables": "property",
+     "thread_info": "property",
+     "transport": "property",
+     "transport_matrix": "property",
+     "unit_system": "property",
+     "until": "method",
+     "userflags": "property",
+     "water_age": "property",
+     "write": "method",
+     "write_compat": "method",
+     "write_geopackage": "method",
+     "write_staged": "method",
+     "write_with_plugin": "method"
+    }
+   },
+   "UserFlagDef": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "description": "property",
+     "name": "property",
+     "type": "property"
+    }
+   },
+   "UserFlags": {
+    "bases": [
+     "MutableMapping[str, Union[bool, int, float, str]]"
+    ],
+    "members": {
+     "__contains__": "dunder",
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder",
+     "clear_value": "method",
+     "define": "method",
+     "definitions": "method",
+     "get_value": "method",
+     "set_value": "method",
+     "undefine": "method"
+    }
+   },
+   "_OptionsExtView": {
+    "bases": [
+     "MutableMapping[str, str]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder"
+    }
+   }
+  },
+  "functions": [
+   "abi_tag",
+   "run",
+   "run_with_callback"
+  ]
+ },
+ "_spatial": {
+  "classes": {
+   "Spatial": {
+    "bases": [],
+    "members": {
+     "crs": "property",
+     "gage_coord": "method",
+     "get_annotation": "method",
+     "link_coord": "method",
+     "link_vertices": "method",
+     "map_dimensions": "property",
+     "map_units": "property",
+     "node_coord": "method",
+     "node_coords": "method",
+     "node_has_coord": "method",
+     "set_annotation": "method",
+     "set_gage_coord": "method",
+     "set_link_coord": "method",
+     "set_link_vertices": "method",
+     "set_node_coord": "method",
+     "set_node_coords": "method",
+     "set_subcatchment_coord": "method",
+     "set_subcatchment_polygon": "method",
+     "subcatchment_coord": "method",
+     "subcatchment_polygon": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_split": {
+  "classes": {
+   "MaterialSplitParticipant": {
+    "bases": [
+     "SplitParticipant"
+    ],
+    "members": {
+     "apply_geometry": "method",
+     "bind": "method",
+     "checkpoint_capabilities": "method",
+     "checkpoint_capture": "method",
+     "checkpoint_enable": "method",
+     "checkpoint_prepare_outputs": "method",
+     "checkpoint_restore": "method",
+     "configure": "method",
+     "copy_packet": "method",
+     "decode": "method",
+     "encode": "method",
+     "evaluate": "method",
+     "geometry": "method",
+     "set_callback": "method",
+     "set_transport": "method",
+     "validate_input": "method"
+    }
+   },
+   "SplitFrame": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "close": "method",
+     "node": "method",
+     "outfall_return": "method",
+     "phase": "property",
+     "source": "method",
+     "time": "property"
+    }
+   },
+   "SplitParticipant": {
+    "bases": [
+     "EngineView"
+    ],
+    "members": {
+     "apply_geometry": "method",
+     "configure": "method",
+     "decode": "method",
+     "encode": "method",
+     "evaluate": "method",
+     "geometry": "method",
+     "set_callback": "method",
+     "validate_input": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_statistics": {
+  "classes": {
+   "ReportTable": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "columns": "property",
+     "rows": "property",
+     "table": "property",
+     "title": "property",
+     "values": "property"
+    }
+   },
+   "Statistics": {
+    "bases": [],
+    "members": {
+     "link_max_filling": "property",
+     "link_max_filling_at": "method",
+     "link_max_flow": "property",
+     "link_max_flow_at": "method",
+     "link_max_velocity": "property",
+     "link_max_velocity_at": "method",
+     "link_surcharge_time": "property",
+     "link_surcharge_time_at": "method",
+     "link_vol_flow": "property",
+     "link_vol_flow_at": "method",
+     "node_max_depth": "property",
+     "node_max_depth_at": "method",
+     "node_max_overflow": "property",
+     "node_max_overflow_at": "method",
+     "node_time_flooded": "property",
+     "node_time_flooded_at": "method",
+     "node_vol_flooded": "property",
+     "node_vol_flooded_at": "method",
+     "subcatchment_max_runoff": "property",
+     "subcatchment_max_runoff_at": "method",
+     "subcatchment_precip": "property",
+     "subcatchment_runoff_vol": "property",
+     "subcatchment_runoff_vol_at": "method",
+     "summary_row_at": "method",
+     "summary_table": "method",
+     "summary_tables": "method",
+     "summary_value_at": "method"
+    }
+   },
+   "SummaryColumn": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "name": "property",
+     "units": "property"
+    }
+   },
+   "SummaryRow": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "label": "property",
+     "object_index": "property",
+     "object_type": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_subcatchments": {
+  "classes": {
+   "Aquifers": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_evap_pattern": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "get_param": "method",
+     "rename": "method",
+     "set_evap_pattern": "method",
+     "set_param": "method"
+    }
+   },
+   "CoverageView": {
+    "bases": [
+     "MutableMapping[str, float]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder"
+    }
+   },
+   "GroundwaterParams": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "a1": "property",
+     "a2": "property",
+     "a3": "property",
+     "b1": "property",
+     "b2": "property",
+     "hstar": "property",
+     "surf_elev": "property",
+     "tw": "property"
+    }
+   },
+   "InfiltrationView": {
+    "bases": [],
+    "members": {
+     "curve_number": "property",
+     "curve_number_drying_time": "property",
+     "green_ampt": "property",
+     "horton": "property",
+     "model": "property",
+     "set_curve_number": "method",
+     "set_green_ampt": "method",
+     "set_horton": "method"
+    }
+   },
+   "LoadingsView": {
+    "bases": [
+     "MutableMapping[str, float]"
+    ],
+    "members": {
+     "__delitem__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder"
+    }
+   },
+   "Snowpacks": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_id": "method",
+     "get_impervious": "method",
+     "get_index": "method",
+     "get_pervious": "method",
+     "get_plowable": "method",
+     "get_removal": "method",
+     "get_removal_subcatch": "method",
+     "rename": "method",
+     "set_impervious": "method",
+     "set_pervious": "method",
+     "set_plowable": "method",
+     "set_removal": "method",
+     "set_removal_subcatch": "method"
+    }
+   },
+   "Subcatchment": {
+    "bases": [],
+    "members": {
+     "aquifer": "property",
+     "area": "property",
+     "coverage": "property",
+     "coverages": "method",
+     "ds_imperv": "property",
+     "ds_perv": "property",
+     "evap": "property",
+     "gage": "property",
+     "get_gw_state": "method",
+     "get_snow_state": "method",
+     "groundwater": "property",
+     "gw_node": "property",
+     "gw_params": "property",
+     "id": "property",
+     "imperv_pct": "property",
+     "index": "property",
+     "infil": "property",
+     "infiltration": "property",
+     "loadings": "property",
+     "n_imperv": "property",
+     "n_perv": "property",
+     "outlet": "property",
+     "ponded_quality": "method",
+     "quality": "method",
+     "rain_scale_factor": "property",
+     "rainfall": "property",
+     "runoff": "property",
+     "set_gw_params": "method",
+     "set_gw_state": "method",
+     "set_outlet_node": "method",
+     "set_outlet_subcatchment": "method",
+     "set_ponded_quality": "method",
+     "set_snow_state": "method",
+     "slope": "property",
+     "snow_depth": "property",
+     "snow_scale_factor": "property",
+     "snowpack": "property",
+     "solver": "property",
+     "stats": "property",
+     "tag": "property",
+     "width": "property",
+     "zero_imperv_pct": "property"
+    }
+   },
+   "SubcatchmentStatsView": {
+    "bases": [],
+    "members": {
+     "max_runoff": "property",
+     "precip": "property",
+     "runoff_vol": "property"
+    }
+   },
+   "Subcatchments": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "evaps": "property",
+     "get_gwf_expression": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "gwf_functions": "method",
+     "gwf_variables": "method",
+     "ids": "property",
+     "infils": "property",
+     "qualities": "method",
+     "rainfalls": "property",
+     "rename": "method",
+     "runoffs": "property",
+     "set_gwf_expression": "method",
+     "snow_depths": "property",
+     "validate_gwf_expression": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_surface_quality": {
+  "classes": {
+   "SurfaceCoverage": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "landuses": "property",
+     "scope": "property",
+     "tag": "property"
+    }
+   },
+   "SurfaceCurbLength": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "length": "property",
+     "scope": "property",
+     "tag": "property"
+    }
+   },
+   "SurfaceLoading": {
+    "bases": [],
+    "members": {
+     "cell": "property",
+     "scope": "property",
+     "species": "property",
+     "tag": "property",
+     "value": "property"
+    }
+   },
+   "SurfaceQuality": {
+    "bases": [],
+    "members": {
+     "buildup": "method",
+     "coverages": "property",
+     "curb_lengths": "property",
+     "loadings": "property",
+     "remove_coverage": "method",
+     "remove_curb_length": "method",
+     "remove_loading": "method",
+     "set_coverage": "method",
+     "set_curb_length": "method",
+     "set_loading": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_tables": {
+  "classes": {
+   "Curve": {
+    "bases": [
+     "_PointTable"
+    ],
+    "members": {
+     "points": "property"
+    }
+   },
+   "Pattern": {
+    "bases": [],
+    "members": {
+     "factors": "property",
+     "id": "property",
+     "index": "property",
+     "set_factors": "method",
+     "solver": "property",
+     "type": "property"
+    }
+   },
+   "Patterns": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add": "method",
+     "get_index": "method",
+     "remove": "method",
+     "rename": "method"
+    }
+   },
+   "Tables": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "add_curve": "method",
+     "add_timeseries": "method",
+     "as_curve": "method",
+     "as_timeseries": "method",
+     "get_id": "method",
+     "get_index": "method",
+     "get_type": "method",
+     "rename": "method",
+     "set_type": "method"
+    }
+   },
+   "TimeSeries": {
+    "bases": [
+     "_PointTable"
+    ],
+    "members": {
+     "add": "method",
+     "points": "property",
+     "relative_info": "property",
+     "set_relative_info": "method"
+    }
+   },
+   "_PointTable": {
+    "bases": [],
+    "members": {
+     "__len__": "dunder",
+     "add_point": "method",
+     "clear": "method",
+     "id": "property",
+     "index": "property",
+     "lookup": "method",
+     "replace_points": "method",
+     "solver": "property",
+     "validate_points": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_trace": {
+  "classes": {
+   "FlowTracer": {
+    "bases": [],
+    "members": {
+     "__enter__": "dunder",
+     "__exit__": "dunder",
+     "averages": "property",
+     "close": "method",
+     "default_options": "method",
+     "estimate": "method",
+     "info": "property",
+     "link_ids": "property",
+     "node_ids": "property",
+     "prepare": "method",
+     "prepare_live": "method",
+     "set_averages": "method",
+     "topology": "property"
+    }
+   },
+   "TraceError": {
+    "bases": [
+     "RuntimeError"
+    ],
+    "members": {
+     "code": "property"
+    }
+   },
+   "TraceInfo": {
+    "bases": [],
+    "members": {
+     "algorithm_version": "property",
+     "cache_loaded": "property",
+     "duration_s": "property",
+     "first_report_date": "property",
+     "last_report_date": "property",
+     "link_count": "property",
+     "node_count": "property",
+     "periods": "property",
+     "schema_version": "property",
+     "source_flow_units": "property"
+    }
+   },
+   "TraceLink": {
+    "bases": [],
+    "members": {
+     "from_node": "property",
+     "id": "property",
+     "length_m": "property",
+     "to_node": "property",
+     "type": "property"
+    }
+   },
+   "TraceLinkAverage": {
+    "bases": [],
+    "members": {
+     "absolute_flow_m3s": "property",
+     "absolute_velocity_mps": "property",
+     "direction": "property",
+     "first_volume_m3": "property",
+     "flags": "property",
+     "forward_volume_m3": "property",
+     "last_volume_m3": "property",
+     "net_flow_m3s": "property",
+     "reverse_volume_m3": "property",
+     "travel_s": "property"
+    }
+   },
+   "TraceNode": {
+    "bases": [],
+    "members": {
+     "flags": "property",
+     "id": "property",
+     "type": "property"
+    }
+   },
+   "TraceNodeAverage": {
+    "bases": [],
+    "members": {
+     "first_volume_m3": "property",
+     "flags": "property",
+     "inflow_m3s": "property",
+     "last_volume_m3": "property",
+     "lateral_in_m3s": "property",
+     "outgoing_m3s": "property",
+     "overflow_m3s": "property",
+     "residence_s": "property",
+     "volume_m3": "property",
+     "withdrawal_m3s": "property"
+    }
+   },
+   "TraceOptions": {
+    "bases": [],
+    "members": {
+     "flow_epsilon_m3s": "property",
+     "max_iterations": "property",
+     "reversal_dominance": "property",
+     "solver_tolerance": "property",
+     "velocity_epsilon_mps": "property"
+    }
+   },
+   "TraceResult": {
+    "bases": [],
+    "members": {
+     "links": "property",
+     "nodes": "property",
+     "summary": "property"
+    }
+   },
+   "TraceSummary": {
+    "bases": [],
+    "members": {
+     "accounting_error": "property",
+     "boundary_in_m3": "property",
+     "boundary_out_m3": "property",
+     "cyclic": "property",
+     "known_loss_m3": "property",
+     "lateral_in_m3": "property",
+     "partial_balance_residual_m3": "property",
+     "reached_links": "property",
+     "reached_nodes": "property",
+     "solver_residual": "property",
+     "storage_change_m3": "property",
+     "terminal": "property",
+     "withdrawal_m3": "property"
+    }
+   },
+   "TraceValue": {
+    "bases": [],
+    "members": {
+     "flags": "property",
+     "from_time_s": "property",
+     "ratio": "property",
+     "terminal_fraction": "property",
+     "terminal_kind": "property",
+     "time_coverage": "property",
+     "time_s": "property",
+     "to_time_s": "property"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_transport": {
+  "classes": {
+   "ConduitDispersion": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "link_index": "property",
+     "value": "property"
+    }
+   },
+   "EffectiveThreads": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "dynamic_wave": "property",
+     "global_threads": "property",
+     "surface2d": "property"
+    }
+   },
+   "ThreadInfo": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "kokkos_omp_threads": "property",
+     "logical_cpus": "property",
+     "omp_available": "property",
+     "omp_max_threads": "property",
+     "perf_cores": "property"
+    }
+   },
+   "Transport": {
+    "bases": [],
+    "members": {
+     "boundaries": "property",
+     "conduit_dispersion": "property",
+     "configured": "property",
+     "detailed_output": "property",
+     "dispersion_mode": "property",
+     "dispersion_value": "property",
+     "preview_matrix": "method",
+     "remove_boundary": "method",
+     "remove_conduit_dispersion": "method",
+     "remove_source": "method",
+     "set_boundary": "method",
+     "set_conduit_dispersion": "method",
+     "set_source": "method",
+     "sources": "property",
+     "target_dx": "property"
+    }
+   },
+   "TransportCell": {
+    "bases": [],
+    "members": {
+     "count": "property",
+     "reason": "property",
+     "state": "property"
+    }
+   },
+   "TransportRow": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "element": "property",
+     "is_timeseries": "property",
+     "species": "property",
+     "timeseries": "property",
+     "value": "property"
+    }
+   }
+  },
+  "functions": [
+   "effective_threads",
+   "thread_info",
+   "transport_class_name",
+   "transport_domain_name",
+   "transport_matrix"
+  ]
+ },
+ "_water_age": {
+  "classes": {
+   "WaterAge": {
+    "bases": [],
+    "members": {
+     "enabled": "property",
+     "globals": "property",
+     "node_overrides": "property",
+     "save": "method"
+    }
+   },
+   "WaterAgeOverride": {
+    "bases": [
+     "NamedTuple"
+    ],
+    "members": {
+     "hours": "property",
+     "node_index": "property",
+     "source": "property"
+    }
+   },
+   "_WaterAgeGlobals": {
+    "bases": [],
+    "members": {
+     "__contains__": "dunder",
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "__setitem__": "dunder"
+    }
+   },
+   "_WaterAgeOverrides": {
+    "bases": [],
+    "members": {
+     "__getitem__": "dunder",
+     "__iter__": "dunder",
+     "__len__": "dunder",
+     "remove": "method",
+     "set": "method"
+    }
+   }
+  },
+  "functions": []
+ },
+ "_xsect": {
+  "classes": {
+   "XSectionGeometry": {
+    "bases": [],
+    "members": {
+     "area": "method",
+     "area_from_section_factor": "method",
+     "critical_depth": "method",
+     "depth_from_area": "method",
+     "dsda": "method",
+     "flow_units": "property",
+     "from_curve": "method",
+     "from_link": "method",
+     "from_street": "method",
+     "from_transect": "method",
+     "full_area": "property",
+     "full_depth": "property",
+     "full_hyd_radius": "property",
+     "full_section_factor": "property",
+     "hyd_radius": "method",
+     "hyd_radius_from_area": "method",
+     "is_open": "property",
+     "max_area": "property",
+     "max_width": "property",
+     "section_factor": "method",
+     "shape": "property",
+     "units": "property",
+     "width": "method"
+    }
+   }
+  },
+  "functions": [
+   "shape_name"
+  ]
+ },
+ "catalog": {
+  "classes": {},
+  "functions": [
+   "canonical",
+   "current_path",
+   "load",
+   "lookup",
+   "members",
+   "renamed_path",
+   "require_revision",
+   "resolve",
+   "revision",
+   "targets",
+   "unit_label",
+   "views_of"
+  ]
+ }
+}
