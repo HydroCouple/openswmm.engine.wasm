@@ -30471,6 +30471,407 @@
      "size": 4
     }
    ]
+  },
+  "SWMM_UebSnowpack": {
+   "header": "openswmm_snow.h",
+   "size": 48,
+   "align": 8,
+   "fields": [
+    {
+     "name": "model",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "forest_fraction",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "drift_factor",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "ground_heat_wm2",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "extinction_depth_m",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "initial_energy_kjm2",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_SnowpackEdit": {
+   "header": "openswmm_snow.h",
+   "size": 280,
+   "align": 8,
+   "fields": [
+    {
+     "name": "name",
+     "type": "const char*",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "surface",
+     "type": "double[21]",
+     "offset": 8,
+     "size": 168,
+     "count": 21
+    },
+    {
+     "name": "removal",
+     "type": "double[6]",
+     "offset": 176,
+     "size": 48,
+     "count": 6
+    },
+    {
+     "name": "removal_subcatch",
+     "type": "const char*",
+     "offset": 224,
+     "size": 4
+    },
+    {
+     "name": "ueb",
+     "type": "SWMM_UebSnowpack",
+     "offset": 232,
+     "size": 48
+    }
+   ]
+  },
+  "SWMM_SnowState": {
+   "header": "openswmm_snow.h",
+   "size": 96,
+   "align": 8,
+   "fields": [
+    {
+     "name": "model",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "swe_m",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "cover_fraction",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "melt_ms",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "surface_input_ms",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "energy_kjm2",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "surface_temperature_c",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "bulk_temperature_c",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "albedo",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "surface_age",
+     "type": "double",
+     "offset": 72,
+     "size": 8
+    },
+    {
+     "name": "sublimation_ms",
+     "type": "double",
+     "offset": 80,
+     "size": 8
+    },
+    {
+     "name": "water_age_s",
+     "type": "double",
+     "offset": 88,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_SnowLedger": {
+   "header": "openswmm_snow.h",
+   "size": 128,
+   "align": 8,
+   "fields": [
+    {
+     "name": "elapsed_s",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "initial_m3",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "precipitation_m3",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "liquid_m3",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "throughfall_m3",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "sublimation_m3",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "removed_m3",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "transferred_m3",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "stored_m3",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "residual_m3",
+     "type": "double",
+     "offset": 72,
+     "size": 8
+    },
+    {
+     "name": "net_energy_kj",
+     "type": "double",
+     "offset": 80,
+     "size": 8
+    },
+    {
+     "name": "geometry_energy_kj",
+     "type": "double",
+     "offset": 88,
+     "size": 8
+    },
+    {
+     "name": "plowed_energy_kj",
+     "type": "double",
+     "offset": 96,
+     "size": 8
+    },
+    {
+     "name": "initial_energy_kj",
+     "type": "double",
+     "offset": 104,
+     "size": 8
+    },
+    {
+     "name": "stored_energy_kj",
+     "type": "double",
+     "offset": 112,
+     "size": 8
+    },
+    {
+     "name": "energy_residual_kj",
+     "type": "double",
+     "offset": 120,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_RadiationConfig": {
+   "header": "openswmm_snow.h",
+   "size": 56,
+   "align": 8,
+   "fields": [
+    {
+     "name": "explicit_site",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "latitude",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "longitude",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "timezone",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "elevation_m",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "shortwave_mode",
+     "type": "int",
+     "offset": 40,
+     "size": 4
+    },
+    {
+     "name": "longwave_mode",
+     "type": "int",
+     "offset": 44,
+     "size": 4
+    },
+    {
+     "name": "shortwave_authored",
+     "type": "int",
+     "offset": 48,
+     "size": 4
+    },
+    {
+     "name": "longwave_authored",
+     "type": "int",
+     "offset": 52,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_ClimateCloudConfig": {
+   "header": "openswmm_snow.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "mode",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "fraction",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "shortwave_k",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "shortwave_n",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "longwave_k",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_ClimateMetSummary": {
+   "header": "openswmm_snow.h",
+   "size": 104,
+   "align": 8,
+   "fields": [
+    {
+     "name": "records",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "first_date",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "last_date",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "minimum",
+     "type": "double[5]",
+     "offset": 24,
+     "size": 40,
+     "count": 5
+    },
+    {
+     "name": "maximum",
+     "type": "double[5]",
+     "offset": 64,
+     "size": 40,
+     "count": 5
+    }
+   ]
   }
  },
  "callbacks": {

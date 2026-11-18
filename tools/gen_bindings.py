@@ -71,6 +71,14 @@ STRUCTS_OF_INTEREST = [
     "SWMM_Infil2DOptions",
     "SWMM_Infil2DRow",
     "SWMM_GwClockStats",
+    # Snow (wave B): openswmm_snow.h / openswmm_climate.h
+    "SWMM_SnowLedger",
+    "SWMM_UebSnowpack",
+    "SWMM_RadiationConfig",
+    "SWMM_ClimateCloudConfig",
+    "SWMM_ClimateMetSummary",
+    "SWMM_SnowpackEdit",
+    "SWMM_SnowState",
 ]
 
 WASM32 = {
@@ -221,52 +229,71 @@ def parse_struct_field(decl: str, defines: dict[str, int]) -> tuple[str, str, in
 
 
 def parse_structs(header_dir: Path):
-    """Compute wasm32 layouts for the structs of interest."""
-    structs = {}
+    """Compute wasm32 layouts for the structs of interest.
+
+    A field whose type is another struct of interest takes that struct's
+    layout (nested structs must be listed too); layouts are computed on demand,
+    so declaration order across headers does not matter.
+    """
     defines = parse_defines(header_dir)
+    bodies = {}
     for h in sorted(header_dir.glob("*.h")):
         if h.name in EXCLUDED_HEADERS:
             continue
         text = strip_comments(h.read_text(encoding="utf-8"))
         for m in re.finditer(r"typedef\s+struct\s*(\w*)\s*\{(.*?)\}\s*(\w+)\s*;", text, re.S):
-            sname = m.group(3)
-            if sname not in STRUCTS_OF_INTEREST:
+            if m.group(3) in STRUCTS_OF_INTEREST:
+                bodies[m.group(3)] = (h.name, m.group(2))
+
+    structs = {}
+
+    def layout(sname):
+        if sname in structs:
+            return structs[sname]
+        header, body = bodies[sname]
+        fields = []
+        offset = 0
+        max_align = 1
+        declarations = []
+        for group in body.split(";"):
+            parts = group.strip().split(",")
+            if not parts[0]:
                 continue
-            fields = []
-            offset = 0
-            max_align = 1
-            declarations = []
-            for group in m.group(2).split(";"):
-                parts = group.strip().split(",")
-                if not parts[0]:
-                    continue
-                declarations.append(parts[0])
-                if len(parts) > 1:
-                    typ, _, _ = parse_struct_field(parts[0], defines)
-                    declarations.extend(f"{typ} {part.strip()}" for part in parts[1:])
-            for decl in declarations:
-                decl = decl.strip()
-                if not decl:
-                    continue
-                typ, fname, count = parse_struct_field(decl, defines)
-                base = "ptr" if typ.endswith("*") else typ.replace("const ", "")
-                if base not in WASM32:
-                    raise SystemExit(f"{sname}.{fname}: unsupported field type {typ!r}")
+            declarations.append(parts[0])
+            if len(parts) > 1:
+                typ, _, _ = parse_struct_field(parts[0], defines)
+                declarations.extend(f"{typ} {part.strip()}" for part in parts[1:])
+        for decl in declarations:
+            decl = decl.strip()
+            if not decl:
+                continue
+            typ, fname, count = parse_struct_field(decl, defines)
+            base = "ptr" if typ.endswith("*") else typ.replace("const ", "")
+            if base in WASM32:
                 size, align = WASM32[base]
-                offset = (offset + align - 1) // align * align
-                field = {
-                    "name": fname,
-                    "type": typ if count == 1 else f"{typ}[{count}]",
-                    "offset": offset,
-                    "size": size * count,
-                }
-                if count != 1:
-                    field["count"] = count
-                fields.append(field)
-                offset += size * count
-                max_align = max(max_align, align)
-            total = (offset + max_align - 1) // max_align * max_align
-            structs[sname] = {"header": h.name, "size": total, "align": max_align, "fields": fields}
+            elif base in bodies:
+                nested = layout(base)
+                size, align = nested["size"], nested["align"]
+            else:
+                raise SystemExit(f"{sname}.{fname}: unsupported field type {typ!r}")
+            offset = (offset + align - 1) // align * align
+            field = {
+                "name": fname,
+                "type": typ if count == 1 else f"{typ}[{count}]",
+                "offset": offset,
+                "size": size * count,
+            }
+            if count != 1:
+                field["count"] = count
+            fields.append(field)
+            offset += size * count
+            max_align = max(max_align, align)
+        total = (offset + max_align - 1) // max_align * max_align
+        structs[sname] = {"header": header, "size": total, "align": max_align, "fields": fields}
+        return structs[sname]
+
+    for sname in bodies:
+        layout(sname)
     missing = set(STRUCTS_OF_INTEREST) - set(structs)
     if missing:
         raise SystemExit(f"structs not found: {sorted(missing)}")

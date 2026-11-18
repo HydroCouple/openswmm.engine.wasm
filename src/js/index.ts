@@ -107,6 +107,10 @@ export { XSectionGeometry, shapeName } from "./XSectionGeometry.js";
 export type { XSectUnits } from "./XSectionGeometry.js";
 export { SimulationOptions, OptionsExtView, UserFlags, EventsView } from "./SolverViews.js";
 export type { SimulationEvent, UserFlagValue } from "./SolverViews.js";
+export { Snow } from "./Snow.js";
+export type { SnowRecord, SnowpackRow } from "./Snow.js";
+export { readStruct, writeStruct, withStruct, withStructs } from "./structs.js";
+export type { StructName, StructValue, StructField } from "./structs.js";
 
 // ---------------------------------------------------------------------------
 // Raw layer (generated) — for advanced users; also published as "./raw"

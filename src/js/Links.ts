@@ -15,6 +15,8 @@ import { LinkType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
+import type { ModelBuilder } from "./ModelBuilder.js";
+import type { Solver } from "./Solver.js";
 import { checkedAlloc, guardedRaw } from "./mem.js";
 
 // =============================================================================
@@ -306,6 +308,8 @@ export class Links implements Iterable<Link> {
     mod: OpenSwmmWasmModule,
     engine: number,
     private readonly _checkOwner: () => void = () => {},
+    /** The solver (or model builder) that owns the collection. */
+    readonly solver: Solver | ModelBuilder | null = null,
   ) {
     this._mod = mod;
     this._raw = guardedRaw(mod, this._checkOwner);
