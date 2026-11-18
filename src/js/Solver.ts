@@ -68,6 +68,7 @@ import { checkedAlloc, rawOf, withCString, withDouble, withInt } from "./mem.js"
 import { datetimeToOadate, oadateToDatetime } from "./dates.js";
 import { EventsView, SimulationOptions, UserFlags } from "./SolverViews.js";
 import { Snow } from "./Snow.js";
+import { Aquifers, Snowpacks } from "./NamedObjects.js";
 
 // =============================================================================
 // Solver
@@ -646,6 +647,16 @@ export class Solver {
   /** Snow model, UEB packs, radiation and snow state (Python `solver.snow`). */
   get snow(): Snow {
     return new Snow(this);
+  }
+
+  /** The `[AQUIFERS]` entries (Python `solver.aquifers`). */
+  get aquifers(): Aquifers {
+    return new Aquifers(this);
+  }
+
+  /** The `[SNOWPACKS]` entries (Python `solver.snowpacks`). */
+  get snowpacks(): Snowpacks {
+    return new Snowpacks(this);
   }
 
   /**

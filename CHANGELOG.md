@@ -62,6 +62,14 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Subcatchments, aquifers and snowpacks** (wave B, part 3), mirroring
+  Python: subcatchment roughness, depression storage, scale factors, tag,
+  snowpack, gage, outlet (node or subcatchment), aquifer and groundwater node,
+  groundwater parameters and state, snow state, rainfall/evaporation/
+  infiltration/snow depth, quality and ponded quality, and the `infiltration`,
+  `coverage`, `loadings` (pollutants or reaction species) and `stats`
+  sub-views; collection `add`/`rename`/`ids`/`has`, bulk values and custom
+  groundwater flow expressions; `solver.aquifers` and `solver.snowpacks`.
 - **Nodes and links** (wave B, part 2), mirroring Python: node tag, virtual
   and inlet flags with their eligibility codes, rim/surcharge/ponded/initial
   depths, crown elevation, full volume, degree, quality and mass flux, and the

@@ -60,7 +60,17 @@ export {
   OutletView,
 } from "./Links.js";
 
-export { Subcatchments, Subcatchment } from "./Subcatchments.js";
+export {
+  Subcatchments,
+  Subcatchment,
+  SubcatchmentStatsView,
+  InfiltrationView,
+  CoverageView,
+  LoadingsView,
+} from "./Subcatchments.js";
+export type { GroundwaterParams } from "./Subcatchments.js";
+export { Aquifers, Snowpacks } from "./NamedObjects.js";
+export type { SnowSurface, SnowRemoval } from "./NamedObjects.js";
 
 export { Gages, Gage } from "./Gages.js";
 
