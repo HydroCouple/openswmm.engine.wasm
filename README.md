@@ -24,6 +24,7 @@ classes cover a subset of the Python API. See [Compatibility and gaps](#compatib
   - [Controls](#controls)
   - [Forcing](#forcing)
   - [Surface2D (2D surface routing)](#surface2d-2d-surface-routing)
+  - [Coupling, native peers and flow tracing](#coupling-native-peers-and-flow-tracing)
   - [Fields by catalog path](#fields-by-catalog-path)
   - [Saved results](#saved-results)
   - [Tables, patterns, cross-sections and dates](#tables-patterns-cross-sections-and-dates)
@@ -453,7 +454,8 @@ if (mesh.isActive) {
 | Forcing | `forceRainfall`, `forceRainfallUniform`, `forceEvap`, `forceEvapUniform`, `forceCouplingFlux` (options `{ mode, persist }`, default `OVERRIDE`/`RESET` as in Python), `forceClearAll()` |
 | Infiltration | `surface2d.infiltration`: `infilStep`, `defaults` (a live `Infil2DDefaults` mapping), `setDefault`, `cell`, `setCell`, `setCells`, `authoredRows`/`replaceAuthoredRows`, `ownership`/`ownershipBulk`, `rate()`, `cumulative()`, `totalVolume` |
 | Quality and edges | `species`, `concentrations(i)`, initial, initial-bed and boundary quality rows, `setEdgeBcConcentrations`, `clearEdgeBc`/`clearBoundary`, `boundaryFlow`, `edgeIsExterior`, `setEdgeBcGroup`, wall drag, initial HGL |
-| Coupling, owners, output | node coupling type/parameters (`validateNodeCoupling`, `replaceNodeCoupling`, ...), surface owners (`getSurfaceOwners`, `previewSurfaceOwners`, `replaceSurfaceOwners`), `setResultsFile`, `setAutoBackendCpu`, `geometryScaleToSi`, `getReportRainfallBulk`, and the `snow` and `quality` sub-views. Runtime sources and boundary receipts (`sources`, `setHeadBoundary`, ...) arrive with the coupling wave. |
+| Coupling, owners, output | node coupling type/parameters (`validateNodeCoupling`, `replaceNodeCoupling`, ...), surface owners (`getSurfaceOwners`, `previewSurfaceOwners`, `replaceSurfaceOwners`), `setResultsFile`, `setAutoBackendCpu`, `geometryScaleToSi`, `getReportRainfallBulk`, and the `snow` and `quality` sub-views |
+| Runtime exchange | `sources` (a `DomainSources`), `setWaterSource`, `setHeatSource`, `setSpeciesSource`, `clearSource`, `sourceReceipt`, `setHeadBoundary`, `setFlowBoundary`, `boundaryReceipt`, `speciesLedger`; see [Coupling](#coupling-native-peers-and-flow-tracing) |
 
 Notes:
 
@@ -473,11 +475,50 @@ Notes:
   parameters, sorption, initial quality, boundary quality, named and XY
   sources with scale and species terms, and the initial-quality file. Clock
   counters use `bigint` to preserve 64-bit values. Runtime sources and
-  boundary forcing (`sources`, `setHeadBoundary`, ...) arrive with the
-  coupling wave; surface quality is `surface2d.quality`.
+  boundaries (`sources`, `setWaterSource`, `setHeadBoundary`,
+  `boundaryFlow`, ...) match the surface's; surface quality is
+  `surface2d.quality`.
 - **Size.** 2D adds about 0.6 MB to the `.wasm`. Configure with
   `-DOPENSWMM_WASM_2D=OFF` for a 1D-only module; the 2D raw functions then
   throw "export … is not available".
+
+### Coupling, native peers and flow tracing
+
+```ts
+import { FlowTracer, NodeType, TraceTerminal } from "@hydrocouple/openswmm-engine-wasm";
+
+const s = solver.surface2d; // after initialize() and start()
+s.setWaterSource([0, 1], [0.01, 0.02], { concentrations: { TSS: 7 } }); // m³/s per cell
+solver.advanceTo(60);
+console.log(s.sourceReceipt("external", 0).appliedM3, s.speciesLedger("TSS").externalIn);
+
+// One provider's sources, boundaries and forcing, applied atomically:
+solver.coupling.forProvider("model-b").applyFrame({
+  sources: [{ sourceId: "inflow", domain: "groundwater", cell: 0, flowM3S: 0.001 }],
+  forcings: [{ channel: "rainfall", rateMS: 1e-5, untilSeconds: 600 }],
+});
+
+// Flow tracing over a saved output, independent of any solver:
+using trace = new FlowTracer(mod, [{ id: "J1" }, { id: "O1", type: NodeType.OUTFALL }],
+  [{ id: "C1", fromNode: 0, toNode: 1, lengthM: 100 }]);
+trace.prepare("/model.out");
+console.log(trace.estimate("J1").summary.terminal[TraceTerminal.OUTFALL]);
+```
+
+| Class | Members |
+|---|---|
+| `Coupling` (`solver.coupling`) | `providerId`, `forProvider`, `surface`, `groundwater`, `capabilities`, `setSources`, `applyFrame`, `advanceTo` |
+| `DomainSources` | `waterTotals`, `setSource`, `clearSource`, `sourceReceipt`, `sourceReceipts`, `setBoundary`, `clearBoundary`, `boundaryFlow`, `setBoundaries`, `setForcings`, `boundaryReceipt`, `infiltrationReceipt`, `speciesLedger` |
+| `SplitParticipant` (`solver.split`), `SplitFrame` | `validateInput`, `configure`, `geometry`, `applyGeometry`, `setCallback`, `evaluate`, `encode`, `decode`; frames: `phase`, `time`, `node`, `source`, `outfallReturn`, `close` |
+| `MaterialSplitParticipant` (`solver.materialSplit`) | the above plus `setTransport`, `bind`, `copyPacket` and the `checkpoint*` pair recovery |
+| `PassiveExchange` (`solver.passiveExchange`) | `enable`, `enableCheckpoint`, `status`, `pool`, `receipt`, `row`, `leg`, `attempt` |
+| `FlowTracer` | `defaultOptions(mod)`, `nodeIds`, `linkIds`, `topology`, `info`, `averages`, `setAverages`, `prepare`, `prepareLive`, `estimate`, `close`; failures raise `TraceError` with a `TraceStatus` code |
+
+Records are plain objects with camelCase keys (`appliedM3`, `flowM3S`,
+`rateMS`). Split frames and tracers own native memory: close them, or use
+them with `using`. Receipt, row and leg IDs of the passive exchange take a
+safe integer or a `bigint`. Inspection and lifecycle calls from inside a
+callback are refused with `LifecycleError`, as in Python.
 
 ### Fields by catalog path
 
@@ -727,18 +768,19 @@ the submodule, and rebuild the binary as well as TypeScript.
 
 | Surface | Available | Remaining boundary |
 |---|---|---|
-| Raw C API | `bindRaw(mod)` / package `/raw`; signatures, export list and struct layouts generated from the engine headers | Heap allocation, pointer lifetimes, return codes and callback registration remain the caller’s responsibility. This is not the Python object API. |
+| Raw C API | `bindRaw(mod)` / package `/raw`; signatures, export list and struct layouts generated from the engine headers; 64-bit integers passed by value are `bigint`, and strings over 16,384 characters are copied to the heap rather than the 1 MB stack | Heap allocation, pointer lifetimes, return codes and callback registration remain the caller’s responsibility. This is not the Python object API. |
 | Enums | All numeric Python enum classes, including transport and capability selectors | Disabled-feature selectors are constants only. |
 | Solver, builder and element views | Lifecycle, options, user flags, events and callbacks; nodes, links, subcatchments and gages with their sub-views (storage, outfall, divider, xsect, pump, weir, orifice, outlet, infiltration, coverage, loadings, stats), aquifers, snowpacks, snow, tables, patterns, controls and forcing, `solver.spatial` (coordinates, polylines, polygons, `[MAP]`, CRS) and `solver.editor` / `ModelEditor` (deletes with impact reports and undo records, type conversion, conduit split and fuse), `solver.infrastructure` (transects, streets, inlet designs and placements, LID controls, storage-node LID stacks and subcatchment placements), member for member with Python (`tests/_work/python_parity_report.json`); destroyed owners and transferred builder owners reject view access | Mutations made through raw calls bypass wrapper invalidation. Reacquire views after such mutations. |
 | ARD transport | `solver.transport` and `builder.transport`: configuration, conduit overrides, boundary/source rows, detailed output, `previewMatrix`; `solver.transportMatrix`, `threadInfo`, `effectiveThreads()` | Persistence needs a process-component registration and config-file path. Boundary and source rows need a configured species. |
 | Runtime forcing | Existing flow/rainfall controls plus `nodeTemperature`, `nodeAge`, `linkSeepage` | Use native field units: temperature REPLACE is °C, age REPLACE is hours; ADD uses °C·ft³/s or hours·ft³/s. Both require the corresponding model option. |
-| 2D surface routing | `solver.surface2d` (`Surface2D`) and `surface2d.infiltration`, mirroring Python; all five 2D headers in the raw layer; the `OUTPUT_FILE` results file through `Output2DReader` and `Results.surface` | Groundwater options, aquifer rows, state arrays, clock diagnostics and named sources have typed wrappers; other groundwater tables, surface quality and mesh snow remain raw-only. |
+| 2D surface routing | `solver.surface2d` (`Surface2D`) and `surface2d.infiltration`, mirroring Python; all five 2D headers in the raw layer; the `OUTPUT_FILE` results file through `Output2DReader` and `Results.surface` | Runtime sources are total SI m³/s per cell; the FULL_SWE momentum equation reports no runtime capabilities (`coupling.capabilities`) and refuses them. |
 | Heat | `solver.heat`: flux modules, radiative, solar, cloud and sediment parameters, inlet temperatures with node and element overrides, effective values, mesh/ground/channel-ground status and values, channel-ground map preview (with progress), `HeatSnapshot` and `editAtomic` | Values the deck parser refuses are refused, never clamped. |
 | Reactions | `solver.reactions`: species, coefficients and terms (live views), PIPE/TANK expressions, initial quality rows, `[REACTION_OPTIONS]`, `validate`, and the `.rxn` text round trip (`serialize`, `checkText`, `applyText`, `save`); `Reactions.hydraulicVariables(mod)` and `Reactions.functions(mod)` need no model | Edits are BUILDING/OPENED only; a mutation that leaves any expression uncompilable is rolled back and refused. |
 | Build and process services | `capabilities(mod)` (the same JSON document as Python's `capabilities()`), `VERSION`, `solver.processComponents` (registrations, arguments, the known vocabulary), `solver.waterAge` (global ages, node overrides, `save`), `surface2d.snow` (mesh snow configuration, rows, states, ledgers) and `surface2d.quality` (coverages, loadings, curb lengths, buildup) | HydroCouple component libraries are not available in WASM: `ProcessComponents.libraries` is empty and `addSearchPath` throws. |
 | Catalog | `catalog` (Python `openswmm.engine.catalog`: `lookup`, `members`, `targets`, `resolve`, `canonical`, `unitLabel`, revisions), embedded from the engine's `catalog.json` | Paths stay the Python names; `resolve` walks them on a TypeScript solver in camelCase. Targets of facade waves not yet shipped do not resolve. |
 | Catalog field paths | `solver.fields`: 182 of 393 catalog properties by path (`"node.max_depth"`, `"link.stats.max_flow"`, `"climate.elevation"`), generated by `tools/gen_fields.py` and checked against the native engine by `tools/verify_fields_native.py`; coverage per target in `tests/fixtures/facade_coverage.json` | Properties that need unit conversion, tuples or records, and all methods, stay hand-written. No Gymnasium/MCP runtime is supplied. |
 | Simulation services and results | Pollutants, quality, inflows, climate, statistics, mass balance, report snapshot, hot starts, the save schedule and checkpoint sessions; `OutputReader`, `Output2DReader` and `Results` for saved results; `GeoPackage` and `solver.writeGeopackage()`, mirroring Python | Checkpoint saving and bundle export are refused: the engine has no atomic no-replace publication for Emscripten. |
+| Coupling family | `solver.coupling` (`Coupling`, `DomainSources`: sources, boundaries, forcing, provider frames, receipts, species ledger), `solver.split` (`SplitParticipant`, `SplitFrame`: two peers in one module), `solver.passiveExchange` (V1 snapshots), `solver.materialSplit` and `FlowTracer` (with its HDF5 cache), mirroring Python | The material peer and the split packet codec need an engine built with HydroCouple: in WASM they raise `PluginError`. Passive checkpoints wait on checkpoint saving (above). |
 
 ```ts
 import { TransportDispersionMode } from "@hydrocouple/openswmm-engine-wasm";
@@ -777,8 +819,8 @@ extern declarations do not count as calls, while executable `.pxd` helpers do.
 It fails when source files are missing. Raw API coverage, host signature checks,
 TypeScript unit tests and a real WASM smoke run are separate checks; none alone
 establishes numerical parity for every transport process. Browser execution,
-worker integration, broader heap-allocation failure handling and complete high-level
-Python API parity still require dedicated validation/work.
+worker integration and broader heap-allocation failure handling still require
+dedicated validation/work.
 
 The high-level API is tracked against the Python bindings member by member:
 `tools/gen_python_surface.py` writes the pinned engine's public Python surface
@@ -786,7 +828,8 @@ to `tests/fixtures/python_surface.json`, and `tests/python_surface.test.ts`
 requires a TypeScript counterpart (camelCase) for every entry of each module that
 `tools/python_surface_map.json` neither excludes (with a reason) nor lists as
 pending. Each run writes per-module coverage, pending modules included, to
-`tests/_work/python_parity_report.json`.
+`tests/_work/python_parity_report.json`. Nothing is pending: every one of the
+2,484 Python members has a TypeScript counterpart or a recorded exclusion.
 
 ### Groundwater clock and source authoring
 

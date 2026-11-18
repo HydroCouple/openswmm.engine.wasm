@@ -24,6 +24,14 @@ import { checkedAlloc, guardedRaw, withCString, withCStrings, withDouble, withIn
 import { STRUCTS, type RawApi } from "./raw.js";
 import { readStruct, withStruct, withStructs } from "./structs.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import {
+  DomainSources,
+  type BoundaryReceipt,
+  type PerCell,
+  type SourceOptions,
+  type SourceReceipt,
+} from "./Coupling.js";
+import type { Solver } from "./Solver.js";
 
 export interface AquiferRow {
   readonly scope: CellScope;
@@ -320,7 +328,12 @@ class GroundwaterView {
 export class Groundwater extends GroundwaterView {
   readonly options: AquiferOptions;
   readonly transport: GroundwaterTransport;
-  constructor(mod: OpenSwmmWasmModule, handle: number, checkOwner: () => void = () => {}) {
+  constructor(
+    mod: OpenSwmmWasmModule,
+    handle: number,
+    checkOwner: () => void = () => {},
+    private readonly _owner?: Solver,
+  ) {
     super(mod, handle, checkOwner);
     this.options = new AquiferOptions(mod, this.raw, handle);
     this.transport = new GroundwaterTransport(mod, handle, checkOwner);
@@ -763,6 +776,86 @@ export class Groundwater extends GroundwaterView {
     return withDouble(this.mod, (p) =>
       this.raw.swmm_gw2d_get_species_ledger(this.handle, species, term, p),
     );
+  }
+
+  // ---- runtime sources and boundaries (Python `_coupling.DomainSources`) ----
+
+  /** Runtime external sources and cumulative accepted-transfer receipts. */
+  get sources(): DomainSources {
+    if (!this._owner) throw new TypeError("Obtain groundwater through solver.groundwater2d");
+    return new DomainSources(this._owner, "groundwater");
+  }
+
+  /** Prescribe a runtime head (m) on an exterior edge. */
+  setHeadBoundary(
+    cell: number,
+    edge: number,
+    headM: number,
+    concentrations: Readonly<Record<string, number>> | null = null,
+  ): void {
+    this.sources.setBoundary(cell, edge, 1, headM, concentrations);
+  }
+
+  /** Prescribe a total outward flow (m³/s) on an exterior edge; negative supplies boundary water. */
+  setFlowBoundary(
+    cell: number,
+    edge: number,
+    flowM3S: number,
+    concentrations: Readonly<Record<string, number>> | null = null,
+  ): void {
+    this.sources.setBoundary(cell, edge, 2, flowM3S, concentrations);
+  }
+
+  /** Remove a runtime edge boundary. */
+  clearBoundary(cell: number, edge: number): void {
+    this.sources.clearBoundary(cell, edge);
+  }
+
+  /** Last accepted outward m³/s; zero for cleared or native no-flow edges. */
+  boundaryFlow(cell: number, edge: number): number {
+    return this.sources.boundaryFlow(cell, edge);
+  }
+
+  /** Cumulative boundary receipt, positive inward; heat includes advection. */
+  boundaryReceipt(cell: number, edge: number): BoundaryReceipt {
+    return this.sources.boundaryReceipt(cell, edge);
+  }
+
+  /** Water source on one or more cells (m³/s each); see {@link DomainSources.setSource}. */
+  setWaterSource(
+    cells: number | ArrayLike<number>,
+    flowM3S: PerCell,
+    options: SourceOptions = {},
+  ): void {
+    this.sources.setSource(cells, flowM3S, options);
+  }
+
+  /** Heat source (W) supplied to the water of one or more cells. */
+  setHeatSource(
+    cells: number | ArrayLike<number>,
+    heatW: PerCell,
+    { sourceId = "heat", untilSeconds = null }: SourceOptions = {},
+  ): void {
+    this.sources.setSource(cells, 0, { heatW, sourceId, untilSeconds });
+  }
+
+  /** Species sources (concentration unit × m³/s) without water. */
+  setSpeciesSource(
+    cells: number | ArrayLike<number>,
+    speciesRates: Readonly<Record<string, PerCell>>,
+    { sourceId = "species", untilSeconds = null }: SourceOptions = {},
+  ): void {
+    this.sources.setSource(cells, 0, { speciesRates, sourceId, untilSeconds });
+  }
+
+  /** Clear a source ID on every cell, or on one cell. */
+  clearSource(sourceId = "external", cell: number | null = null): void {
+    this.sources.clearSource(sourceId, cell);
+  }
+
+  /** Cumulative receipt of one source on one cell. */
+  sourceReceipt(sourceId = "external", cell = 0): SourceReceipt {
+    return this.sources.sourceReceipt(sourceId, cell);
   }
 }
 

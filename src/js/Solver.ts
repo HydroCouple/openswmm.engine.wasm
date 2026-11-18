@@ -94,6 +94,9 @@ import { ProcessComponents } from "./ProcessComponents.js";
 import { WaterAge } from "./WaterAge.js";
 import { Reactions } from "./Reactions.js";
 import { Heat } from "./Heat.js";
+import { Coupling } from "./Coupling.js";
+import { MaterialSplitParticipant, SplitParticipant } from "./Split.js";
+import { PassiveExchange } from "./PassiveExchange.js";
 import type { Groundwater } from "./Groundwater.js";
 
 /** Plugin id of the built-in GeoPackage model writer. */
@@ -228,6 +231,8 @@ export class Solver {
   private _callbackError: unknown = undefined;
   /** @internal Function-table slots of the registered callbacks, by kind. */
   private readonly _callbackSlots = new Map<string, number>();
+  /** @internal Cleanup of the state a registered callback keeps, by kind. */
+  private readonly _callbackReleases = new Map<string, () => void>();
   /** @internal Paths of the last open (Python `_inp`, `_out`). */
   private _inp = "";
   private _out = "";
@@ -265,7 +270,7 @@ export class Solver {
     this.controls = new Controls(mod, h, () => this._assertAlive());
     this.transport = new Transport(mod, h, () => this._assertAlive());
     this.forcing = new Forcing(mod, h, () => this._assertAlive());
-    this.surface2d = new Surface2D(mod, h, () => this._assertAlive());
+    this.surface2d = new Surface2D(mod, h, () => this._assertAlive(), this);
     this.fields = new Fields(mod, () => this.handle);
     this.tables = new Tables(mod, h, this, () => this._assertAlive());
     this.patterns = new Patterns(mod, h, this, () => this._assertAlive());
@@ -506,6 +511,8 @@ export class Solver {
     this._handle = 0;
     for (const slot of this._callbackSlots.values()) this._mod.removeFunction(slot);
     this._callbackSlots.clear();
+    for (const release of this._callbackReleases.values()) release();
+    this._callbackReleases.clear();
     this._invalidateViews();
   }
 
@@ -706,7 +713,7 @@ export class Solver {
   }
 
   /** @internal Python `require_idle`: no lifecycle change from a native call or callback. */
-  private _requireIdle(): void {
+  _requireIdle(): void {
     if (this._active) {
       throw new LifecycleError("Cannot change lifecycle during a native call or callback");
     }
@@ -789,6 +796,26 @@ export class Solver {
   /** Heat-transport configuration and diagnostics (Python `solver.heat`). */
   get heat(): Heat {
     return new Heat(this);
+  }
+
+  /** Runtime exchange sources, boundaries and forcing of the default provider (Python `solver.coupling`). */
+  get coupling(): Coupling {
+    return new Coupling(this);
+  }
+
+  /** Experimental native water peer and owned phase snapshots (Python `solver.split`). */
+  get split(): SplitParticipant {
+    return new SplitParticipant(this);
+  }
+
+  /** Experimental in-process material peer and schema-10 packet codec (Python `solver.material_split`). */
+  get materialSplit(): MaterialSplitParticipant {
+    return new MaterialSplitParticipant(this);
+  }
+
+  /** Experimental integrated passive exchange and exact V1 observations (Python `solver.passive_exchange`). */
+  get passiveExchange(): PassiveExchange {
+    return new PassiveExchange(this);
   }
 
   /** The multi-species reaction system, `[REACTION_*]` / `.rxn` (Python `solver.reactions`). */
@@ -1119,7 +1146,7 @@ export class Solver {
   // it or call back into stepping.
 
   /** @internal Rethrow the first error a callback raised during the last native call. */
-  private _rethrowCallbackError(): void {
+  _rethrowCallbackError(): void {
     if (this._callbackError !== undefined) {
       const err = this._callbackError;
       this._callbackError = undefined;
@@ -1127,12 +1154,23 @@ export class Solver {
     }
   }
 
-  /** @internal Install (or with `fn === null`, remove) one kind of callback. */
-  private _setCallback(
+  /**
+   * @internal Install (or with `fn === null`, remove) one kind of callback.
+   * A callback that returns a status hands `failed` back to native code when
+   * it throws, or when an earlier callback of the same native call did.
+   * `release` runs once the registration is replaced, removed or destroyed.
+   * `check` raises for a nonzero setter code (default: the engine's last error).
+   */
+  _setCallback(
     kind: string,
     setter: (engine: number, fn: number, user: number) => number,
     signature: string,
-    fn: ((...args: number[]) => void) | null,
+    fn: ((...args: number[]) => number | void) | null,
+    {
+      failed,
+      release,
+      check,
+    }: { failed?: number; release?: () => void; check?: (rc: number) => void } = {},
   ): void {
     this._requireIdle();
     const h = this.handle;
@@ -1140,22 +1178,28 @@ export class Solver {
     let slot = 0;
     if (fn) {
       slot = this._mod.addFunction((...args: number[]) => {
-        if (this._callbackError !== undefined) return;
+        if (this._callbackError !== undefined) return failed;
         try {
-          fn(...args);
+          return fn(...args);
         } catch (err) {
           this._callbackError = err;
+          return failed;
         }
       }, signature);
     }
     const rc = setter(h, slot, 0);
     if (rc !== 0) {
       if (slot) this._mod.removeFunction(slot);
+      release?.();
+      if (check) check(rc);
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(h));
     }
     if (previous) this._mod.removeFunction(previous);
+    this._callbackReleases.get(kind)?.();
+    this._callbackReleases.delete(kind);
     if (slot) this._callbackSlots.set(kind, slot);
     else this._callbackSlots.delete(kind);
+    if (slot && release) this._callbackReleases.set(kind, release);
   }
 
   /** `callback(elapsedFraction)` as the run progresses, fraction in [0, 1]. */
