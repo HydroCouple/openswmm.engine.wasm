@@ -30,7 +30,6 @@
   },
   "pending": {
     "_capabilities": "E",
-    "_report": "C",
     "_output_reader": "D",
     "_output2d": "D",
     "_results": "D",

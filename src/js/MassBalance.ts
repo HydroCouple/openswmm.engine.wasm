@@ -25,17 +25,17 @@ export class MassBalance extends SolverView {
     return resolveIndex(this._raw, this._h, "pollutant", key);
   }
 
-  /** Runoff continuity error (%). */
+  /** Runoff continuity error as a fraction (0.001 = 0.1 %). */
   get runoffContinuityError(): number {
     return this._d(this._raw.swmm_get_runoff_continuity_error);
   }
 
-  /** Flow routing continuity error (%). */
+  /** Flow routing continuity error as a fraction (0.001 = 0.1 %). */
   get routingContinuityError(): number {
     return this._d(this._raw.swmm_get_routing_continuity_error);
   }
 
-  /** Quality routing continuity error of a pollutant (%). */
+  /** Quality routing continuity error of a pollutant, as a signed fraction. */
   qualityContinuityError(pollutant: number | string): number {
     const p = this._pollutant(pollutant);
     return this._d((h, out) => this._raw.swmm_get_quality_continuity_error(h, p, out));
