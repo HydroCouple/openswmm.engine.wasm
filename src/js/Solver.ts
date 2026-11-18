@@ -57,7 +57,15 @@ import { Links } from "./Links.js";
 import { Subcatchments } from "./Subcatchments.js";
 import { Gages } from "./Gages.js";
 import { Controls } from "./Controls.js";
-import { Transport } from "./Transport.js";
+import {
+  Transport,
+  effectiveThreads,
+  threadInfo,
+  transportMatrix,
+  type EffectiveThreads,
+  type ThreadInfo,
+  type TransportMatrix,
+} from "./Transport.js";
 import { Forcing } from "./Forcing.js";
 import { Fields } from "./Fields.js";
 import { Surface2D } from "./Surface2D.js";
@@ -724,6 +732,21 @@ export class Solver {
   get editor(): ModelEditor {
     this._assertAlive();
     return (this._editor ??= new ModelEditor(this));
+  }
+
+  /** Process-wide hardware and OpenMP limits (Python `solver.thread_info`). */
+  get threadInfo(): ThreadInfo {
+    return threadInfo(this._mod);
+  }
+
+  /** Thread team sizes for this model; 0 requests automatic selection. */
+  effectiveThreads(requested = 0): EffectiveThreads {
+    return effectiveThreads(this, requested);
+  }
+
+  /** Transport capability matrix keyed by domain and species class, with reasons. */
+  get transportMatrix(): TransportMatrix {
+    return transportMatrix(this);
   }
 
   /** Transects, streets, inlets, inlet placements and LIDs (Python `solver.infrastructure`). */

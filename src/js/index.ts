@@ -229,7 +229,24 @@ export { Fields } from "./Fields.js";
 export type { FieldValue } from "./Fields.js";
 export { CATALOG_REVISION, ELEMENTS, FIELDS } from "./fields.generated.js";
 export type { FieldKind, FieldSpec, ElementSpec } from "./fields.generated.js";
-export type { TransportRow, ConduitDispersion } from "./Transport.js";
+export type {
+  TransportRow,
+  ConduitDispersion,
+  ThreadInfo,
+  EffectiveThreads,
+  TransportMatrix,
+  TransportDraft,
+} from "./Transport.js";
+export {
+  TransportCell,
+  threadInfo,
+  effectiveThreads,
+  transportMatrix,
+  transportDomainName,
+  transportClassName,
+} from "./Transport.js";
+export * as catalog from "./catalog.js";
+export type { Catalog, CatalogEntry } from "./catalog.js";
 
 // ---------------------------------------------------------------------------
 // 2D surface routing (solver.surface2d)

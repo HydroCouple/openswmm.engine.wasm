@@ -99,6 +99,10 @@ STRUCTS_OF_INTEREST = [
     "SWMM_StorageLidState",
     "SWMM_StorageLidAnchor",
     "SWMM_LidUsageRecord",
+    # Transport (wave E): openswmm_engine.h
+    "SWMM_TransportCell",
+    "SWMM_TransportMatrix",
+    "SWMM_TransportDraft",
 ]
 
 WASM32 = {

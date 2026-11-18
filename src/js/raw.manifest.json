@@ -30429,6 +30429,90 @@
     }
    ]
   },
+  "SWMM_TransportCell": {
+   "header": "openswmm_engine.h",
+   "size": 104,
+   "align": 4,
+   "fields": [
+    {
+     "name": "state",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "count",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "reason",
+     "type": "char[96]",
+     "offset": 8,
+     "size": 96,
+     "count": 96
+    }
+   ]
+  },
+  "SWMM_TransportMatrix": {
+   "header": "openswmm_engine.h",
+   "size": 1664,
+   "align": 4,
+   "fields": [
+    {
+     "name": "cell",
+     "type": "SWMM_TransportCell[16]",
+     "offset": 0,
+     "size": 1664,
+     "count": 16
+    }
+   ]
+  },
+  "SWMM_TransportDraft": {
+   "header": "openswmm_engine.h",
+   "size": 36,
+   "align": 4,
+   "fields": [
+    {
+     "name": "ignore_quality",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "heat",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "age",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "ignore_2d",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "surface_class",
+     "type": "int[4]",
+     "offset": 16,
+     "size": 16,
+     "count": 4
+    },
+    {
+     "name": "groundwater",
+     "type": "int",
+     "offset": 32,
+     "size": 4
+    }
+   ]
+  },
   "SWMM_GwClockStats": {
    "header": "openswmm_gw2d.h",
    "size": 336,

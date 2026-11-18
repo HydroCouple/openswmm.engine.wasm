@@ -4925,6 +4925,64 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_TransportCell": {
+    "size": 104,
+    "fields": {
+      "state": {
+        "offset": 0,
+        "type": "int"
+      },
+      "count": {
+        "offset": 4,
+        "type": "int"
+      },
+      "reason": {
+        "offset": 8,
+        "type": "char[96]",
+        "count": 96
+      }
+    }
+  },
+  "SWMM_TransportMatrix": {
+    "size": 1664,
+    "fields": {
+      "cell": {
+        "offset": 0,
+        "type": "SWMM_TransportCell[16]",
+        "count": 16
+      }
+    }
+  },
+  "SWMM_TransportDraft": {
+    "size": 36,
+    "fields": {
+      "ignore_quality": {
+        "offset": 0,
+        "type": "int"
+      },
+      "heat": {
+        "offset": 4,
+        "type": "int"
+      },
+      "age": {
+        "offset": 8,
+        "type": "int"
+      },
+      "ignore_2d": {
+        "offset": 12,
+        "type": "int"
+      },
+      "surface_class": {
+        "offset": 16,
+        "type": "int[4]",
+        "count": 4
+      },
+      "groundwater": {
+        "offset": 32,
+        "type": "int"
+      }
+    }
+  },
   "SWMM_GwClockStats": {
     "size": 336,
     "fields": {
