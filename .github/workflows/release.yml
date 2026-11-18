@@ -53,7 +53,7 @@ jobs:
       tarball: ${{ steps.pack.outputs.tarball }}
       dry_run: ${{ steps.version.outputs.dry_run }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
         with:
           submodules: recursive
 
@@ -156,7 +156,7 @@ jobs:
             tar -tvzf "release/$tarball" | awk '$6 ~ /\.(wasm|js)$/ && $6 ~ /openswmm_engine|index/ {printf "| `%s` | %.2f MB |\n", $6, $3/1048576}'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v7
         with:
           name: release-files
           path: release/
@@ -174,12 +174,12 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: release-files
           path: release
 
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ needs.build.outputs.version }}
           prerelease: ${{ needs.build.outputs.dist_tag != 'latest' }}
@@ -199,12 +199,12 @@ jobs:
       contents: read
       id-token: write # npm trusted publishing and provenance
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: release-files
           path: release
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           registry-url: "https://registry.npmjs.org"
@@ -240,12 +240,12 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/download-artifact@v5
+      - uses: actions/download-artifact@v8
         with:
           name: release-files
           path: release
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version: "24"
           registry-url: "https://npm.pkg.github.com"
