@@ -35,6 +35,22 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ### Added
 
+- **Coupling family** (wave F), mirroring Python's `_coupling`, `_split`,
+  `_passive_exchange` and `_trace`; with it, every one of the 2,484 public
+  Python members has a TypeScript counterpart (`pending` is empty).
+  `solver.coupling` (`Coupling`: providers, `applyFrame` of sources,
+  boundaries, forcing and clears, `capabilities`) and `DomainSources`
+  (sources, receipts, runtime boundaries, forcing, infiltration receipts,
+  surface species ledger), also reached as `surface2d.sources` and
+  `groundwater2d.sources` with the Python shortcuts (`setWaterSource`,
+  `setHeatSource`, `setSpeciesSource`, `setHeadBoundary`, `setFlowBoundary`,
+  `boundaryReceipt`, `sourceReceipt`, `clearSource`, ...). `solver.split`
+  (`SplitParticipant`, `SplitFrame`) runs a network and a surface peer in one
+  module; `solver.passiveExchange` copies the V1 status, pool, receipt, row
+  and leg observations; `solver.materialSplit` covers the material codec and
+  pair checkpoints; `FlowTracer` traces over supplied averages or a saved
+  output, with its HDF5 cache. The material peer and the split packet codec
+  need an engine built with HydroCouple and raise `PluginError` in WASM.
 - **HDF5 in the WASM build** (`-DOPENSWMM_WASM_HDF5=ON`, the default): HDF5
   2.1.1, the native engine's vcpkg release, is downloaded and built during
   configure. The 2D `[2D_OPTIONS] OUTPUT_FILE` results file is now written and

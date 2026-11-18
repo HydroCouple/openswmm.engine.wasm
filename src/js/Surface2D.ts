@@ -33,6 +33,15 @@
  * @license  Apache-2.0
  */
 
+import {
+  DomainSources,
+  type BoundaryReceipt,
+  type PerCell,
+  type SourceOptions,
+  type SourceReceipt,
+  type SurfaceSpeciesLedger,
+} from "./Coupling.js";
+import type { Solver } from "./Solver.js";
 import { MeshSnow } from "./Snow2D.js";
 import { SurfaceQuality } from "./SurfaceQuality.js";
 import {
@@ -187,9 +196,10 @@ export class Surface2D {
     private readonly mod: OpenSwmmWasmModule,
     private readonly handle: number,
     checkOwner: () => void = () => {},
+    private readonly _owner?: Solver,
   ) {
     this.raw = guardedRaw(mod, checkOwner);
-    this.groundwater = new Groundwater(mod, handle, checkOwner);
+    this.groundwater = new Groundwater(mod, handle, checkOwner, _owner);
   }
 
   // ---- availability & editing ----------------------------------------------
@@ -1121,6 +1131,81 @@ export class Surface2D {
   boundaryFlow(cell: number, edge: number): number {
     this.getEdgeBcType(cell, edge); // validates the cell and edge
     return this.getEdgeFluxBulk()[cell * this.edgeStride + edge];
+  }
+
+  // ---- runtime sources and boundaries (Python `_coupling.DomainSources`) ----
+
+  /** Runtime external sources and cumulative accepted-transfer receipts. */
+  get sources(): DomainSources {
+    if (!this._owner) throw new TypeError("Obtain the surface through solver.surface2d");
+    return new DomainSources(this._owner, "surface");
+  }
+
+  /** Prescribe a runtime head (m) on an exterior edge. */
+  setHeadBoundary(
+    cell: number,
+    edge: number,
+    headM: number,
+    concentrations: Readonly<Record<string, number>> | null = null,
+  ): void {
+    this.sources.setBoundary(cell, edge, 1, headM, concentrations);
+  }
+
+  /** Total outward m³/s, with inflow quality; overrides authored series. */
+  setFlowBoundary(
+    cell: number,
+    edge: number,
+    flowM3S: number,
+    concentrations: Readonly<Record<string, number>> | null = null,
+  ): void {
+    this.sources.setBoundary(cell, edge, 2, flowM3S, concentrations);
+  }
+
+  /** Applied boundary transfer, positive inward, including advective heat. */
+  boundaryReceipt(cell: number, edge: number): BoundaryReceipt {
+    return this.sources.boundaryReceipt(cell, edge);
+  }
+
+  /** Every surface ledger term of one species, in its mass units. */
+  speciesLedger(species: string): SurfaceSpeciesLedger {
+    return this.sources.speciesLedger(species);
+  }
+
+  /** Water source on one or more cells (m³/s each); see {@link DomainSources.setSource}. */
+  setWaterSource(
+    cells: number | ArrayLike<number>,
+    flowM3S: PerCell,
+    options: SourceOptions = {},
+  ): void {
+    this.sources.setSource(cells, flowM3S, options);
+  }
+
+  /** Heat source (W) supplied to the water of one or more cells. */
+  setHeatSource(
+    cells: number | ArrayLike<number>,
+    heatW: PerCell,
+    { sourceId = "heat", untilSeconds = null }: SourceOptions = {},
+  ): void {
+    this.sources.setSource(cells, 0, { heatW, sourceId, untilSeconds });
+  }
+
+  /** Species sources (concentration unit × m³/s) without water. */
+  setSpeciesSource(
+    cells: number | ArrayLike<number>,
+    speciesRates: Readonly<Record<string, PerCell>>,
+    { sourceId = "species", untilSeconds = null }: SourceOptions = {},
+  ): void {
+    this.sources.setSource(cells, 0, { speciesRates, sourceId, untilSeconds });
+  }
+
+  /** Clear a source ID on every cell, or on one cell. */
+  clearSource(sourceId = "external", cell: number | null = null): void {
+    this.sources.clearSource(sourceId, cell);
+  }
+
+  /** Cumulative receipt of one source on one cell. */
+  sourceReceipt(sourceId = "external", cell = 0): SourceReceipt {
+    return this.sources.sourceReceipt(sourceId, cell);
   }
 
   /** @internal */

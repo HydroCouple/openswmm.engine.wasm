@@ -347,3 +347,47 @@ export type {
   GroundwaterClockStats,
   GroundwaterClosureStats,
 } from "./Groundwater.js";
+
+// ---------------------------------------------------------------------------
+// Coupling family: runtime exchange, native peers, passive exchange, tracing
+// ---------------------------------------------------------------------------
+export { Coupling, DomainSources } from "./Coupling.js";
+export type {
+  CouplingDomain,
+  RuntimeSource,
+  RuntimeBoundary,
+  RuntimeForcing,
+  RuntimeClear,
+  CouplingFrame,
+  SourceReceipt,
+  BoundaryReceipt,
+  CouplingCapabilities,
+  CouplingWaterTotals,
+  SurfaceSpeciesLedger,
+  SourceOptions,
+  PerCell,
+} from "./Coupling.js";
+export { SplitFrame, SplitParticipant, MaterialSplitParticipant } from "./Split.js";
+export type { SplitFrameNode, SplitFrameSource } from "./Split.js";
+export { PassiveExchange } from "./PassiveExchange.js";
+export type {
+  PassiveAmount,
+  PassiveStatus,
+  PassivePool,
+  PassiveReceipt,
+  PassiveRow,
+  PassiveLeg,
+} from "./PassiveExchange.js";
+export { FlowTracer, TraceError } from "./Trace.js";
+export type {
+  TraceNode,
+  TraceLink,
+  TraceOptions,
+  TraceNodeAverage,
+  TraceLinkAverage,
+  TraceInfo,
+  TraceValue,
+  TraceSummary,
+  TraceResult,
+  TraceProgress,
+} from "./Trace.js";
