@@ -22,7 +22,11 @@
     "_SurfaceCell": "SurfaceCell",
     "_SurfaceCells": "SurfaceCells",
     "_WaterAgeGlobals": "WaterAgeGlobals",
-    "_WaterAgeOverrides": "WaterAgeOverrides"
+    "_WaterAgeOverrides": "WaterAgeOverrides",
+    "_SpeciesCollection": "SpeciesCollection",
+    "_CoefficientCollection": "CoefficientCollection",
+    "_TermCollection": "TermCollection",
+    "_InitialQualityRows": "InitialQualityRows"
   },
   "memberAliases": {
     "ModelBuilder.add_subcatch": "addSubcatchment",
@@ -40,7 +44,6 @@
   },
   "pending": {
     "_heat": "E",
-    "_reactions": "E",
     "_groundwater": "E",
     "_gw_transport": "E",
     "_2d": "E",
@@ -50,7 +53,6 @@
     "_trace": "F",
     "_solver.Solver.groundwater2d": "E",
     "_solver.Solver.heat": "E",
-    "_solver.Solver.reactions": "E",
     "_solver.Solver.coupling": "F",
     "_solver.Solver.material_split": "F",
     "_solver.Solver.passive_exchange": "F",

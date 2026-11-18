@@ -92,6 +92,7 @@ import { ModelEditor } from "./Edit.js";
 import { Infrastructure } from "./Infrastructure.js";
 import { ProcessComponents } from "./ProcessComponents.js";
 import { WaterAge } from "./WaterAge.js";
+import { Reactions } from "./Reactions.js";
 
 /** Plugin id of the built-in GeoPackage model writer. */
 const GEOPACKAGE_PLUGIN_ID = "org.hydrocouple.openswmm.plugins.geopackage";
@@ -739,6 +740,11 @@ export class Solver {
   /** The `[PROCESS_COMPONENTS]` registrations (Python `solver.process_components`). */
   get processComponents(): ProcessComponents {
     return new ProcessComponents(this);
+  }
+
+  /** The multi-species reaction system, `[REACTION_*]` / `.rxn` (Python `solver.reactions`). */
+  get reactions(): Reactions {
+    return new Reactions(this);
   }
 
   /** The `[WATER_AGE_SOURCES]` table (Python `solver.water_age`). */

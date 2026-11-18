@@ -62,6 +62,13 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Reactions** (wave E, part 3), mirroring Python: `solver.reactions` with
+  `species`, `coefficients` and `terms` (live views: expressions, initial
+  and rainfall concentrations, values), `initial` rows, options, `validate`,
+  and the `.rxn` text contract (`serialize`, `checkText`, `applyText`,
+  `save`), plus the model-free `Reactions.hydraulicVariables` and
+  `Reactions.functions`. Serialized text matches native Python byte for
+  byte.
 - **Process components, water age, mesh snow and surface quality** (wave E,
   part 2), mirroring Python: `solver.processComponents` (register, remove,
   arguments, `known`, `libraries`, `addSearchPath`), `solver.waterAge`
