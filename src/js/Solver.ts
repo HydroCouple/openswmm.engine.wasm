@@ -50,8 +50,8 @@
  * @license  Apache-2.0
  */
 
-import { EngineState, FlowUnits, InpProfile } from "./enums.js";
-import { BadHandleError, EngineError, raiseForCode } from "./errors.js";
+import { EngineState, FilePathRole, FlowUnits, InpProfile } from "./enums.js";
+import { BadHandleError, EngineError, LifecycleError, raiseForCode } from "./errors.js";
 import { Nodes } from "./Nodes.js";
 import { Links } from "./Links.js";
 import { Subcatchments } from "./Subcatchments.js";
@@ -64,7 +64,7 @@ import { Surface2D } from "./Surface2D.js";
 import { Patterns, Tables } from "./Tables.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import { CALLBACK_SIGNATURES, type RawApi } from "./raw.js";
-import { checkedAlloc, rawOf, withCString, withDouble, withInt } from "./mem.js";
+import { checkedAlloc, rawOf, withCString, withCStrings, withDouble, withInt } from "./mem.js";
 import { datetimeToOadate, oadateToDatetime } from "./dates.js";
 import { EventsView, SimulationOptions, UserFlags } from "./SolverViews.js";
 import { Snow } from "./Snow.js";
@@ -78,6 +78,7 @@ import { Statistics } from "./Statistics.js";
 import { Inflows } from "./Inflows.js";
 import { Checkpoints } from "./Checkpoints.js";
 import { SaveSchedule } from "./HotStart.js";
+import { Results } from "./Results.js";
 
 // =============================================================================
 // Solver
@@ -208,6 +209,9 @@ export class Solver {
   private _callbackError: unknown = undefined;
   /** @internal Function-table slots of the registered callbacks, by kind. */
   private readonly _callbackSlots = new Map<string, number>();
+  /** @internal Paths of the last open (Python `_inp`, `_out`). */
+  private _inp = "";
+  private _out = "";
 
   // -------------------------------------------------------------------------
   // Constructor
@@ -335,6 +339,8 @@ export class Solver {
    */
   open(inp: string, rpt: string, out: string, pluginLib = ""): void {
     this._invalidateViews();
+    this._inp = inp;
+    this._out = out;
     const rc = this._raw.swmm_engine_open(this.handle, inp, rpt, out, pluginLib || null);
     this._rethrowCallbackError();
     if (rc !== 0) {
@@ -727,6 +733,7 @@ export class Solver {
    */
   openMetadata(inp: string): void {
     this._invalidateViews();
+    this._inp = inp;
     const rc = this._raw.swmm_engine_open_metadata(this.handle, inp);
     this._rethrowCallbackError();
     if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -738,6 +745,7 @@ export class Solver {
    */
   openSimulationPeriod(inp: string): void {
     this._invalidateViews();
+    this._inp = inp;
     const rc = this._raw.swmm_engine_open_simulation_period(this.handle, inp);
     this._rethrowCallbackError();
     if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -804,6 +812,46 @@ export class Solver {
     const h = this.handle;
     const n = this._raw.swmm_get_warning_count(h);
     return Array.from({ length: n }, (_, i) => this._raw.swmm_get_warning_at(h, i) ?? "");
+  }
+
+  /**
+   * Open result readers for this solver's files (Python `open_results`).
+   * Call after {@link end}; while the engine is alive the configured 2D
+   * `OUTPUT_FILE` is found automatically (relative paths resolve against the
+   * input file's folder), after {@link destroy} pass `surface`. With `live`,
+   * only the binary 1D output is opened, during a run. The returned
+   * {@link Results} owns its readers and is closed separately.
+   */
+  openResults({
+    surface,
+    live = false,
+  }: { surface?: string | null; live?: boolean } = {}): Results {
+    let surfacePath = surface ?? null;
+    if (this._handle) {
+      const state = this.state;
+      if (!live && state !== EngineState.ENDED && state !== EngineState.CLOSED) {
+        throw new LifecycleError(
+          "Call end() before opening saved results, or use live for 1D output",
+        );
+      }
+      if (surfacePath === null && !live) {
+        let configured = "";
+        try {
+          const [absolute, original] = withCStrings(this._mod, 4096, 2, ([a, o], len) =>
+            this._raw.swmm_file_path_get(this._handle, FilePathRole.OUTPUT_2D, "", a, len, o, len),
+          );
+          configured = absolute || original;
+        } catch (err) {
+          if (!(err instanceof EngineError)) throw err;
+        }
+        if (configured) {
+          const slash = this._inp.lastIndexOf("/");
+          const folder = slash < 0 ? "." : this._inp.slice(0, slash) || "/";
+          surfacePath = configured.startsWith("/") ? configured : `${folder}/${configured}`;
+        }
+      }
+    }
+    return Results.open(this._mod, this._out || null, { surface: surfacePath, live });
   }
 
   /** Coordinate reference system of the model (empty when none). */

@@ -77,6 +77,24 @@ export { InitialQuality } from "./InitialQuality.js";
 export type { InitialQualityEntry } from "./InitialQuality.js";
 export { MassBalance } from "./MassBalance.js";
 export { getReportSnapshot } from "./Report.js";
+export { OutputReader, OutputNodeStats } from "./OutputReader.js";
+export type { SeriesRange } from "./OutputReader.js";
+export { Output2DReader } from "./Output2D.js";
+export type { Output2DDType, Output2DSelection } from "./Output2D.js";
+export {
+  Results,
+  ResultCollection,
+  ResultField,
+  ResultObject,
+  SeriesField,
+  SurfaceCell,
+  SurfaceCells,
+  SurfaceField,
+  SurfaceResults,
+} from "./Results.js";
+export type { ResultMesh, ResultReadOptions, ResultSelection, Selector } from "./Results.js";
+export { ELLIPSIS, slice } from "./ndarray.js";
+export type { AxisKey, NDArray, NumericData, Slice } from "./ndarray.js";
 export type {
   RoutingDiagnostics,
   RunoffContinuity,
