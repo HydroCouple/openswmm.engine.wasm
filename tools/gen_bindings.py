@@ -40,6 +40,8 @@ EXCLUDED_HEADERS: set[str] = set()
 # calling one of these then throws "export ... is not available".
 OPTIONAL_2D_HEADERS = {
     "openswmm_2d.h",
+    "openswmm_coupling.h",
+    "openswmm_surface_ownership.h",
     "openswmm_infil2d.h",
     "openswmm_gw2d.h",
     "openswmm_gw_transport.h",
@@ -498,7 +500,7 @@ def emit_enums(engine_root: Path) -> str:
     for node in tree.body:
         if not isinstance(node, ast.ClassDef):
             continue
-        if not any(isinstance(b, ast.Name) and b.id == "IntEnum" for b in node.bases):
+        if not any(isinstance(b, ast.Name) and b.id in ("IntEnum", "IntFlag") for b in node.bases):
             continue
         out.append(f"export enum {node.name} {{\n")
         for stmt in node.body:

@@ -802,6 +802,8 @@ export enum GroundwaterVariable {
   COMPLETED_TIME = 30,
   PENDING_IN = 31,
   PENDING_OUT = 32,
+  QX = 33,
+  QY = 34,
 }
 
 export enum GroundwaterLedger {
@@ -872,6 +874,23 @@ export enum TraceDirection {
   UPSTREAM = 1,
 }
 
+export enum TraceNodeFlags {
+  PONDING = 1,
+  EXTERNAL_EXCHANGE = 2,
+  ROUTED_OUTFALL = 4,
+  UNKNOWN_LOSSES = 8,
+}
+
+export enum TraceFlags {
+  UNREACHABLE = 1,
+  NO_DIRECTION = 2,
+  REVERSAL = 4,
+  UNKNOWN_TIME = 8,
+  PARTIAL_TIME = 16,
+  TRAPPED = 32,
+  APPROXIMATE = 64,
+}
+
 export enum TraceTerminal {
   OUTFALL = 0,
   LOSS = 1,
@@ -902,4 +921,52 @@ export enum Heat2DValue {
   WATER_THERMAL_INCREMENT = 10,
   ACCEPTED_EVAPORATION = 11,
   THERMAL_RESIDUAL = 12,
+}
+
+export enum SplitRole {
+  NETWORK = 1,
+  SURFACE = 2,
+}
+
+export enum SplitPhase {
+  CONDUCTANCE = 1,
+  ADVANCE = 2,
+  FINISH = 3,
+  OUTFALL_PREPARE = 4,
+  SOURCE_PREPARE = 5,
+  LID_TRIAL = 6,
+  LID_ACCEPT = 7,
+  MATERIAL_REPORT = 8,
+}
+
+export enum LidExtraField {
+  SURFACE_VEGETATION = 0,
+  SURFACE_SIDE_SLOPE = 1,
+  SOIL_SUCTION = 2,
+  STORAGE_CLOGGING = 3,
+  DRAIN_DELAY = 4,
+  DRAIN_OPEN = 5,
+  DRAIN_CLOSE = 6,
+  STORAGE_COVERED = 7,
+}
+
+export enum SummaryTable {
+  NODE_DEPTH = 0,
+  NODE_INFLOW = 1,
+  NODE_SURCHARGE = 2,
+  NODE_FLOODING = 3,
+  STORAGE_VOLUME = 4,
+  OUTFALL_LOADING = 5,
+  LINK_FLOW = 6,
+  FLOW_CLASSIFICATION = 7,
+  CONDUIT_SURCHARGE = 8,
+  PUMPING = 9,
+  LID_PERFORMANCE = 10,
+}
+
+export enum SummaryObject {
+  SYSTEM = -1,
+  NODE = 0,
+  LINK = 1,
+  SUBCATCHMENT = 2,
 }
