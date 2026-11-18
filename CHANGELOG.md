@@ -62,6 +62,10 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Inflows** (wave C, part 3), mirroring Python: `solver.inflows` for
+  external inflows (time series, scale, baseline, pattern), dry-weather
+  inflows (average and four patterns), RDII rows, unit-hydrograph groups
+  (R/T/K, initial abstraction, gages, rename/remove) and RDII decay.
 - **Climate and statistics** (wave C, part 2), mirroring Python:
   `solver.climate` (temperature source, evaporation, wind, humidity, snowmelt,
   areal depletion and monthly adjustments; `previewEvaporation` from the model

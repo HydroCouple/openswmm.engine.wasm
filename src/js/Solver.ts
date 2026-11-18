@@ -75,6 +75,7 @@ import { Pollutants } from "./Pollutants.js";
 import { Quality } from "./Quality.js";
 import { Climate } from "./Climate.js";
 import { Statistics } from "./Statistics.js";
+import { Inflows } from "./Inflows.js";
 
 // =============================================================================
 // Solver
@@ -693,6 +694,11 @@ export class Solver {
   /** Run statistics and report summary tables (Python `solver.statistics`). */
   get statistics(): Statistics {
     return new Statistics(this);
+  }
+
+  /** External, dry-weather and RDII inflows and unit hydrographs (Python `solver.inflows`). */
+  get inflows(): Inflows {
+    return new Inflows(this);
   }
 
   /**

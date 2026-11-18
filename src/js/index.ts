@@ -81,6 +81,16 @@ export { Climate } from "./Climate.js";
 export type { EvapPreview, EvapPreviewSample } from "./Climate.js";
 export { Statistics } from "./Statistics.js";
 export type { ReportTable, SummaryColumn, SummaryRow } from "./Statistics.js";
+export { Inflows } from "./Inflows.js";
+export type {
+  RDIIEntry,
+  HydrographEntry,
+  HydrographGageEntry,
+  RDIIDecayEntry,
+  RDIIDecayParams,
+  ExternalInflow,
+  DryWeatherInflow,
+} from "./Inflows.js";
 export type { SnowSurface, SnowRemoval } from "./NamedObjects.js";
 
 export { Gages, Gage } from "./Gages.js";
