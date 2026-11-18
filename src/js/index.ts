@@ -273,6 +273,26 @@ export type {
   ReactionInitialEntry,
   ExpressionDiagnostic,
 } from "./Reactions.js";
+export {
+  Heat,
+  HeatSnapshot,
+  HeatModules,
+  HeatRadiative,
+  HeatSolar,
+  HeatCloud,
+  HeatSources,
+  HeatSediment,
+  HeatNodeOverrides,
+  HeatElementOverrides,
+} from "./Heat.js";
+export type {
+  HeatNodeOverride,
+  HeatElementOverride,
+  HeatLidMaterial,
+  HeatElementValue,
+  ChannelGroundContact,
+  ChannelGroundPreview,
+} from "./Heat.js";
 export { MeshSnow } from "./Snow2D.js";
 export type { MeshSnowRow } from "./Snow2D.js";
 export {

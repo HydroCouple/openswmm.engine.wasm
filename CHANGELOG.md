@@ -62,6 +62,21 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Heat** (wave E, part 4), mirroring Python: `solver.heat` with `modules`,
+  `radiative`, `solar`, `cloud`, `sources`, `sediment`, `nodeOverrides` and
+  `elementOverrides`, shortwave mode and series, `effectiveElement`, mesh,
+  ground and channel-ground status and values, `previewChannelGroundMap`
+  (paged, with a cancellable progress callback), `HeatSnapshot` and
+  `editAtomic` (rolled back natively when the callback throws). Results
+  match native Python on the engine's heat test deck.
+- **Lifecycle guard**, as in Python: open/initialize/start/step/end/report/
+  close/destroy/write and the callback setters throw `LifecycleError` while
+  a native call that can run JavaScript callbacks is in progress, so a
+  callback cannot free or re-enter the engine mid-call.
+- The generator now emits every callback typedef's `addFunction()`
+  signature, including those declared next to their API (heat edit, staged
+  output, split, material transport, surface-owner progress, trace
+  progress): 14 in `CALLBACK_SIGNATURES`.
 - **Reactions** (wave E, part 3), mirroring Python: `solver.reactions` with
   `species`, `coefficients` and `terms` (live views: expressions, initial
   and rainfall concentrations, values), `initial` rows, options, `validate`,

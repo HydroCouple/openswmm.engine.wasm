@@ -93,6 +93,7 @@ import { Infrastructure } from "./Infrastructure.js";
 import { ProcessComponents } from "./ProcessComponents.js";
 import { WaterAge } from "./WaterAge.js";
 import { Reactions } from "./Reactions.js";
+import { Heat } from "./Heat.js";
 
 /** Plugin id of the built-in GeoPackage model writer. */
 const GEOPACKAGE_PLUGIN_ID = "org.hydrocouple.openswmm.plugins.geopackage";
@@ -316,10 +317,13 @@ export class Solver {
 
   /** Save the currently opened model to a file in the virtual filesystem. */
   writeModel(path: string, outputPluginId = ""): void {
+    this._requireIdle();
     const h = this.handle;
-    const rc = outputPluginId
-      ? this._raw.swmm_model_write_with_plugin(h, path, outputPluginId)
-      : this._raw.swmm_model_write(h, path);
+    const rc = this._operation(() =>
+      outputPluginId
+        ? this._raw.swmm_model_write_with_plugin(h, path, outputPluginId)
+        : this._raw.swmm_model_write(h, path),
+    );
     this._rethrowCallbackError();
     raiseForCode(rc, rc ? this._raw.swmm_get_last_error_msg(h) : undefined);
   }
@@ -357,10 +361,13 @@ export class Solver {
    * @throws {@link LifecycleError} if the engine is not in `CREATED` state.
    */
   open(inp: string, rpt: string, out: string, pluginLib = ""): void {
+    this._requireIdle();
     this._invalidateViews();
     this._inp = inp;
     this._out = out;
-    const rc = this._raw.swmm_engine_open(this.handle, inp, rpt, out, pluginLib || null);
+    const rc = this._operation(() =>
+      this._raw.swmm_engine_open(this.handle, inp, rpt, out, pluginLib || null),
+    );
     this._rethrowCallbackError();
     if (rc !== 0) {
       const msg = this._raw.swmm_get_last_error_msg(this.handle);
@@ -374,7 +381,8 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `OPENED` state.
    */
   initialize(): void {
-    const rc = this._raw.swmm_engine_initialize(this.handle);
+    this._requireIdle();
+    const rc = this._operation(() => this._raw.swmm_engine_initialize(this.handle));
     this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -388,7 +396,8 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `INITIALIZED` state.
    */
   start(saveResults = true): void {
-    const rc = this._raw.swmm_engine_start(this.handle, saveResults ? 1 : 0);
+    this._requireIdle();
+    const rc = this._operation(() => this._raw.swmm_engine_start(this.handle, saveResults ? 1 : 0));
     this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -405,9 +414,10 @@ export class Solver {
    * @throws {@link LifecycleError}  if not in `STARTED` or `RUNNING` state.
    */
   step(): number {
+    this._requireIdle();
     const ptr = checkedAlloc(this._mod, 8);
     try {
-      const rc = this._raw.swmm_engine_step(this.handle, ptr);
+      const rc = this._operation(() => this._raw.swmm_engine_step(this.handle, ptr));
       this._rethrowCallbackError();
       if (rc !== 0) {
         raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -427,9 +437,10 @@ export class Solver {
    *          Returns `0` when the end time has been reached.
    */
   stride(nSteps: number): number {
+    this._requireIdle();
     const ptr = checkedAlloc(this._mod, 8);
     try {
-      const rc = this._raw.swmm_engine_stride(this.handle, nSteps, ptr);
+      const rc = this._operation(() => this._raw.swmm_engine_stride(this.handle, nSteps, ptr));
       this._rethrowCallbackError();
       if (rc !== 0) {
         raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -446,7 +457,8 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `RUNNING` or `STARTED` state.
    */
   end(): void {
-    const rc = this._raw.swmm_engine_end(this.handle);
+    this._requireIdle();
+    const rc = this._operation(() => this._raw.swmm_engine_end(this.handle));
     this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -459,7 +471,8 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `ENDED` state.
    */
   report(): void {
-    const rc = this._raw.swmm_engine_report(this.handle);
+    this._requireIdle();
+    const rc = this._operation(() => this._raw.swmm_engine_report(this.handle));
     this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -472,8 +485,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `ENDED` state.
    */
   close(): void {
+    this._requireIdle();
     this._invalidateViews();
-    const rc = this._raw.swmm_engine_close(this.handle);
+    const rc = this._operation(() => this._raw.swmm_engine_close(this.handle));
     this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
@@ -486,6 +500,7 @@ export class Solver {
    */
   destroy(): void {
     if (!this._handle) return;
+    this._requireIdle();
     this._raw.swmm_engine_destroy(this._handle);
     this._handle = 0;
     for (const slot of this._callbackSlots.values()) this._mod.removeFunction(slot);
@@ -673,6 +688,29 @@ export class Solver {
     return this._mod;
   }
 
+  /** @internal Native calls in progress that can run JavaScript callbacks. */
+  private _active = 0;
+
+  /**
+   * @internal Run a native call that may call back into JavaScript (Python
+   * `_operation`); lifecycle calls are refused until it returns.
+   */
+  _operation<T>(fn: () => T): T {
+    this._active++;
+    try {
+      return fn();
+    } finally {
+      this._active--;
+    }
+  }
+
+  /** @internal Python `require_idle`: no lifecycle change from a native call or callback. */
+  private _requireIdle(): void {
+    if (this._active) {
+      throw new LifecycleError("Cannot change lifecycle during a native call or callback");
+    }
+  }
+
   /** @internal A structural edit happened: invalidate views, as Python's `_bump_generation`. */
   _bumpGeneration(): void {
     this._invalidateViews();
@@ -742,6 +780,11 @@ export class Solver {
     return new ProcessComponents(this);
   }
 
+  /** Heat-transport configuration and diagnostics (Python `solver.heat`). */
+  get heat(): Heat {
+    return new Heat(this);
+  }
+
   /** The multi-species reaction system, `[REACTION_*]` / `.rxn` (Python `solver.reactions`). */
   get reactions(): Reactions {
     return new Reactions(this);
@@ -804,6 +847,7 @@ export class Solver {
    */
   create(): void {
     this._assertAlive();
+    this._requireIdle();
   }
 
   /**
@@ -811,9 +855,10 @@ export class Solver {
    * editing a model without running it.
    */
   openMetadata(inp: string): void {
+    this._requireIdle();
     this._invalidateViews();
     this._inp = inp;
-    const rc = this._raw.swmm_engine_open_metadata(this.handle, inp);
+    const rc = this._operation(() => this._raw.swmm_engine_open_metadata(this.handle, inp));
     this._rethrowCallbackError();
     if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
   }
@@ -823,9 +868,12 @@ export class Solver {
    * rows that address its cells are skipped, so a large 2D model opens fast.
    */
   openSimulationPeriod(inp: string): void {
+    this._requireIdle();
     this._invalidateViews();
     this._inp = inp;
-    const rc = this._raw.swmm_engine_open_simulation_period(this.handle, inp);
+    const rc = this._operation(() =>
+      this._raw.swmm_engine_open_simulation_period(this.handle, inp),
+    );
     this._rethrowCallbackError();
     if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
   }
@@ -835,9 +883,10 @@ export class Solver {
    * @returns Elapsed seconds actually reached.
    */
   advanceTo(seconds: number): number {
+    this._requireIdle();
     const ptr = checkedAlloc(this._mod, 8);
     try {
-      const rc = this._raw.swmm_engine_advance_to(this.handle, seconds, ptr);
+      const rc = this._operation(() => this._raw.swmm_engine_advance_to(this.handle, seconds, ptr));
       this._rethrowCallbackError();
       if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
       return this._mod.HEAPF64[ptr >> 3];
@@ -905,6 +954,7 @@ export class Solver {
     surface,
     live = false,
   }: { surface?: string | null; live?: boolean } = {}): Results {
+    this._requireIdle();
     let surfacePath = surface ?? null;
     if (this._handle) {
       const state = this.state;
@@ -980,8 +1030,9 @@ export class Solver {
    * Conversion warnings appear in {@link openWarnings}; the model is unchanged.
    */
   writeCompat(path: string, profile: InpProfile): void {
+    this._requireIdle();
     const h = this.handle;
-    const rc = this._raw.swmm_model_write_compat(h, path, profile);
+    const rc = this._operation(() => this._raw.swmm_model_write_compat(h, path, profile));
     this._rethrowCallbackError();
     if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(h));
   }
@@ -1018,7 +1069,7 @@ export class Solver {
     }, "iiii");
     try {
       const h = this.handle;
-      const rc = this._raw.swmm_model_write_staged(h, finalPath, slot, 0);
+      const rc = this._operation(() => this._raw.swmm_model_write_staged(h, finalPath, slot, 0));
       if (failure !== undefined) throw failure;
       this._rethrowCallbackError();
       if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(h));
@@ -1077,6 +1128,7 @@ export class Solver {
     signature: string,
     fn: ((...args: number[]) => void) | null,
   ): void {
+    this._requireIdle();
     const h = this.handle;
     const previous = this._callbackSlots.get(kind);
     let slot = 0;

@@ -123,3 +123,71 @@ org.hydrocouple.openswmm.reactions config="${rxnName}"
 INPUT NO
 `;
 }
+
+/** The heat component config of python/tests/engine/test_heat.py. */
+export const HEAT_CONFIG = `[HEAT_SOURCES]
+DWF             GLOBAL  15.0
+INITIAL_STATE   GLOBAL  20.0
+DWF             NODE    J1  22.0
+
+[HEAT_FLUXES]
+RADIATIVE_EXCHANGE  ON
+
+[RADIATIVE_FLUXES]
+SHORTWAVE  GLOBAL  250.0
+
+[CLOUD_COVER]
+FRACTION  GLOBAL  0.25
+`;
+
+/** The heat deck of the same Python test, bound to `heatName`. */
+export function heatInp(heatName: string): string {
+  return `[TITLE]
+Python heat-binding round-trip deck
+
+[OPTIONS]
+FLOW_UNITS           CFS
+FLOW_ROUTING         DYNWAVE
+HEAT_TRANSPORT       ON
+START_DATE           06/21/2026
+START_TIME           12:00:00
+END_DATE             06/21/2026
+END_TIME             12:10:00
+ROUTING_STEP         10
+REPORT_STEP          00:05:00
+
+[TEMPERATURE]
+TIMESERIES  air_ts
+HUMIDITY    50.0
+
+[TIMESERIES]
+air_ts    06/21/2026 00:00 50.0
+air_ts    06/22/2026 00:00 50.0
+sw_ts     06/21/2026 00:00 700.0
+sw_ts     06/22/2026 00:00 700.0
+cloud_ts  06/21/2026 00:00 0.5
+cloud_ts  06/22/2026 00:00 0.5
+
+[JUNCTIONS]
+;;Name Elev MaxDepth InitDepth SurDepth Aponded
+J1  9.0  10  1.0  0  0
+J2  8.5  10  1.0  0  0
+
+[OUTFALLS]
+OUT  8.0  FREE  NO
+
+[CONDUITS]
+C1  J1  J2   500  0.013  0  0  0
+C2  J2  OUT  500  0.013  0  0  0
+
+[XSECTIONS]
+C1  CIRCULAR  3.0  0  0  0
+C2  CIRCULAR  3.0  0  0  0
+
+[PROCESS_COMPONENTS]
+org.hydrocouple.openswmm.heat config="${heatName}"
+
+[REPORT]
+INPUT NO
+`;
+}

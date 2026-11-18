@@ -30613,6 +30613,327 @@
     }
    ]
   },
+  "SWMM_Heat2DStatus": {
+   "header": "openswmm_heat.h",
+   "size": 296,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "requested",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "initialized",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "surface_active",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "radiative_active",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "bed_active",
+     "type": "int",
+     "offset": 20,
+     "size": 4
+    },
+    {
+     "name": "bed_model",
+     "type": "int",
+     "offset": 24,
+     "size": 4
+    },
+    {
+     "name": "experimental",
+     "type": "int",
+     "offset": 28,
+     "size": 4
+    },
+    {
+     "name": "water_heat_capacity",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "reason",
+     "type": "char[256]",
+     "offset": 40,
+     "size": 256,
+     "count": 256
+    }
+   ]
+  },
+  "SWMM_GroundHeatStatus": {
+   "header": "openswmm_heat.h",
+   "size": 304,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "requested",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "initialized",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "aquifer_cells",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "standalone_cells",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "thermal_layers",
+     "type": "int",
+     "offset": 20,
+     "size": 4
+    },
+    {
+     "name": "conduction_active",
+     "type": "int",
+     "offset": 24,
+     "size": 4
+    },
+    {
+     "name": "lateral_active",
+     "type": "int",
+     "offset": 28,
+     "size": 4
+    },
+    {
+     "name": "experimental",
+     "type": "int",
+     "offset": 32,
+     "size": 4
+    },
+    {
+     "name": "water_heat_capacity",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "reason",
+     "type": "char[256]",
+     "offset": 48,
+     "size": 256,
+     "count": 256
+    }
+   ]
+  },
+  "SWMM_ChannelGroundStatus": {
+   "header": "openswmm_heat.h",
+   "size": 288,
+   "align": 4,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "requested",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "initialized",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "exchange_active",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "mapped_links",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "contact_cells",
+     "type": "int",
+     "offset": 20,
+     "size": 4
+    },
+    {
+     "name": "contact_intervals",
+     "type": "int",
+     "offset": 24,
+     "size": 4
+    },
+    {
+     "name": "experimental",
+     "type": "int",
+     "offset": 28,
+     "size": 4
+    },
+    {
+     "name": "reason",
+     "type": "char[256]",
+     "offset": 32,
+     "size": 256,
+     "count": 256
+    }
+   ]
+  },
+  "SWMM_ChannelGroundContact": {
+   "header": "openswmm_heat.h",
+   "size": 48,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "link",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "layer",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "begin_fraction",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "end_fraction",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "share",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "invert_m",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_ChannelGroundPreview": {
+   "header": "openswmm_heat.h",
+   "size": 304,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "link",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "valid",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "contact_cells",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "contact_intervals",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "length_m",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "covered_length_m",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "uncovered_length_m",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "reason",
+     "type": "char[256]",
+     "offset": 48,
+     "size": 256,
+     "count": 256
+    }
+   ]
+  },
   "SWMM_Infil2DOptions": {
    "header": "openswmm_infil2d.h",
    "size": 8,
@@ -32133,6 +32454,134 @@
     ]
    ],
    "signature": "viiii"
+  },
+  "SWMM_HydrothermalEdit": {
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "void*",
+     "user"
+    ]
+   ],
+   "signature": "iii"
+  },
+  "SWMM_StageOutputCallback": {
+   "ret": "const char*",
+   "params": [
+    [
+     "void*",
+     "user_data"
+    ],
+    [
+     "const char*",
+     "final_path"
+    ],
+    [
+     "int",
+     "kind"
+    ]
+   ],
+   "signature": "iiii"
+  },
+  "SWMM_SplitCallback": {
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "network"
+    ],
+    [
+     "int",
+     "phase"
+    ],
+    [
+     "SWMM_SplitFrame",
+     "request"
+    ],
+    [
+     "SWMM_SplitFrame*",
+     "reply"
+    ],
+    [
+     "void*",
+     "user"
+    ]
+   ],
+   "signature": "iiiiii"
+  },
+  "SWMM_MaterialTransport": {
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "network"
+    ],
+    [
+     "int",
+     "stage"
+    ],
+    [
+     "const char*",
+     "request"
+    ],
+    [
+     "size_t",
+     "length"
+    ],
+    [
+     "const char**",
+     "response"
+    ],
+    [
+     "size_t*",
+     "response_length"
+    ],
+    [
+     "void*",
+     "user"
+    ]
+   ],
+   "signature": "iiiiiiii"
+  },
+  "SWMM_SurfaceOwnerProgress": {
+   "ret": "int",
+   "params": [
+    [
+     "int",
+     "done"
+    ],
+    [
+     "int",
+     "total"
+    ],
+    [
+     "void*",
+     "user"
+    ]
+   ],
+   "signature": "iiii"
+  },
+  "SWMM_TraceProgress": {
+   "ret": "int",
+   "params": [
+    [
+     "double",
+     "fraction"
+    ],
+    [
+     "const char*",
+     "stage"
+    ],
+    [
+     "void*",
+     "user"
+    ]
+   ],
+   "signature": "idii"
   }
  },
  "excludedHeaders": [],

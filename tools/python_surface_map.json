@@ -26,7 +26,15 @@
     "_SpeciesCollection": "SpeciesCollection",
     "_CoefficientCollection": "CoefficientCollection",
     "_TermCollection": "TermCollection",
-    "_InitialQualityRows": "InitialQualityRows"
+    "_InitialQualityRows": "InitialQualityRows",
+    "_HeatCloud": "HeatCloud",
+    "_HeatElementOverrides": "HeatElementOverrides",
+    "_HeatModules": "HeatModules",
+    "_HeatNodeOverrides": "HeatNodeOverrides",
+    "_HeatRadiative": "HeatRadiative",
+    "_HeatSediment": "HeatSediment",
+    "_HeatSolar": "HeatSolar",
+    "_HeatSources": "HeatSources"
   },
   "memberAliases": {
     "ModelBuilder.add_subcatch": "addSubcatchment",
@@ -43,7 +51,6 @@
     "_results.ResultField.to_xarray": "Converts to a pandas/xarray object; those are Python libraries. read() returns the shaped array and the field carries its times, ids and units."
   },
   "pending": {
-    "_heat": "E",
     "_groundwater": "E",
     "_gw_transport": "E",
     "_2d": "E",
@@ -52,7 +59,6 @@
     "_passive_exchange": "F",
     "_trace": "F",
     "_solver.Solver.groundwater2d": "E",
-    "_solver.Solver.heat": "E",
     "_solver.Solver.coupling": "F",
     "_solver.Solver.material_split": "F",
     "_solver.Solver.passive_exchange": "F",

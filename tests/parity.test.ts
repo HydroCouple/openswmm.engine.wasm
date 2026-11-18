@@ -47,6 +47,13 @@ describe("raw layer", () => {
       SWMM_PluginStateCallback: expect.objectContaining({ signature: "viiiii" }),
       SWMM_HotStartMissingCallback: expect.objectContaining({ signature: "viiii" }),
       SWMM_CancelCallback: expect.objectContaining({ signature: "iiiii" }),
+      // Typedefs declared next to the API that takes them.
+      SWMM_HydrothermalEdit: expect.objectContaining({ signature: "iii" }),
+      SWMM_StageOutputCallback: expect.objectContaining({ signature: "iiii" }),
+      SWMM_SplitCallback: expect.objectContaining({ signature: "iiiiii" }),
+      SWMM_MaterialTransport: expect.objectContaining({ signature: "iiiiiiii" }),
+      SWMM_SurfaceOwnerProgress: expect.objectContaining({ signature: "iiii" }),
+      SWMM_TraceProgress: expect.objectContaining({ signature: "idii" }),
     });
     expect(CALLBACK_SIGNATURES.SWMM_WarningCallback).toBe("viiii");
   });
