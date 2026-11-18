@@ -1655,6 +1655,11 @@ static_assert(offsetof(SWMM_ConversionResult, cleared_fields) == 4, "SWMM_Conver
 static_assert(offsetof(SWMM_ConversionResult, n_cleared) == 8, "SWMM_ConversionResult.n_cleared: offset");
 static_assert(offsetof(SWMM_ConversionResult, warnings) == 12, "SWMM_ConversionResult.warnings: offset");
 static_assert(offsetof(SWMM_ConversionResult, n_warnings) == 16, "SWMM_ConversionResult.n_warnings: offset");
+static_assert(sizeof(SWMM_TypeChange) == 32, "SWMM_TypeChange: size");
+static_assert(offsetof(SWMM_TypeChange, source_type) == 0, "SWMM_TypeChange.source_type: offset");
+static_assert(offsetof(SWMM_TypeChange, status) == 4, "SWMM_TypeChange.status: offset");
+static_assert(offsetof(SWMM_TypeChange, dependency_node) == 8, "SWMM_TypeChange.dependency_node: offset");
+static_assert(offsetof(SWMM_TypeChange, details) == 12, "SWMM_TypeChange.details: offset");
 static_assert(sizeof(SWMM_ThreadInfo) == 20, "SWMM_ThreadInfo: size");
 static_assert(offsetof(SWMM_ThreadInfo, logical_cpus) == 0, "SWMM_ThreadInfo.logical_cpus: offset");
 static_assert(offsetof(SWMM_ThreadInfo, omp_max_threads) == 4, "SWMM_ThreadInfo.omp_max_threads: offset");

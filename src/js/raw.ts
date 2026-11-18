@@ -4879,6 +4879,27 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_TypeChange": {
+    "size": 32,
+    "fields": {
+      "source_type": {
+        "offset": 0,
+        "type": "int"
+      },
+      "status": {
+        "offset": 4,
+        "type": "int"
+      },
+      "dependency_node": {
+        "offset": 8,
+        "type": "int"
+      },
+      "details": {
+        "offset": 12,
+        "type": "SWMM_ConversionResult"
+      }
+    }
+  },
   "SWMM_ThreadInfo": {
     "size": 20,
     "fields": {
