@@ -30361,6 +30361,37 @@
     }
    ]
   },
+  "SWMM_TypeChange": {
+   "header": "openswmm_edit.h",
+   "size": 32,
+   "align": 4,
+   "fields": [
+    {
+     "name": "source_type",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "status",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "dependency_node",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "details",
+     "type": "SWMM_ConversionResult",
+     "offset": 12,
+     "size": 20
+    }
+   ]
+  },
   "SWMM_ThreadInfo": {
    "header": "openswmm_engine.h",
    "size": 20,

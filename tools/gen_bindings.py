@@ -64,6 +64,7 @@ STRUCTS_OF_INTEREST = [
     "SWMM_ImpactEntry",
     "SWMM_ImpactReport",
     "SWMM_ConversionResult",
+    "SWMM_TypeChange",
     "SWMM_ThreadInfo",
     "SWMM_InletDesign",
     "SWMM_InletUsage",

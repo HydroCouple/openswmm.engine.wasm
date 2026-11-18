@@ -94,6 +94,10 @@ export {
 } from "./Results.js";
 export type { ResultMesh, ResultReadOptions, ResultSelection, Selector } from "./Results.js";
 export { ELLIPSIS, slice } from "./ndarray.js";
+export { ModelEditor, DeleteRecord, ImpactEntry, ConversionResult, TypeChange } from "./Edit.js";
+export type { ConvertTypesOptions, EditorOwner } from "./Edit.js";
+export { Spatial } from "./Spatial.js";
+export type { XYArray } from "./Spatial.js";
 export type { AxisKey, NDArray, NumericData, Slice } from "./ndarray.js";
 export type {
   RoutingDiagnostics,

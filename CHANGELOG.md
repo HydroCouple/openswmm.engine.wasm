@@ -62,6 +62,15 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Spatial data and the model editor** (wave D, part 2), mirroring Python:
+  `solver.spatial` (`Spatial`: CRS, `[MAP]` dimensions and units, annotation
+  sections, node/link/subcatchment/gage coordinates, link polylines and
+  subcatchment polygons as `[n, 2]` arrays) and `solver.editor` /
+  `new ModelEditor(builder)` (impact analysis and deletes for every object
+  kind, batch and recorded deletes with `DeleteRecord.restore()`, node/link
+  conversion, batch `convertTypes` preview, virtual and inlet junction split
+  and fuse, counts and dates). Checked against native Python running the same
+  edits.
 - **Saved results** (wave D, part 1), mirroring Python: `OutputReader` (binary
   `.out`: metadata, ids, period times, per-period results, series, attribute
   maps, node statistics; `live` reading with `refresh()`), `Output2DReader`

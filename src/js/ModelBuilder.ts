@@ -169,6 +169,16 @@ export class ModelBuilder {
     return this._generation;
   }
 
+  /** @internal The WASM module the builder runs in. */
+  get module(): OpenSwmmWasmModule {
+    return this._mod;
+  }
+
+  /** @internal A structural edit happened (Python `_bump_generation`). */
+  _bumpGeneration(): void {
+    this._generation++;
+  }
+
   /** @internal */
   private _viewGuard(): () => void {
     const generation = this._generation;

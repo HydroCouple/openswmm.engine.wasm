@@ -36,8 +36,6 @@
   },
   "pending": {
     "_capabilities": "E",
-    "_edit": "D",
-    "_spatial": "D",
     "_infrastructure": "D",
     "_lid_nodes": "D",
     "_geopackage": "D",
@@ -56,9 +54,7 @@
     "_split": "F",
     "_passive_exchange": "F",
     "_trace": "F",
-    "_solver.Solver.editor": "D",
     "_solver.Solver.infrastructure": "D",
-    "_solver.Solver.spatial": "D",
     "_solver.Solver.write_geopackage": "D",
     "_solver.Solver.groundwater2d": "E",
     "_solver.Solver.heat": "E",

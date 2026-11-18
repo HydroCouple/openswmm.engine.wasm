@@ -79,6 +79,8 @@ import { Inflows } from "./Inflows.js";
 import { Checkpoints } from "./Checkpoints.js";
 import { SaveSchedule } from "./HotStart.js";
 import { Results } from "./Results.js";
+import { Spatial } from "./Spatial.js";
+import { ModelEditor } from "./Edit.js";
 
 // =============================================================================
 // Solver
@@ -212,6 +214,8 @@ export class Solver {
   /** @internal Paths of the last open (Python `_inp`, `_out`). */
   private _inp = "";
   private _out = "";
+  /** @internal Cached `editor` (Python `_editor`). */
+  private _editor: ModelEditor | undefined;
 
   // -------------------------------------------------------------------------
   // Constructor
@@ -707,6 +711,20 @@ export class Solver {
   /** External, dry-weather and RDII inflows and unit hydrographs (Python `solver.inflows`). */
   get inflows(): Inflows {
     return new Inflows(this);
+  }
+
+  /**
+   * Delete objects with their references, undo recorded deletes, convert
+   * types, split and fuse conduits (Python `solver.editor`).
+   */
+  get editor(): ModelEditor {
+    this._assertAlive();
+    return (this._editor ??= new ModelEditor(this));
+  }
+
+  /** Coordinates, polygons, `[MAP]` and the CRS (Python `solver.spatial`). */
+  get spatial(): Spatial {
+    return new Spatial(this);
   }
 
   /** Engine checkpoint sessions (Python `solver.checkpoints`). */
