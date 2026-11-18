@@ -76,7 +76,18 @@ export type { Buildup, Washoff } from "./Quality.js";
 export { InitialQuality } from "./InitialQuality.js";
 export type { InitialQualityEntry } from "./InitialQuality.js";
 export { MassBalance } from "./MassBalance.js";
-export type { RoutingDiagnostics } from "./Report.js";
+export { getReportSnapshot } from "./Report.js";
+export type {
+  RoutingDiagnostics,
+  RunoffContinuity,
+  RoutingContinuity,
+  QualityContinuity,
+  NodeFloodingEntry,
+  LinkFlowEntry,
+  PumpEntry,
+  SubcatchmentEntry,
+  ReportSnapshot,
+} from "./Report.js";
 export { Climate } from "./Climate.js";
 export type { EvapPreview, EvapPreviewSample } from "./Climate.js";
 export { Statistics } from "./Statistics.js";

@@ -62,6 +62,12 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Report snapshot** (wave C, part 5), mirroring Python `_report.py`:
+  `getReportSnapshot(solver)` returns runoff, routing and quality continuity
+  (errors in percent), routing diagnostics, flooded nodes, storage, link flow,
+  pumping and subcatchment summaries. Its routing continuity error is the
+  engine's exact ledger; the printed report uses legacy half-step totals, so
+  the two can differ.
 - **Hot starts and checkpoints** (wave C, part 4), mirroring Python:
   `HotStart` (save from a solver, open native or legacy files, metadata,
   node/link/subcatchment records with species, state edits, apply;
