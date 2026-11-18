@@ -141,8 +141,15 @@ async function main() {
   mkdirSync(work, { recursive: true });
   writeFileSync(resolve(work, "smoke2d.wasm.rpt"), rpt);
 
-  // ---- The build has no HDF5 writer: OUTPUT_FILE is reported, not fatal ----
-  assert(/OUTPUT_FILE \S+ ignored/.test(rpt), "report lacks the ignored-OUTPUT_FILE warning");
+  // ---- OUTPUT_FILE: written by an HDF5 build (tests/smoke/hdf5.mjs reads it), ----
+  // ---- otherwise reported and ignored, not fatal --------------------------------
+  const hasHdf5 = mod._swmm_output2d_available() === 1;
+  assert(
+    hasHdf5 !== /OUTPUT_FILE \S+ ignored/.test(rpt),
+    hasHdf5
+      ? "the HDF5 build reports OUTPUT_FILE as ignored"
+      : "report lacks the ignored-OUTPUT_FILE warning",
+  );
 
   // ---- Compare the 2D volume balance with the native reference ---------------
   const ref = readFileSync(resolve(root, "tests", "fixtures", "smoke2d.native.rpt"), "utf8");
