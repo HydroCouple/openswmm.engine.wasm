@@ -77,6 +77,10 @@ export { InitialQuality } from "./InitialQuality.js";
 export type { InitialQualityEntry } from "./InitialQuality.js";
 export { MassBalance } from "./MassBalance.js";
 export type { RoutingDiagnostics } from "./Report.js";
+export { Climate } from "./Climate.js";
+export type { EvapPreview, EvapPreviewSample } from "./Climate.js";
+export { Statistics } from "./Statistics.js";
+export type { ReportTable, SummaryColumn, SummaryRow } from "./Statistics.js";
 export type { SnowSurface, SnowRemoval } from "./NamedObjects.js";
 
 export { Gages, Gage } from "./Gages.js";

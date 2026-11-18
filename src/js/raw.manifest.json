@@ -30050,6 +30050,187 @@
     }
    ]
   },
+  "SWMM_EvapPreviewSample": {
+   "header": "openswmm_climate.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "date",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "source_rate",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "adjustment",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "effective_rate",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "status",
+     "type": "int",
+     "offset": 32,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_EvapPreviewSummary": {
+   "header": "openswmm_climate.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "source_type",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "available_count",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "held_count",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "missing_count",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "estimated_count",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "runtime_forcing_unknown",
+     "type": "int",
+     "offset": 20,
+     "size": 4
+    },
+    {
+     "name": "minimum_rate",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "maximum_rate",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_EvapPreviewConfig": {
+   "header": "openswmm_climate.h",
+   "size": 440,
+   "align": 8,
+   "fields": [
+    {
+     "name": "evap_type",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "evap_monthly",
+     "type": "double[12]",
+     "offset": 8,
+     "size": 96,
+     "count": 12
+    },
+    {
+     "name": "pan_coeff",
+     "type": "double[12]",
+     "offset": 104,
+     "size": 96,
+     "count": 12
+    },
+    {
+     "name": "adjust_evaporation",
+     "type": "double[12]",
+     "offset": 200,
+     "size": 96,
+     "count": 12
+    },
+    {
+     "name": "evap_timeseries",
+     "type": "const char*",
+     "offset": 296,
+     "size": 4
+    },
+    {
+     "name": "temp_source",
+     "type": "int",
+     "offset": 300,
+     "size": 4
+    },
+    {
+     "name": "temp_timeseries",
+     "type": "const char*",
+     "offset": 304,
+     "size": 4
+    },
+    {
+     "name": "climate_file_path",
+     "type": "const char*",
+     "offset": 308,
+     "size": 4
+    },
+    {
+     "name": "climate_file_start",
+     "type": "double",
+     "offset": 312,
+     "size": 8
+    },
+    {
+     "name": "climate_file_temp_units",
+     "type": "int",
+     "offset": 320,
+     "size": 4
+    },
+    {
+     "name": "latitude",
+     "type": "double",
+     "offset": 328,
+     "size": 8
+    },
+    {
+     "name": "longitude_correction_minutes",
+     "type": "double",
+     "offset": 336,
+     "size": 8
+    },
+    {
+     "name": "adjust_temperature",
+     "type": "double[12]",
+     "offset": 344,
+     "size": 96,
+     "count": 12
+    }
+   ]
+  },
   "SWMM_ImpactEntry": {
    "header": "openswmm_edit.h",
    "size": 16,
