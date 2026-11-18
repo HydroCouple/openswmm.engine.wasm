@@ -30293,6 +30293,336 @@
     }
    ]
   },
+  "SWMM_CouplingSource": {
+   "header": "openswmm_coupling.h",
+   "size": 56,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "id",
+     "type": "const char*",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "domain",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "flow_m3_s",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "heat_w",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "until_seconds",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "species_count",
+     "type": "int",
+     "offset": 40,
+     "size": 4
+    },
+    {
+     "name": "concentrations",
+     "type": "const double*",
+     "offset": 44,
+     "size": 4
+    },
+    {
+     "name": "rates",
+     "type": "const double*",
+     "offset": 48,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_CouplingReceipt": {
+   "header": "openswmm_coupling.h",
+   "size": 64,
+   "align": 8,
+   "fields": [
+    {
+     "name": "requested_m3",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "applied_m3",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "rejected_m3",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "requested_heat_j",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "applied_heat_j",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "rejected_heat_j",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "last_applied_m3_s",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "last_interval_seconds",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_CouplingBoundary": {
+   "header": "openswmm_coupling.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "domain",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "edge",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "kind",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "value",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "species_count",
+     "type": "int",
+     "offset": 32,
+     "size": 4
+    },
+    {
+     "name": "concentrations",
+     "type": "const double*",
+     "offset": 36,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_CouplingForcing": {
+   "header": "openswmm_coupling.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "channel",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "mode",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "rate_m_s",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "until_seconds",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "species_count",
+     "type": "int",
+     "offset": 32,
+     "size": 4
+    },
+    {
+     "name": "concentrations",
+     "type": "const double*",
+     "offset": 36,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_CouplingClear": {
+   "header": "openswmm_coupling.h",
+   "size": 12,
+   "align": 4,
+   "fields": [
+    {
+     "name": "domain",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "id",
+     "type": "const char*",
+     "offset": 8,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_CouplingFrame": {
+   "header": "openswmm_coupling.h",
+   "size": 44,
+   "align": 4,
+   "fields": [
+    {
+     "name": "struct_size",
+     "type": "unsigned",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "version",
+     "type": "unsigned",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "provider",
+     "type": "const char*",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "source_count",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "sources",
+     "type": "const SWMM_CouplingSource*",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "boundary_count",
+     "type": "int",
+     "offset": 20,
+     "size": 4
+    },
+    {
+     "name": "boundaries",
+     "type": "const SWMM_CouplingBoundary*",
+     "offset": 24,
+     "size": 4
+    },
+    {
+     "name": "forcing_count",
+     "type": "int",
+     "offset": 28,
+     "size": 4
+    },
+    {
+     "name": "forcings",
+     "type": "const SWMM_CouplingForcing*",
+     "offset": 32,
+     "size": 4
+    },
+    {
+     "name": "clear_count",
+     "type": "int",
+     "offset": 36,
+     "size": 4
+    },
+    {
+     "name": "clears",
+     "type": "const SWMM_CouplingClear*",
+     "offset": 40,
+     "size": 4
+    }
+   ]
+  },
   "SWMM_ImpactEntry": {
    "header": "openswmm_edit.h",
    "size": 16,
@@ -32001,6 +32331,458 @@
     }
    ]
   },
+  "SWMM_PassiveAmountV1": {
+   "header": "openswmm_passive_exchange.h",
+   "size": 520,
+   "align": 8,
+   "fields": [
+    {
+     "name": "count",
+     "type": "uint64_t",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "components",
+     "type": "double[64]",
+     "offset": 8,
+     "size": 512,
+     "count": 64
+    }
+   ]
+  },
+  "SWMM_PassiveStatusV1": {
+   "header": "openswmm_passive_exchange.h",
+   "size": 72,
+   "align": 8,
+   "fields": [
+    {
+     "name": "receipt_count",
+     "type": "uint64_t",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "leg_count",
+     "type": "uint64_t",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "unsealed_leg_count",
+     "type": "uint64_t",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "pollutant",
+     "type": "int",
+     "offset": 24,
+     "size": 4
+    },
+    {
+     "name": "units",
+     "type": "int",
+     "offset": 28,
+     "size": 4
+    },
+    {
+     "name": "failed",
+     "type": "int",
+     "offset": 32,
+     "size": 4
+    },
+    {
+     "name": "window_open",
+     "type": "int",
+     "offset": 36,
+     "size": 4
+    },
+    {
+     "name": "delivery_frozen",
+     "type": "int",
+     "offset": 40,
+     "size": 4
+    },
+    {
+     "name": "history_preflight",
+     "type": "int",
+     "offset": 44,
+     "size": 4
+    },
+    {
+     "name": "checkpoint_attached",
+     "type": "int",
+     "offset": 48,
+     "size": 4
+    },
+    {
+     "name": "history_refused",
+     "type": "int",
+     "offset": 52,
+     "size": 4
+    },
+    {
+     "name": "elapsed_ms",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "delivery_seconds",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_PassivePoolV1": {
+   "header": "openswmm_passive_exchange.h",
+   "size": 1608,
+   "align": 8,
+   "fields": [
+    {
+     "name": "node",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "units",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "settled_volume_ft3",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "settled_depth_ft",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "settled_concentration",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "settled_physical_amount",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "hydraulic_volume_ft3",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "roundoff",
+     "type": "SWMM_PassiveAmountV1",
+     "offset": 48,
+     "size": 520
+    },
+    {
+     "name": "pending_drain",
+     "type": "SWMM_PassiveAmountV1",
+     "offset": 568,
+     "size": 520
+    },
+    {
+     "name": "pending_spill",
+     "type": "SWMM_PassiveAmountV1",
+     "offset": 1088,
+     "size": 520
+    }
+   ]
+  },
+  "SWMM_PassiveReceiptV1": {
+   "header": "openswmm_passive_exchange.h",
+   "size": 88,
+   "align": 8,
+   "fields": [
+    {
+     "name": "id",
+     "type": "uint64_t",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "row_count",
+     "type": "uint64_t",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "first_leg",
+     "type": "uint64_t",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "leg_count",
+     "type": "uint64_t",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "generation",
+     "type": "uint64_t",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "phase",
+     "type": "int",
+     "offset": 40,
+     "size": 4
+    },
+    {
+     "name": "capture_ms",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "start_ms",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "end_ms",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "eligible_ms",
+     "type": "double",
+     "offset": 72,
+     "size": 8
+    },
+    {
+     "name": "publication_delivery_seconds",
+     "type": "double",
+     "offset": 80,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_PassiveRowV1": {
+   "header": "openswmm_passive_exchange.h",
+   "size": 2096,
+   "align": 8,
+   "fields": [
+    {
+     "name": "point",
+     "type": "uint64_t",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "node",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "units",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "drain_water",
+     "type": "SWMM_PassiveAmountV1",
+     "offset": 16,
+     "size": 520
+    },
+    {
+     "name": "spill_water",
+     "type": "SWMM_PassiveAmountV1",
+     "offset": 536,
+     "size": 520
+    },
+    {
+     "name": "drain_amount",
+     "type": "SWMM_PassiveAmountV1",
+     "offset": 1056,
+     "size": 520
+    },
+    {
+     "name": "spill_amount",
+     "type": "SWMM_PassiveAmountV1",
+     "offset": 1576,
+     "size": 520
+    }
+   ]
+  },
+  "SWMM_PassiveLegV1": {
+   "header": "openswmm_passive_exchange.h",
+   "size": 152,
+   "align": 8,
+   "fields": [
+    {
+     "name": "point",
+     "type": "uint64_t",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "cell",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "node",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "drain",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "applied",
+     "type": "int",
+     "offset": 20,
+     "size": 4
+    },
+    {
+     "name": "sealed",
+     "type": "int",
+     "offset": 24,
+     "size": 4
+    },
+    {
+     "name": "phase",
+     "type": "int",
+     "offset": 28,
+     "size": 4
+    },
+    {
+     "name": "water_m3",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "source_amount",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "water_ft3",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "native_amount",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "source_before",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "source_after",
+     "type": "double",
+     "offset": 72,
+     "size": 8
+    },
+    {
+     "name": "sampled_concentration",
+     "type": "double",
+     "offset": 80,
+     "size": 8
+    },
+    {
+     "name": "volume_before_m3",
+     "type": "double",
+     "offset": 88,
+     "size": 8
+    },
+    {
+     "name": "volume_after_m3",
+     "type": "double",
+     "offset": 96,
+     "size": 8
+    },
+    {
+     "name": "start_ms",
+     "type": "double",
+     "offset": 104,
+     "size": 8
+    },
+    {
+     "name": "end_ms",
+     "type": "double",
+     "offset": 112,
+     "size": 8
+    },
+    {
+     "name": "offset_seconds",
+     "type": "double",
+     "offset": 120,
+     "size": 8
+    },
+    {
+     "name": "duration_seconds",
+     "type": "double",
+     "offset": 128,
+     "size": 8
+    },
+    {
+     "name": "remaining_water_ft3",
+     "type": "double",
+     "offset": 136,
+     "size": 8
+    },
+    {
+     "name": "remaining_native_amount",
+     "type": "double",
+     "offset": 144,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_PassiveLegV2": {
+   "header": "openswmm_passive_exchange.h",
+   "size": 160,
+   "align": 8,
+   "fields": [
+    {
+     "name": "leg",
+     "type": "SWMM_PassiveLegV1",
+     "offset": 0,
+     "size": 152
+    },
+    {
+     "name": "stage",
+     "type": "int",
+     "offset": 152,
+     "size": 4
+    }
+   ]
+  },
   "SWMM_ComponentLibraryInfo": {
    "header": "openswmm_process_components.h",
    "size": 2896,
@@ -32726,6 +33508,447 @@
      "type": "double",
      "offset": 40,
      "size": 8
+    }
+   ]
+  },
+  "SWMM_TraceNodeInput": {
+   "header": "openswmm_trace.h",
+   "size": 12,
+   "align": 4,
+   "fields": [
+    {
+     "name": "id",
+     "type": "const char*",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "type",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "flags",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_TraceLinkInput": {
+   "header": "openswmm_trace.h",
+   "size": 24,
+   "align": 8,
+   "fields": [
+    {
+     "name": "id",
+     "type": "const char*",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "from_node",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "to_node",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "type",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "length_m",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_TraceOptions": {
+   "header": "openswmm_trace.h",
+   "size": 40,
+   "align": 8,
+   "fields": [
+    {
+     "name": "flow_epsilon_m3s",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "velocity_epsilon_mps",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "reversal_dominance",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "solver_tolerance",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "max_iterations",
+     "type": "int",
+     "offset": 32,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_TraceNodeAverage": {
+   "header": "openswmm_trace.h",
+   "size": 80,
+   "align": 8,
+   "fields": [
+    {
+     "name": "volume_m3",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "inflow_m3s",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "lateral_in_m3s",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "withdrawal_m3s",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "overflow_m3s",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "outgoing_m3s",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "residence_s",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "first_volume_m3",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "last_volume_m3",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "flags",
+     "type": "int",
+     "offset": 72,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_TraceLinkAverage": {
+   "header": "openswmm_trace.h",
+   "size": 72,
+   "align": 8,
+   "fields": [
+    {
+     "name": "net_flow_m3s",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "absolute_flow_m3s",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "absolute_velocity_mps",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "forward_volume_m3",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "reverse_volume_m3",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "travel_s",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "first_volume_m3",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "last_volume_m3",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "direction",
+     "type": "int",
+     "offset": 64,
+     "size": 4
+    },
+    {
+     "name": "flags",
+     "type": "int",
+     "offset": 68,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_TraceInfo": {
+   "header": "openswmm_trace.h",
+   "size": 56,
+   "align": 8,
+   "fields": [
+    {
+     "name": "schema_version",
+     "type": "int",
+     "offset": 0,
+     "size": 4
+    },
+    {
+     "name": "algorithm_version",
+     "type": "int",
+     "offset": 4,
+     "size": 4
+    },
+    {
+     "name": "node_count",
+     "type": "int",
+     "offset": 8,
+     "size": 4
+    },
+    {
+     "name": "link_count",
+     "type": "int",
+     "offset": 12,
+     "size": 4
+    },
+    {
+     "name": "periods",
+     "type": "int",
+     "offset": 16,
+     "size": 4
+    },
+    {
+     "name": "source_flow_units",
+     "type": "int",
+     "offset": 20,
+     "size": 4
+    },
+    {
+     "name": "cache_loaded",
+     "type": "int",
+     "offset": 24,
+     "size": 4
+    },
+    {
+     "name": "first_report_date",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "last_report_date",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "duration_s",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_TraceValue": {
+   "header": "openswmm_trace.h",
+   "size": 56,
+   "align": 8,
+   "fields": [
+    {
+     "name": "ratio",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "time_s",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "time_coverage",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "from_time_s",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "to_time_s",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "terminal_fraction",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "terminal_kind",
+     "type": "int",
+     "offset": 48,
+     "size": 4
+    },
+    {
+     "name": "flags",
+     "type": "int",
+     "offset": 52,
+     "size": 4
+    }
+   ]
+  },
+  "SWMM_TraceSummary": {
+   "header": "openswmm_trace.h",
+   "size": 136,
+   "align": 8,
+   "fields": [
+    {
+     "name": "terminal",
+     "type": "double[6]",
+     "offset": 0,
+     "size": 48,
+     "count": 6
+    },
+    {
+     "name": "accounting_error",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "solver_residual",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "boundary_in_m3",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "boundary_out_m3",
+     "type": "double",
+     "offset": 72,
+     "size": 8
+    },
+    {
+     "name": "lateral_in_m3",
+     "type": "double",
+     "offset": 80,
+     "size": 8
+    },
+    {
+     "name": "withdrawal_m3",
+     "type": "double",
+     "offset": 88,
+     "size": 8
+    },
+    {
+     "name": "known_loss_m3",
+     "type": "double",
+     "offset": 96,
+     "size": 8
+    },
+    {
+     "name": "storage_change_m3",
+     "type": "double",
+     "offset": 104,
+     "size": 8
+    },
+    {
+     "name": "partial_balance_residual_m3",
+     "type": "double",
+     "offset": 112,
+     "size": 8
+    },
+    {
+     "name": "cyclic",
+     "type": "int",
+     "offset": 120,
+     "size": 4
+    },
+    {
+     "name": "reached_nodes",
+     "type": "int",
+     "offset": 124,
+     "size": 4
+    },
+    {
+     "name": "reached_links",
+     "type": "int",
+     "offset": 128,
+     "size": 4
     }
    ]
   }
