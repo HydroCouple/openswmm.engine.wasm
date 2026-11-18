@@ -34,7 +34,7 @@
 // ---------------------------------------------------------------------------
 // Solver (main lifecycle controller)
 // ---------------------------------------------------------------------------
-export { Solver } from "./Solver.js";
+export { Solver, abiTag, run, runWithCallback } from "./Solver.js";
 
 // ---------------------------------------------------------------------------
 // Model builder (programmatic model construction)
@@ -105,6 +105,8 @@ export { PointTable, TimeSeries, Curve, Tables, Pattern, Patterns } from "./Tabl
 export type { TablePoint, PointRows } from "./Tables.js";
 export { XSectionGeometry, shapeName } from "./XSectionGeometry.js";
 export type { XSectUnits } from "./XSectionGeometry.js";
+export { SimulationOptions, OptionsExtView, UserFlags, EventsView } from "./SolverViews.js";
+export type { SimulationEvent, UserFlagValue } from "./SolverViews.js";
 
 // ---------------------------------------------------------------------------
 // Raw layer (generated) — for advanced users; also published as "./raw"

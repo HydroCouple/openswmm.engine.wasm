@@ -245,8 +245,8 @@ The main lifecycle controller.
 | `destroy()` | Free the engine context. |
 | `run(inp, rpt, out, save?, plugin?)` | One-shot complete simulation. |
 | `state` | `EngineState` — current lifecycle state. |
-| `startDatetime` | `Date` — simulation start. |
-| `endDatetime` | `Date` — simulation end. |
+| `startDatetime`, `endDatetime`, `reportStartDatetime` | `Date` — configured `[OPTIONS]` dates (settable). |
+| `simStartTime`, `simEndTime` | `Date` — the resolved start and end the engine runs. |
 | `currentDatetime` | `Date` — current simulation time. |
 | `routingStep` | Routing time step in seconds. |
 | `flowUnits` | `FlowUnits` — unit system in use. |
@@ -260,6 +260,17 @@ The main lifecycle controller.
 | `forcing` | `Forcing` — runtime forcing. |
 | `transport` | `Transport` — ARD transport authoring. |
 | `surface2d` | `Surface2D` — 2D surface routing (see below). |
+| `options`, `userflags`, `events` | `[OPTIONS]`/`[OPTIONS_EXT]` by key, user flags, `[EVENTS]` periods. |
+| `tables`, `patterns` | Time series, curves and patterns. |
+| `openMetadata(inp)`, `openSimulationPeriod(inp)` | Partial opens for inspection and editing. |
+| `advanceTo(s)`, `until(Date \| s)`, `steps()`, `elapsed` | Step to a time; iterate steps; elapsed seconds. |
+| `write`, `writeWithPlugin`, `writeCompat`, `writeStaged` | Save the model (native, plugin, EPA SWMM 5, staged). |
+| `setProgressCallback`, `setWarningCallback`, `setStepBeginCallback`, `setStepEndCallback`, `setPhaseCallback` | JavaScript callbacks; an error a callback throws is rethrown when the engine call returns. |
+| `openErrors`, `openWarnings`, `crs`, `unitSystem`, `eventCount`, `isBetweenEvents`, `steadyStateSkip`, `generation` | Diagnostics and model facts. |
+| `openRunoffInterfaceWrite/Read`, `saveRunoffStep`, `readRunoffStep`, `closeRunoffInterface` | Runoff interface files. |
+
+Module functions: `run(mod, inp, rpt?, out?)`, `runWithCallback(mod, inp, rpt, out, cb)` and
+`abiTag(mod)` mirror Python's `run`, `run_with_callback` and `abi_tag`.
 
 ### Nodes / Node
 
