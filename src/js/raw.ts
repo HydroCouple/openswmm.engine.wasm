@@ -4,7 +4,8 @@
  *
  * Typed access to every exported OpenSWMM Engine C function. Pointers and
  * handles are heap offsets (numbers); `const char*` inputs are JS strings
- * (copied to a temporary C string per call; `null` passes NULL).
+ * (copied to a temporary C string per call; `null` passes NULL); 64-bit
+ * integers passed by value are `bigint`.
  * Functions from the 2D headers throw when the module was built with
  * -DOPENSWMM_WASM_2D=OFF.
  */
@@ -2171,7 +2172,7 @@ export interface RawApi {
   /** `openswmm_output2d.h` */
   swmm_output2d_read_int64(output: number, dataset: string | null, start: number, count: number, stride: number, values: number, capacity: number): number;
   /** `openswmm_passive_exchange.h` */
-  swmm_passive_exchange_enable(a0: number, capacity: number, preflight: number): number;
+  swmm_passive_exchange_enable(a0: number, capacity: bigint, preflight: number): number;
   /** `openswmm_passive_exchange.h` */
   swmm_passive_exchange_enable_checkpoint(a0: number): number;
   /** `openswmm_passive_exchange.h` */
@@ -2179,15 +2180,15 @@ export interface RawApi {
   /** `openswmm_passive_exchange.h` */
   swmm_passive_exchange_pool_v1(a0: number, node: number, a2: number, a3: number): number;
   /** `openswmm_passive_exchange.h` */
-  swmm_passive_exchange_receipt_v1(a0: number, receipt: number, a2: number, a3: number): number;
+  swmm_passive_exchange_receipt_v1(a0: number, receipt: bigint, a2: number, a3: number): number;
   /** `openswmm_passive_exchange.h` */
-  swmm_passive_exchange_row_v1(a0: number, receipt: number, remaining: number, row: number, a4: number, a5: number): number;
+  swmm_passive_exchange_row_v1(a0: number, receipt: bigint, remaining: number, row: bigint, a4: number, a5: number): number;
   /** `openswmm_passive_exchange.h` */
-  swmm_passive_exchange_leg_v1(a0: number, leg: number, a2: number, a3: number): number;
+  swmm_passive_exchange_leg_v1(a0: number, leg: bigint, a2: number, a3: number): number;
   /** `openswmm_passive_exchange.h` */
   swmm_passive_exchange_attempt_v1(a0: number, a1: number, a2: number): number;
   /** `openswmm_passive_exchange.h` */
-  swmm_passive_exchange_leg_v2(a0: number, leg: number, a2: number, a3: number): number;
+  swmm_passive_exchange_leg_v2(a0: number, leg: bigint, a2: number, a3: number): number;
   /** `openswmm_passive_exchange.h` */
   swmm_passive_exchange_attempt_v2(a0: number, a1: number, a2: number): number;
   /** `openswmm_passive_exchange.h` */
@@ -2513,7 +2514,7 @@ export interface RawApi {
   /** `openswmm_split_material.h` */
   swmm_split_material_set_transport(a0: number, a1: number, a2: number): number;
   /** `openswmm_split_material.h` */
-  swmm_split_material_bind(network: number, surface: number, capacity: number): number;
+  swmm_split_material_bind(network: number, surface: number, capacity: bigint): number;
   /** `openswmm_split_material.h` */
   swmm_split_material_checkpoint_capabilities(a0: number, flags: number): number;
   /** `openswmm_split_material.h` */
@@ -3073,16 +3074,63 @@ export interface RawApi {
 }
 
 /** Bind every C function on `mod`. Direct `_name` binding when no strings are involved. */
+/** Module helpers for string arguments copied to the heap. */
+interface HeapStrings {
+  _malloc(bytes: number): number;
+  _free(ptr: number): void;
+  lengthBytesUTF8(text: string): number;
+  stringToUTF8(text: string, ptr: number, bytes: number): void;
+  UTF8ToString(ptr: number): string;
+}
+
+/**
+ * cwrap copies string arguments onto the module's 1 MB stack, and a larger
+ * one overruns it and corrupts memory. Strings longer than this many
+ * characters (at most three UTF-8 bytes each) are copied to the heap.
+ */
+const HEAP_STRING_CHARS = 16384;
+
 export function bindRaw(mod: RawModule): RawApi {
   const api: Record<string, unknown> = {};
+  const missing = (name: string) => () => {
+    throw new Error(`openswmm wasm: export _${name} is not available in this module`);
+  };
+  /** Call an export with its string arguments in heap copies (freed afterwards). */
+  const heapCall = (name: string, ret: string | null, args: string[], values: unknown[]) => {
+    const m = mod as unknown as HeapStrings;
+    const fn = mod[`_${name}`];
+    if (typeof fn !== "function") return missing(name)();
+    const owned: number[] = [];
+    try {
+      const native = values.map((v, i) => {
+        if (args[i] !== "string") return v;
+        if (v === null || v === undefined) return 0;
+        const text = String(v);
+        const bytes = m.lengthBytesUTF8(text) + 1;
+        const ptr = m._malloc(bytes);
+        if (!ptr) throw new Error(`openswmm wasm: cannot allocate ${bytes} bytes for ${name}`);
+        owned.push(ptr);
+        m.stringToUTF8(text, ptr, bytes);
+        return ptr;
+      });
+      const result = (fn as (...a: unknown[]) => unknown)(...native);
+      return ret === "string" ? m.UTF8ToString(result as number) : result;
+    } finally {
+      for (const ptr of owned) m._free(ptr);
+    }
+  };
   const bind = (name: string, ret: string | null, args: string[]): void => {
     if (ret !== "string" && !args.includes("string")) {
       const fn = mod[`_${name}`];
-      api[name] = typeof fn === "function" ? fn : () => {
-        throw new Error(`openswmm wasm: export _${name} is not available in this module`);
-      };
+      api[name] = typeof fn === "function" ? fn : missing(name);
     } else {
-      api[name] = mod.cwrap(name, ret, args);
+      const wrapped = mod.cwrap(name, ret, args);
+      api[name] = (...values: unknown[]) =>
+        values.some(
+          (v, i) => args[i] === "string" && typeof v === "string" && v.length > HEAP_STRING_CHARS,
+        )
+          ? heapCall(name, ret, args, values)
+          : wrapped(...values);
     }
   };
   bind("swmm_2d_is_active", "number", ["number", "number"]);
@@ -4162,15 +4210,15 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_output2d_strings", "number", ["number", "string", "number", "number", "number"]);
   bind("swmm_output2d_read_double", "number", ["number", "string", "number", "number", "number", "number", "number"]);
   bind("swmm_output2d_read_int64", "number", ["number", "string", "number", "number", "number", "number", "number"]);
-  bind("swmm_passive_exchange_enable", "number", ["number", "number", "number"]);
+  bind("swmm_passive_exchange_enable", "number", ["number", "bigint", "number"]);
   bind("swmm_passive_exchange_enable_checkpoint", "number", ["number"]);
   bind("swmm_passive_exchange_status_v1", "number", ["number", "number", "number"]);
   bind("swmm_passive_exchange_pool_v1", "number", ["number", "number", "number", "number"]);
-  bind("swmm_passive_exchange_receipt_v1", "number", ["number", "number", "number", "number"]);
-  bind("swmm_passive_exchange_row_v1", "number", ["number", "number", "number", "number", "number", "number"]);
-  bind("swmm_passive_exchange_leg_v1", "number", ["number", "number", "number", "number"]);
+  bind("swmm_passive_exchange_receipt_v1", "number", ["number", "bigint", "number", "number"]);
+  bind("swmm_passive_exchange_row_v1", "number", ["number", "bigint", "number", "bigint", "number", "number"]);
+  bind("swmm_passive_exchange_leg_v1", "number", ["number", "bigint", "number", "number"]);
   bind("swmm_passive_exchange_attempt_v1", "number", ["number", "number", "number"]);
-  bind("swmm_passive_exchange_leg_v2", "number", ["number", "number", "number", "number"]);
+  bind("swmm_passive_exchange_leg_v2", "number", ["number", "bigint", "number", "number"]);
   bind("swmm_passive_exchange_attempt_v2", "number", ["number", "number", "number"]);
   bind("swmm_passive_exchange_last_error", "string", []);
   bind("swmm_pollutant_count", "number", ["number"]);
@@ -4333,7 +4381,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_split_material_validate_input", "number", ["number"]);
   bind("swmm_split_material_configure", "number", ["number", "number"]);
   bind("swmm_split_material_set_transport", "number", ["number", "number", "number"]);
-  bind("swmm_split_material_bind", "number", ["number", "number", "number"]);
+  bind("swmm_split_material_bind", "number", ["number", "number", "bigint"]);
   bind("swmm_split_material_checkpoint_capabilities", "number", ["number", "number"]);
   bind("swmm_split_material_checkpoint_prepare_outputs", "number", ["number"]);
   bind("swmm_split_material_checkpoint_enable", "number", ["number", "number"]);
@@ -4830,6 +4878,228 @@ export const STRUCTS = {
         "offset": 344,
         "type": "double[12]",
         "count": 12
+      }
+    }
+  },
+  "SWMM_CouplingSource": {
+    "size": 56,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned"
+      },
+      "id": {
+        "offset": 4,
+        "type": "const char*"
+      },
+      "domain": {
+        "offset": 8,
+        "type": "int"
+      },
+      "cell": {
+        "offset": 12,
+        "type": "int"
+      },
+      "flow_m3_s": {
+        "offset": 16,
+        "type": "double"
+      },
+      "heat_w": {
+        "offset": 24,
+        "type": "double"
+      },
+      "until_seconds": {
+        "offset": 32,
+        "type": "double"
+      },
+      "species_count": {
+        "offset": 40,
+        "type": "int"
+      },
+      "concentrations": {
+        "offset": 44,
+        "type": "const double*"
+      },
+      "rates": {
+        "offset": 48,
+        "type": "const double*"
+      }
+    }
+  },
+  "SWMM_CouplingReceipt": {
+    "size": 64,
+    "fields": {
+      "requested_m3": {
+        "offset": 0,
+        "type": "double"
+      },
+      "applied_m3": {
+        "offset": 8,
+        "type": "double"
+      },
+      "rejected_m3": {
+        "offset": 16,
+        "type": "double"
+      },
+      "requested_heat_j": {
+        "offset": 24,
+        "type": "double"
+      },
+      "applied_heat_j": {
+        "offset": 32,
+        "type": "double"
+      },
+      "rejected_heat_j": {
+        "offset": 40,
+        "type": "double"
+      },
+      "last_applied_m3_s": {
+        "offset": 48,
+        "type": "double"
+      },
+      "last_interval_seconds": {
+        "offset": 56,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_CouplingBoundary": {
+    "size": 40,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned"
+      },
+      "domain": {
+        "offset": 4,
+        "type": "int"
+      },
+      "cell": {
+        "offset": 8,
+        "type": "int"
+      },
+      "edge": {
+        "offset": 12,
+        "type": "int"
+      },
+      "kind": {
+        "offset": 16,
+        "type": "int"
+      },
+      "value": {
+        "offset": 24,
+        "type": "double"
+      },
+      "species_count": {
+        "offset": 32,
+        "type": "int"
+      },
+      "concentrations": {
+        "offset": 36,
+        "type": "const double*"
+      }
+    }
+  },
+  "SWMM_CouplingForcing": {
+    "size": 40,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned"
+      },
+      "channel": {
+        "offset": 4,
+        "type": "int"
+      },
+      "cell": {
+        "offset": 8,
+        "type": "int"
+      },
+      "mode": {
+        "offset": 12,
+        "type": "int"
+      },
+      "rate_m_s": {
+        "offset": 16,
+        "type": "double"
+      },
+      "until_seconds": {
+        "offset": 24,
+        "type": "double"
+      },
+      "species_count": {
+        "offset": 32,
+        "type": "int"
+      },
+      "concentrations": {
+        "offset": 36,
+        "type": "const double*"
+      }
+    }
+  },
+  "SWMM_CouplingClear": {
+    "size": 12,
+    "fields": {
+      "domain": {
+        "offset": 0,
+        "type": "int"
+      },
+      "cell": {
+        "offset": 4,
+        "type": "int"
+      },
+      "id": {
+        "offset": 8,
+        "type": "const char*"
+      }
+    }
+  },
+  "SWMM_CouplingFrame": {
+    "size": 44,
+    "fields": {
+      "struct_size": {
+        "offset": 0,
+        "type": "unsigned"
+      },
+      "version": {
+        "offset": 4,
+        "type": "unsigned"
+      },
+      "provider": {
+        "offset": 8,
+        "type": "const char*"
+      },
+      "source_count": {
+        "offset": 12,
+        "type": "int"
+      },
+      "sources": {
+        "offset": 16,
+        "type": "const SWMM_CouplingSource*"
+      },
+      "boundary_count": {
+        "offset": 20,
+        "type": "int"
+      },
+      "boundaries": {
+        "offset": 24,
+        "type": "const SWMM_CouplingBoundary*"
+      },
+      "forcing_count": {
+        "offset": 28,
+        "type": "int"
+      },
+      "forcings": {
+        "offset": 32,
+        "type": "const SWMM_CouplingForcing*"
+      },
+      "clear_count": {
+        "offset": 36,
+        "type": "int"
+      },
+      "clears": {
+        "offset": 40,
+        "type": "const SWMM_CouplingClear*"
       }
     }
   },
@@ -5991,6 +6261,310 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_PassiveAmountV1": {
+    "size": 520,
+    "fields": {
+      "count": {
+        "offset": 0,
+        "type": "uint64_t"
+      },
+      "components": {
+        "offset": 8,
+        "type": "double[64]",
+        "count": 64
+      }
+    }
+  },
+  "SWMM_PassiveStatusV1": {
+    "size": 72,
+    "fields": {
+      "receipt_count": {
+        "offset": 0,
+        "type": "uint64_t"
+      },
+      "leg_count": {
+        "offset": 8,
+        "type": "uint64_t"
+      },
+      "unsealed_leg_count": {
+        "offset": 16,
+        "type": "uint64_t"
+      },
+      "pollutant": {
+        "offset": 24,
+        "type": "int"
+      },
+      "units": {
+        "offset": 28,
+        "type": "int"
+      },
+      "failed": {
+        "offset": 32,
+        "type": "int"
+      },
+      "window_open": {
+        "offset": 36,
+        "type": "int"
+      },
+      "delivery_frozen": {
+        "offset": 40,
+        "type": "int"
+      },
+      "history_preflight": {
+        "offset": 44,
+        "type": "int"
+      },
+      "checkpoint_attached": {
+        "offset": 48,
+        "type": "int"
+      },
+      "history_refused": {
+        "offset": 52,
+        "type": "int"
+      },
+      "elapsed_ms": {
+        "offset": 56,
+        "type": "double"
+      },
+      "delivery_seconds": {
+        "offset": 64,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_PassivePoolV1": {
+    "size": 1608,
+    "fields": {
+      "node": {
+        "offset": 0,
+        "type": "int"
+      },
+      "units": {
+        "offset": 4,
+        "type": "int"
+      },
+      "settled_volume_ft3": {
+        "offset": 8,
+        "type": "double"
+      },
+      "settled_depth_ft": {
+        "offset": 16,
+        "type": "double"
+      },
+      "settled_concentration": {
+        "offset": 24,
+        "type": "double"
+      },
+      "settled_physical_amount": {
+        "offset": 32,
+        "type": "double"
+      },
+      "hydraulic_volume_ft3": {
+        "offset": 40,
+        "type": "double"
+      },
+      "roundoff": {
+        "offset": 48,
+        "type": "SWMM_PassiveAmountV1"
+      },
+      "pending_drain": {
+        "offset": 568,
+        "type": "SWMM_PassiveAmountV1"
+      },
+      "pending_spill": {
+        "offset": 1088,
+        "type": "SWMM_PassiveAmountV1"
+      }
+    }
+  },
+  "SWMM_PassiveReceiptV1": {
+    "size": 88,
+    "fields": {
+      "id": {
+        "offset": 0,
+        "type": "uint64_t"
+      },
+      "row_count": {
+        "offset": 8,
+        "type": "uint64_t"
+      },
+      "first_leg": {
+        "offset": 16,
+        "type": "uint64_t"
+      },
+      "leg_count": {
+        "offset": 24,
+        "type": "uint64_t"
+      },
+      "generation": {
+        "offset": 32,
+        "type": "uint64_t"
+      },
+      "phase": {
+        "offset": 40,
+        "type": "int"
+      },
+      "capture_ms": {
+        "offset": 48,
+        "type": "double"
+      },
+      "start_ms": {
+        "offset": 56,
+        "type": "double"
+      },
+      "end_ms": {
+        "offset": 64,
+        "type": "double"
+      },
+      "eligible_ms": {
+        "offset": 72,
+        "type": "double"
+      },
+      "publication_delivery_seconds": {
+        "offset": 80,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_PassiveRowV1": {
+    "size": 2096,
+    "fields": {
+      "point": {
+        "offset": 0,
+        "type": "uint64_t"
+      },
+      "node": {
+        "offset": 8,
+        "type": "int"
+      },
+      "units": {
+        "offset": 12,
+        "type": "int"
+      },
+      "drain_water": {
+        "offset": 16,
+        "type": "SWMM_PassiveAmountV1"
+      },
+      "spill_water": {
+        "offset": 536,
+        "type": "SWMM_PassiveAmountV1"
+      },
+      "drain_amount": {
+        "offset": 1056,
+        "type": "SWMM_PassiveAmountV1"
+      },
+      "spill_amount": {
+        "offset": 1576,
+        "type": "SWMM_PassiveAmountV1"
+      }
+    }
+  },
+  "SWMM_PassiveLegV1": {
+    "size": 152,
+    "fields": {
+      "point": {
+        "offset": 0,
+        "type": "uint64_t"
+      },
+      "cell": {
+        "offset": 8,
+        "type": "int"
+      },
+      "node": {
+        "offset": 12,
+        "type": "int"
+      },
+      "drain": {
+        "offset": 16,
+        "type": "int"
+      },
+      "applied": {
+        "offset": 20,
+        "type": "int"
+      },
+      "sealed": {
+        "offset": 24,
+        "type": "int"
+      },
+      "phase": {
+        "offset": 28,
+        "type": "int"
+      },
+      "water_m3": {
+        "offset": 32,
+        "type": "double"
+      },
+      "source_amount": {
+        "offset": 40,
+        "type": "double"
+      },
+      "water_ft3": {
+        "offset": 48,
+        "type": "double"
+      },
+      "native_amount": {
+        "offset": 56,
+        "type": "double"
+      },
+      "source_before": {
+        "offset": 64,
+        "type": "double"
+      },
+      "source_after": {
+        "offset": 72,
+        "type": "double"
+      },
+      "sampled_concentration": {
+        "offset": 80,
+        "type": "double"
+      },
+      "volume_before_m3": {
+        "offset": 88,
+        "type": "double"
+      },
+      "volume_after_m3": {
+        "offset": 96,
+        "type": "double"
+      },
+      "start_ms": {
+        "offset": 104,
+        "type": "double"
+      },
+      "end_ms": {
+        "offset": 112,
+        "type": "double"
+      },
+      "offset_seconds": {
+        "offset": 120,
+        "type": "double"
+      },
+      "duration_seconds": {
+        "offset": 128,
+        "type": "double"
+      },
+      "remaining_water_ft3": {
+        "offset": 136,
+        "type": "double"
+      },
+      "remaining_native_amount": {
+        "offset": 144,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_PassiveLegV2": {
+    "size": 160,
+    "fields": {
+      "leg": {
+        "offset": 0,
+        "type": "SWMM_PassiveLegV1"
+      },
+      "stage": {
+        "offset": 152,
+        "type": "int"
+      }
+    }
+  },
   "SWMM_ComponentLibraryInfo": {
     "size": 2896,
     "fields": {
@@ -6482,6 +7056,303 @@ export const STRUCTS = {
       "native_lid_area": {
         "offset": 40,
         "type": "double"
+      }
+    }
+  },
+  "SWMM_TraceNodeInput": {
+    "size": 12,
+    "fields": {
+      "id": {
+        "offset": 0,
+        "type": "const char*"
+      },
+      "type": {
+        "offset": 4,
+        "type": "int"
+      },
+      "flags": {
+        "offset": 8,
+        "type": "int"
+      }
+    }
+  },
+  "SWMM_TraceLinkInput": {
+    "size": 24,
+    "fields": {
+      "id": {
+        "offset": 0,
+        "type": "const char*"
+      },
+      "from_node": {
+        "offset": 4,
+        "type": "int"
+      },
+      "to_node": {
+        "offset": 8,
+        "type": "int"
+      },
+      "type": {
+        "offset": 12,
+        "type": "int"
+      },
+      "length_m": {
+        "offset": 16,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_TraceOptions": {
+    "size": 40,
+    "fields": {
+      "flow_epsilon_m3s": {
+        "offset": 0,
+        "type": "double"
+      },
+      "velocity_epsilon_mps": {
+        "offset": 8,
+        "type": "double"
+      },
+      "reversal_dominance": {
+        "offset": 16,
+        "type": "double"
+      },
+      "solver_tolerance": {
+        "offset": 24,
+        "type": "double"
+      },
+      "max_iterations": {
+        "offset": 32,
+        "type": "int"
+      }
+    }
+  },
+  "SWMM_TraceNodeAverage": {
+    "size": 80,
+    "fields": {
+      "volume_m3": {
+        "offset": 0,
+        "type": "double"
+      },
+      "inflow_m3s": {
+        "offset": 8,
+        "type": "double"
+      },
+      "lateral_in_m3s": {
+        "offset": 16,
+        "type": "double"
+      },
+      "withdrawal_m3s": {
+        "offset": 24,
+        "type": "double"
+      },
+      "overflow_m3s": {
+        "offset": 32,
+        "type": "double"
+      },
+      "outgoing_m3s": {
+        "offset": 40,
+        "type": "double"
+      },
+      "residence_s": {
+        "offset": 48,
+        "type": "double"
+      },
+      "first_volume_m3": {
+        "offset": 56,
+        "type": "double"
+      },
+      "last_volume_m3": {
+        "offset": 64,
+        "type": "double"
+      },
+      "flags": {
+        "offset": 72,
+        "type": "int"
+      }
+    }
+  },
+  "SWMM_TraceLinkAverage": {
+    "size": 72,
+    "fields": {
+      "net_flow_m3s": {
+        "offset": 0,
+        "type": "double"
+      },
+      "absolute_flow_m3s": {
+        "offset": 8,
+        "type": "double"
+      },
+      "absolute_velocity_mps": {
+        "offset": 16,
+        "type": "double"
+      },
+      "forward_volume_m3": {
+        "offset": 24,
+        "type": "double"
+      },
+      "reverse_volume_m3": {
+        "offset": 32,
+        "type": "double"
+      },
+      "travel_s": {
+        "offset": 40,
+        "type": "double"
+      },
+      "first_volume_m3": {
+        "offset": 48,
+        "type": "double"
+      },
+      "last_volume_m3": {
+        "offset": 56,
+        "type": "double"
+      },
+      "direction": {
+        "offset": 64,
+        "type": "int"
+      },
+      "flags": {
+        "offset": 68,
+        "type": "int"
+      }
+    }
+  },
+  "SWMM_TraceInfo": {
+    "size": 56,
+    "fields": {
+      "schema_version": {
+        "offset": 0,
+        "type": "int"
+      },
+      "algorithm_version": {
+        "offset": 4,
+        "type": "int"
+      },
+      "node_count": {
+        "offset": 8,
+        "type": "int"
+      },
+      "link_count": {
+        "offset": 12,
+        "type": "int"
+      },
+      "periods": {
+        "offset": 16,
+        "type": "int"
+      },
+      "source_flow_units": {
+        "offset": 20,
+        "type": "int"
+      },
+      "cache_loaded": {
+        "offset": 24,
+        "type": "int"
+      },
+      "first_report_date": {
+        "offset": 32,
+        "type": "double"
+      },
+      "last_report_date": {
+        "offset": 40,
+        "type": "double"
+      },
+      "duration_s": {
+        "offset": 48,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_TraceValue": {
+    "size": 56,
+    "fields": {
+      "ratio": {
+        "offset": 0,
+        "type": "double"
+      },
+      "time_s": {
+        "offset": 8,
+        "type": "double"
+      },
+      "time_coverage": {
+        "offset": 16,
+        "type": "double"
+      },
+      "from_time_s": {
+        "offset": 24,
+        "type": "double"
+      },
+      "to_time_s": {
+        "offset": 32,
+        "type": "double"
+      },
+      "terminal_fraction": {
+        "offset": 40,
+        "type": "double"
+      },
+      "terminal_kind": {
+        "offset": 48,
+        "type": "int"
+      },
+      "flags": {
+        "offset": 52,
+        "type": "int"
+      }
+    }
+  },
+  "SWMM_TraceSummary": {
+    "size": 136,
+    "fields": {
+      "terminal": {
+        "offset": 0,
+        "type": "double[6]",
+        "count": 6
+      },
+      "accounting_error": {
+        "offset": 48,
+        "type": "double"
+      },
+      "solver_residual": {
+        "offset": 56,
+        "type": "double"
+      },
+      "boundary_in_m3": {
+        "offset": 64,
+        "type": "double"
+      },
+      "boundary_out_m3": {
+        "offset": 72,
+        "type": "double"
+      },
+      "lateral_in_m3": {
+        "offset": 80,
+        "type": "double"
+      },
+      "withdrawal_m3": {
+        "offset": 88,
+        "type": "double"
+      },
+      "known_loss_m3": {
+        "offset": 96,
+        "type": "double"
+      },
+      "storage_change_m3": {
+        "offset": 104,
+        "type": "double"
+      },
+      "partial_balance_residual_m3": {
+        "offset": 112,
+        "type": "double"
+      },
+      "cyclic": {
+        "offset": 120,
+        "type": "int"
+      },
+      "reached_nodes": {
+        "offset": 124,
+        "type": "int"
+      },
+      "reached_links": {
+        "offset": 128,
+        "type": "int"
       }
     }
   }

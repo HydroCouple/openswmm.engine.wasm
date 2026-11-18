@@ -242,6 +242,15 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ### Fixed
 
+- **Raw functions with 64-bit integer arguments threw** "Cannot convert … to
+  a BigInt": the module passes `uint64_t` by value as a wasm i64, which only a
+  `bigint` fills. The six such functions (`swmm_passive_exchange_enable`,
+  `_receipt_v1`, `_row_v1`, `_leg_v1`, `_leg_v2`, `swmm_split_material_bind`)
+  now take `bigint` in `RawApi`.
+- **A string argument over about 1 MB corrupted memory**: cwrap copies
+  strings onto the 1 MB stack, so a larger one overran it silently and a later
+  call trapped with "memory access out of bounds". Strings over 16,384
+  characters are now copied to the heap (`tests/wasm/raw_layer.test.ts`).
 - **The 1D-only build (`-DOPENSWMM_WASM_2D=OFF`) did not link**: its export
   list named the 17 `openswmm_coupling.h` and 3 `openswmm_surface_ownership.h`
   functions, which the engine implements in its 2D module. Both headers are now
