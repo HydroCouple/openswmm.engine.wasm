@@ -54,7 +54,8 @@ unchecked; from a branch, only dry runs are accepted.
 
 1. **Settings → Environments → New environment** `npm`.
    - *Deployment branches and tags* → *Selected* → tag rule `v*`, so the
-     environment and its secret are usable only from release tags.
+     environment and its secret are usable only from release tags. Dry runs
+     do not enter the environment, so they still run from any branch.
    - Optional: *Required reviewers* → a maintainer, to approve each publish.
 2. In that environment, **Add secret** `NPM_TOKEN` (bootstrap only, see
    below), or from a terminal:
@@ -69,17 +70,29 @@ no other secret is needed.
 Trusted publishers are configured on an existing package, so the first
 publish needs a token:
 
-1. On npmjs.com, make sure the `hydrocouple` organisation exists and you can
+1. On npmjs.com, make sure the `hydrocouple` organization exists and you can
    publish to it.
 2. Create a **granular access token**: *Packages and scopes* → *Read and
-   write*, limited to `@hydrocouple`, with *Bypass 2FA* enabled for CI and a
-   short expiry. Store it as `NPM_TOKEN` in the `npm` environment.
+   write*, limited to `@hydrocouple`, with *Bypass 2FA* enabled for CI. Write
+   tokens expire after at most 90 days (7 by default). Store it as
+   `NPM_TOKEN` in the `npm` environment.
 3. Release the first version (steps above).
 4. On npmjs.com, *Package → Settings → Trusted Publisher → GitHub Actions*:
-   organisation `HydroCouple`, repository `openswmm.engine.wasm`, workflow
-   `release.yml`, environment `npm`.
+   organization `HydroCouple`, repository `openswmm.engine.wasm`, workflow
+   `release.yml`, environment `npm`. Allow publishing, not only staging
+   (newer configurations may default to stage-only). A configuration that no
+   successful publish validates within 2 days expires and must be recreated,
+   so add it shortly before the next release.
 5. Delete the `NPM_TOKEN` secret and revoke the token. Later releases
    authenticate through OIDC.
+
+npm plans to stop direct publishing with granular tokens in January 2027.
+After that, publish the first version by hand instead of steps 2–3: download
+the tarball from a dry run's `release-files` artifact and run
+`npm publish <tarball> --access public --tag dev` (your 2FA code is
+requested). When the tag of that version is pushed later, its npm job fails
+because the version exists; the GitHub Release and GitHub Packages jobs are
+independent and still run.
 
 ## Installing from GitHub Packages
 

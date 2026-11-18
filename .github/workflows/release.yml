@@ -188,13 +188,15 @@ jobs:
 
   # ---------------------------------------------------------------------------
   # npm. Publishes on a GitHub-hosted runner: trusted publishing does not
-  # support containers or self-hosted runners.
+  # support containers or self-hosted runners. Only a real publish enters the
+  # "npm" environment, which accepts v* tags only; a dry run from a branch
+  # needs neither its token nor OIDC.
   # ---------------------------------------------------------------------------
   publish-npm:
     name: Publish to npm
     needs: build
     runs-on: ubuntu-latest
-    environment: npm
+    environment: ${{ needs.build.outputs.dry_run != 'true' && 'npm' || '' }}
     permissions:
       contents: read
       id-token: write # npm trusted publishing and provenance
