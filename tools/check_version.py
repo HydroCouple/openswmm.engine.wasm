@@ -88,6 +88,9 @@ def main() -> int:
             f"package.json version {package} must carry the Python bindings' qualifier: "
             f"{py} -> {expected}"
         )
+    stated = re.search(r'VERSION = "([^"]+)"', (ROOT / "src/js/version.ts").read_text(encoding="utf-8"))
+    if not stated or stated.group(1) != package:
+        errors.append(f"src/js/version.ts VERSION must equal package.json version {package}")
     if a.tag is not None and a.tag != f"v{package}":
         errors.append(f"tag {a.tag} does not match package.json version v{package}")
     for e in errors:

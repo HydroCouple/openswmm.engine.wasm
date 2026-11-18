@@ -31369,6 +31369,62 @@
     }
    ]
   },
+  "SWMM_ComponentLibraryInfo": {
+   "header": "openswmm_process_components.h",
+   "size": 2896,
+   "align": 1,
+   "fields": [
+    {
+     "name": "id",
+     "type": "char[256]",
+     "offset": 0,
+     "size": 256,
+     "count": 256
+    },
+    {
+     "name": "caption",
+     "type": "char[256]",
+     "offset": 256,
+     "size": 256,
+     "count": 256
+    },
+    {
+     "name": "version",
+     "type": "char[64]",
+     "offset": 512,
+     "size": 64,
+     "count": 64
+    },
+    {
+     "name": "path",
+     "type": "char[1024]",
+     "offset": 576,
+     "size": 1024,
+     "count": 1024
+    },
+    {
+     "name": "kind",
+     "type": "char[16]",
+     "offset": 1600,
+     "size": 16,
+     "count": 16
+    },
+    {
+     "name": "stamp",
+     "type": "char[256]",
+     "offset": 1616,
+     "size": 256,
+     "count": 256
+    },
+    {
+     "name": "load_error",
+     "type": "char[1024]",
+     "offset": 1872,
+     "size": 1024,
+     "count": 1024
+    }
+   ]
+  },
   "SWMM_UebSnowpack": {
    "header": "openswmm_snow.h",
    "size": 48,
@@ -31767,6 +31823,128 @@
      "offset": 64,
      "size": 40,
      "count": 5
+    }
+   ]
+  },
+  "SWMM_MeshSnowOverrides": {
+   "header": "openswmm_snow2d.h",
+   "size": 48,
+   "align": 8,
+   "fields": [
+    {
+     "name": "forest",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "drift",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "ground_heat_wm2",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "extinction_depth_m",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "slope_deg",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "aspect_deg",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    }
+   ]
+  },
+  "SWMM_MeshSnowLedger": {
+   "header": "openswmm_snow2d.h",
+   "size": 96,
+   "align": 8,
+   "fields": [
+    {
+     "name": "completed_s",
+     "type": "double",
+     "offset": 0,
+     "size": 8
+    },
+    {
+     "name": "initial_m3",
+     "type": "double",
+     "offset": 8,
+     "size": 8
+    },
+    {
+     "name": "raw_precipitation_m3",
+     "type": "double",
+     "offset": 16,
+     "size": 8
+    },
+    {
+     "name": "precipitation_m3",
+     "type": "double",
+     "offset": 24,
+     "size": 8
+    },
+    {
+     "name": "liquid_m3",
+     "type": "double",
+     "offset": 32,
+     "size": 8
+    },
+    {
+     "name": "sublimation_m3",
+     "type": "double",
+     "offset": 40,
+     "size": 8
+    },
+    {
+     "name": "stored_m3",
+     "type": "double",
+     "offset": 48,
+     "size": 8
+    },
+    {
+     "name": "residual_m3",
+     "type": "double",
+     "offset": 56,
+     "size": 8
+    },
+    {
+     "name": "net_energy_kj",
+     "type": "double",
+     "offset": 64,
+     "size": 8
+    },
+    {
+     "name": "initial_energy_kj",
+     "type": "double",
+     "offset": 72,
+     "size": 8
+    },
+    {
+     "name": "stored_energy_kj",
+     "type": "double",
+     "offset": 80,
+     "size": 8
+    },
+    {
+     "name": "energy_residual_kj",
+     "type": "double",
+     "offset": 88,
+     "size": 8
     }
    ]
   }

@@ -5563,6 +5563,46 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_ComponentLibraryInfo": {
+    "size": 2896,
+    "fields": {
+      "id": {
+        "offset": 0,
+        "type": "char[256]",
+        "count": 256
+      },
+      "caption": {
+        "offset": 256,
+        "type": "char[256]",
+        "count": 256
+      },
+      "version": {
+        "offset": 512,
+        "type": "char[64]",
+        "count": 64
+      },
+      "path": {
+        "offset": 576,
+        "type": "char[1024]",
+        "count": 1024
+      },
+      "kind": {
+        "offset": 1600,
+        "type": "char[16]",
+        "count": 16
+      },
+      "stamp": {
+        "offset": 1616,
+        "type": "char[256]",
+        "count": 256
+      },
+      "load_error": {
+        "offset": 1872,
+        "type": "char[1024]",
+        "count": 1024
+      }
+    }
+  },
   "SWMM_UebSnowpack": {
     "size": 48,
     "fields": {
@@ -5831,6 +5871,88 @@ export const STRUCTS = {
         "offset": 64,
         "type": "double[5]",
         "count": 5
+      }
+    }
+  },
+  "SWMM_MeshSnowOverrides": {
+    "size": 48,
+    "fields": {
+      "forest": {
+        "offset": 0,
+        "type": "double"
+      },
+      "drift": {
+        "offset": 8,
+        "type": "double"
+      },
+      "ground_heat_wm2": {
+        "offset": 16,
+        "type": "double"
+      },
+      "extinction_depth_m": {
+        "offset": 24,
+        "type": "double"
+      },
+      "slope_deg": {
+        "offset": 32,
+        "type": "double"
+      },
+      "aspect_deg": {
+        "offset": 40,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_MeshSnowLedger": {
+    "size": 96,
+    "fields": {
+      "completed_s": {
+        "offset": 0,
+        "type": "double"
+      },
+      "initial_m3": {
+        "offset": 8,
+        "type": "double"
+      },
+      "raw_precipitation_m3": {
+        "offset": 16,
+        "type": "double"
+      },
+      "precipitation_m3": {
+        "offset": 24,
+        "type": "double"
+      },
+      "liquid_m3": {
+        "offset": 32,
+        "type": "double"
+      },
+      "sublimation_m3": {
+        "offset": 40,
+        "type": "double"
+      },
+      "stored_m3": {
+        "offset": 48,
+        "type": "double"
+      },
+      "residual_m3": {
+        "offset": 56,
+        "type": "double"
+      },
+      "net_energy_kj": {
+        "offset": 64,
+        "type": "double"
+      },
+      "initial_energy_kj": {
+        "offset": 72,
+        "type": "double"
+      },
+      "stored_energy_kj": {
+        "offset": 80,
+        "type": "double"
+      },
+      "energy_residual_kj": {
+        "offset": 88,
+        "type": "double"
       }
     }
   }

@@ -246,6 +246,26 @@ export {
   transportClassName,
 } from "./Transport.js";
 export * as catalog from "./catalog.js";
+export { capabilities, CHECKPOINT_FEATURES } from "./capabilities.js";
+export type { Capabilities } from "./capabilities.js";
+export { VERSION } from "./version.js";
+export { ProcessComponents } from "./ProcessComponents.js";
+export type {
+  ProcessComponent,
+  KnownProcessComponent,
+  ComponentLibrary,
+} from "./ProcessComponents.js";
+export { WaterAge, WaterAgeGlobals, WaterAgeOverrides } from "./WaterAge.js";
+export type { WaterAgeOverride, WaterAgeSourceKey } from "./WaterAge.js";
+export { MeshSnow } from "./Snow2D.js";
+export type { MeshSnowRow } from "./Snow2D.js";
+export {
+  SurfaceQuality,
+  SurfaceCoverage,
+  SurfaceLoading,
+  SurfaceCurbLength,
+} from "./SurfaceQuality.js";
+export type { ScopeTarget } from "./SurfaceQuality.js";
 export type { Catalog, CatalogEntry } from "./catalog.js";
 
 // ---------------------------------------------------------------------------

@@ -103,6 +103,10 @@ STRUCTS_OF_INTEREST = [
     "SWMM_TransportCell",
     "SWMM_TransportMatrix",
     "SWMM_TransportDraft",
+    # Process components, mesh snow (wave E)
+    "SWMM_ComponentLibraryInfo",
+    "SWMM_MeshSnowLedger",
+    "SWMM_MeshSnowOverrides",
 ]
 
 WASM32 = {

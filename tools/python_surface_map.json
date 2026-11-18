@@ -20,7 +20,9 @@
     "_OutputNodeStats": "OutputNodeStats",
     "_ResultObject": "ResultObject",
     "_SurfaceCell": "SurfaceCell",
-    "_SurfaceCells": "SurfaceCells"
+    "_SurfaceCells": "SurfaceCells",
+    "_WaterAgeGlobals": "WaterAgeGlobals",
+    "_WaterAgeOverrides": "WaterAgeOverrides"
   },
   "memberAliases": {
     "ModelBuilder.add_subcatch": "addSubcatchment",
@@ -37,15 +39,10 @@
     "_results.ResultField.to_xarray": "Converts to a pandas/xarray object; those are Python libraries. read() returns the shaped array and the field carries its times, ids and units."
   },
   "pending": {
-    "_capabilities": "E",
     "_heat": "E",
     "_reactions": "E",
-    "_water_age": "E",
-    "_process_components": "E",
     "_groundwater": "E",
     "_gw_transport": "E",
-    "_surface_quality": "E",
-    "_snow2d": "E",
     "_2d": "E",
     "_coupling": "F",
     "_split": "F",
@@ -53,9 +50,7 @@
     "_trace": "F",
     "_solver.Solver.groundwater2d": "E",
     "_solver.Solver.heat": "E",
-    "_solver.Solver.process_components": "E",
     "_solver.Solver.reactions": "E",
-    "_solver.Solver.water_age": "E",
     "_solver.Solver.coupling": "F",
     "_solver.Solver.material_split": "F",
     "_solver.Solver.passive_exchange": "F",

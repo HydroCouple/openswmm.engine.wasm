@@ -90,6 +90,8 @@ import { Results } from "./Results.js";
 import { Spatial } from "./Spatial.js";
 import { ModelEditor } from "./Edit.js";
 import { Infrastructure } from "./Infrastructure.js";
+import { ProcessComponents } from "./ProcessComponents.js";
+import { WaterAge } from "./WaterAge.js";
 
 /** Plugin id of the built-in GeoPackage model writer. */
 const GEOPACKAGE_PLUGIN_ID = "org.hydrocouple.openswmm.plugins.geopackage";
@@ -732,6 +734,16 @@ export class Solver {
   get editor(): ModelEditor {
     this._assertAlive();
     return (this._editor ??= new ModelEditor(this));
+  }
+
+  /** The `[PROCESS_COMPONENTS]` registrations (Python `solver.process_components`). */
+  get processComponents(): ProcessComponents {
+    return new ProcessComponents(this);
+  }
+
+  /** The `[WATER_AGE_SOURCES]` table (Python `solver.water_age`). */
+  get waterAge(): WaterAge {
+    return new WaterAge(this);
   }
 
   /** Process-wide hardware and OpenMP limits (Python `solver.thread_info`). */
