@@ -62,6 +62,15 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Transport, threads and the catalog** (wave E, part 1), mirroring Python:
+  `Transport.previewMatrix`, `detailedOutput`, conduit dispersion, boundary
+  and source rows; `solver.transportMatrix`, `solver.threadInfo`,
+  `solver.effectiveThreads()` and the module functions (`transportMatrix`,
+  `threadInfo`, `effectiveThreads`, `transportDomainName`,
+  `transportClassName`); `catalog` (`lookup`, `members`, `targets`,
+  `resolve`, `canonical`, `unitLabel`, `UNIT_KINDS`, revisions), with the
+  engine's `catalog.json` embedded by `tools/gen_fields.py`
+  (`src/js/catalog.generated.ts`, about 600 KB, parsed on first use).
 - **GeoPackage** (wave D, part 4), mirroring Python: `GeoPackage` (simulation
   ids and object counts, result series and summaries, observed series with
   single and bulk writes, transactions, read-only SQL), `registerGeoPackage` /
