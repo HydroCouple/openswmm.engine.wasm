@@ -307,7 +307,7 @@ export type { Catalog, CatalogEntry } from "./catalog.js";
 // ---------------------------------------------------------------------------
 // 2D surface routing (solver.surface2d)
 // ---------------------------------------------------------------------------
-export { Surface2D, Infiltration2D } from "./Surface2D.js";
+export { Surface2D, Infiltration2D, Infil2DDefaults } from "./Surface2D.js";
 export type {
   SurfaceForcingOptions,
   TriangleCouplingRow,
@@ -317,6 +317,13 @@ export type {
   RunStats2D,
   Infil2DRow,
   Infil2DCell,
+  InitialQuality2D,
+  BoundaryQuality2D,
+  QualityTarget,
+  Infil2DAuthoredRow,
+  SurfaceOwnerObject,
+  SurfaceOwnerShare,
+  SurfaceOwnerPreview,
 } from "./Surface2D.js";
 
 export { Groundwater, GroundwaterTransport, GroundwaterOptions } from "./Groundwater.js";

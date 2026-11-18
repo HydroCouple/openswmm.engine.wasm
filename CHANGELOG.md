@@ -62,6 +62,15 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **2D surface remainder** (wave E, part 5), mirroring Python: initial,
+  initial-bed and boundary quality rows, species and per-cell
+  concentrations, edge exterior test, boundary groups and concentrations,
+  wall drag, initial HGL, node coupling records and parameters, surface
+  owners (get, preview with token, replace), `setResultsFile`,
+  `setAutoBackendCpu`, `geometryScaleToSi`, `getReportRainfallBulk`, and on
+  `surface2d.infiltration` authored rows and ownership. `defaults` is now a
+  live `Infil2DDefaults` mapping (get/set/delete/has, iterates tags; was a
+  `Map` snapshot). The runtime source members wait for the coupling wave.
 - **Heat** (wave E, part 4), mirroring Python: `solver.heat` with `modules`,
   `radiative`, `solar`, `cloud`, `sources`, `sediment`, `nodeOverrides` and
   `elementOverrides`, shortwave mode and series, `effectiveElement`, mesh,
