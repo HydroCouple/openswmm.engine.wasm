@@ -13,7 +13,9 @@
   },
   "classAliases": {
     "Infiltration2DView": "Infiltration2D",
-    "_PointTable": "PointTable"
+    "_PointTable": "PointTable",
+    "_OptionsExtView": "OptionsExtView",
+    "Event": "SimulationEvent"
   },
   "memberAliases": {
     "ModelBuilder.add_subcatch": "addSubcatchment",
@@ -25,7 +27,6 @@
     "_access": "Python-internal owner registry and native-access locking; the TypeScript views use generation counters and guardedRaw (single-threaded WASM)."
   },
   "pending": {
-    "_solver": "A",
     "_capabilities": "E",
     "_nodes": "B",
     "_links": "B",
@@ -66,6 +67,35 @@
     "_coupling": "F",
     "_split": "F",
     "_passive_exchange": "F",
-    "_trace": "F"
+    "_trace": "F",
+    "_solver.Solver.aquifers": "B",
+    "_solver.Solver.snow": "B",
+    "_solver.Solver.snowpacks": "B",
+    "_solver.Solver.checkpoints": "C",
+    "_solver.Solver.climate": "C",
+    "_solver.Solver.inflows": "C",
+    "_solver.Solver.initial_quality": "C",
+    "_solver.Solver.mass_balance": "C",
+    "_solver.Solver.pollutants": "C",
+    "_solver.Solver.quality": "C",
+    "_solver.Solver.statistics": "C",
+    "_solver.Solver.save_schedule": "C",
+    "_solver.Solver.editor": "D",
+    "_solver.Solver.infrastructure": "D",
+    "_solver.Solver.spatial": "D",
+    "_solver.Solver.open_results": "D",
+    "_solver.Solver.write_geopackage": "D",
+    "_solver.Solver.groundwater2d": "E",
+    "_solver.Solver.heat": "E",
+    "_solver.Solver.process_components": "E",
+    "_solver.Solver.reactions": "E",
+    "_solver.Solver.water_age": "E",
+    "_solver.Solver.thread_info": "E",
+    "_solver.Solver.effective_threads": "E",
+    "_solver.Solver.transport_matrix": "E",
+    "_solver.Solver.coupling": "F",
+    "_solver.Solver.material_split": "F",
+    "_solver.Solver.passive_exchange": "F",
+    "_solver.Solver.split": "F"
   }
 }

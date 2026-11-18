@@ -356,6 +356,14 @@ function makeMockModule(): OpenSwmmWasmModule {
       heap[ptr] = 45296.0;
       return 0;
     },
+    _swmm_options_get_start_date: (h: number, ptr: number) => {
+      heap[ptr] = 45296.0;
+      return 0;
+    },
+    _swmm_options_get_end_date: (h: number, ptr: number) => {
+      heap[ptr] = 45297.0;
+      return 0;
+    },
     _swmm_get_end_time: (h: number, ptr: number) => {
       heap[ptr] = 45297.0;
       return 0;

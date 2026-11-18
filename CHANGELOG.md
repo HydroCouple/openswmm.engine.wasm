@@ -14,6 +14,11 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ### Changed
 
+- **`Solver.startDatetime` / `endDatetime` are the configured `[OPTIONS]`
+  dates**, as Python's `start_datetime` / `end_datetime`, and are now
+  settable; `simStartTime` / `simEndTime` give the resolved times the engine
+  runs (what `startDatetime` returned before; the two agree once a model is
+  open). Dates are rounded to the millisecond.
 - **Engine pin advanced** from `ed32a16f` to `swmm6_rel` `85c47981`. The raw
   layer grows from 1,414 to 1,527 C functions (1,265 without the 2D headers):
   hot-start contents and legacy hot starts, recorded deletes and type
@@ -47,6 +52,16 @@ built from the pinned engine (`tools/check_version.py`): Python
   Python's `ModelBuilder.add_subcatch`, `get_file_path`, `set_file_path` and
   `userflag_def_count` onto the existing `addSubcatchment`, `filePathGet`,
   `filePathSet` and `getUserflagDefCount`.
+- **Solver members from Python's `_solver`** (wave A4): `options` (with
+  `ext`), `userflags`, `events`; `openMetadata`, `openSimulationPeriod`,
+  `advanceTo`, `until`, `steps()`, `elapsed`; `write`, `writeWithPlugin`,
+  `writeCompat`, `writeStaged`; runoff interface files; diagnostics (`crs`,
+  `openErrors`, `openWarnings`, `unitSystem`, `eventCount`, ...); and progress,
+  warning, step-begin/end and phase callbacks through `addFunction`. A
+  callback's error is kept and rethrown when the engine call returns, so it
+  never unwinds through the engine. Module functions `run`, `runWithCallback`
+  and `abiTag`. Accessors for later facade waves (climate, heat, coupling ...)
+  are listed as pending in the parity gate.
 - **Python API parity gate.** `tools/gen_python_surface.py` records the
   pinned engine's public Python surface (stubs and pure-Python modules) in
   `tests/fixtures/python_surface.json`; `tests/python_surface.test.ts` checks
