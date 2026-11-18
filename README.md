@@ -25,6 +25,7 @@ classes cover a subset of the Python API. See [Compatibility and gaps](#compatib
   - [Forcing](#forcing)
   - [Surface2D (2D surface routing)](#surface2d-2d-surface-routing)
   - [Fields by catalog path](#fields-by-catalog-path)
+  - [Tables, patterns, cross-sections and dates](#tables-patterns-cross-sections-and-dates)
   - [Enumerations](#enumerations)
   - [Error hierarchy](#error-hierarchy)
 - [Building the WASM module](#building-the-wasm-module)
@@ -478,6 +479,38 @@ Values are in the model's units; enum fields return their number and Boolean
 fields `true`/`false`. Engine refusals keep their typed errors (for example a
 runtime-only field written while the model is only opened raises
 `LifecycleError`).
+
+### Tables, patterns, cross-sections and dates
+
+`solver.tables` holds the time series and curves (one namespace, by index or
+id) and `solver.patterns` the `[PATTERNS]` entries, as in Python. Create them
+after `open()` and before `initialize()`.
+
+```ts
+const ts = solver.tables.addTimeseries("Inflow");
+ts.add(new Date(Date.UTC(2026, 0, 1, 6)), 4.2);     // UTC wall clock
+solver.tables.asTimeseries("TS1").points;           // [Date, value][]
+const curve = solver.tables.addCurve("Rating");
+curve.replacePoints([[0, 0], [2, 10]]);
+curve.lookup(1);                                    // 5, the engine's interpolation
+solver.patterns.add("Monthly", PatternType.MONTHLY).setFactors(new Array(12).fill(1));
+```
+
+`XSectionGeometry` runs the engine's cross-section kernels without a model, or
+copies a link's geometry (`XSectionGeometry.fromLink(solver.links.get("C1"))`).
+Every query takes a number or an array. It owns a native handle: `destroy()` it
+or use `using`.
+
+```ts
+using pipe = new XSectionGeometry(mod, XSectShape.CIRCULAR, 1, { units: "SI" });
+pipe.area(0.5);                     // m²
+pipe.area([0.1, 0.5, 0.9]);         // Float64Array, one C call
+```
+
+SWMM DateTimes are days since 1899-12-30. `oadateToDatetime` /
+`datetimeToOadate` convert to and from `Date` (UTC, to the millisecond);
+`encodeDate`, `decodeTime`, `addSeconds`, `timeDiff`, ... call the engine and
+take the module first: `encodeDate(mod, 2026, 11, 17)`.
 
 ### Enumerations
 
