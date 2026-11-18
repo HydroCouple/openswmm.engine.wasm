@@ -62,6 +62,12 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **GeoPackage** (wave D, part 4), mirroring Python: `GeoPackage` (simulation
+  ids and object counts, result series and summaries, observed series with
+  single and bulk writes, transactions, read-only SQL), `registerGeoPackage` /
+  `isGeoPackageRegistered` (Python `_geopackage.register` / `is_registered`)
+  and `solver.writeGeopackage(path, crs)`. The written model matches a
+  natively written GeoPackage table for table.
 - **Infrastructure** (wave D, part 3), mirroring Python:
   `solver.infrastructure` with `transects` (stations, roughness, banks,
   encroachment, modifiers, comments, remove/rename), `streets`, `inlets`

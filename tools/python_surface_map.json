@@ -1,5 +1,5 @@
 {
-  "$comment": "Maps the Python public surface (tests/fixtures/python_surface.json) onto the TypeScript classes for tests/parity.test.ts. Python snake_case members are checked as camelCase. 'dunders' lists the accepted TypeScript names for each Python protocol method. 'classAliases' and 'memberAliases' rename ('Class' or 'Class.member'). 'excluded' takes 'module', 'module.Class', 'module.Class.member' or 'module.function' keys, each with the reason it has no TypeScript counterpart. 'pending' lists the modules whose facade wave (plans: A-F) has not landed; the gate skips them and the report counts them.",
+  "$comment": "Maps the Python public surface (tests/fixtures/python_surface.json) onto the TypeScript classes for tests/parity.test.ts. Python snake_case members are checked as camelCase. 'dunders' lists the accepted TypeScript names for each Python protocol method. 'classAliases' and 'memberAliases' rename ('Class', 'Class.member' or 'module.function'). 'excluded' takes 'module', 'module.Class', 'module.Class.member' or 'module.function' keys, each with the reason it has no TypeScript counterpart. 'pending' lists the modules whose facade wave (plans: A-F) has not landed; the gate skips them and the report counts them.",
   "dunders": {
     "__len__": ["length"],
     "__getitem__": ["get"],
@@ -27,7 +27,9 @@
     "ModelBuilder.get_file_path": "filePathGet",
     "ModelBuilder.set_file_path": "filePathSet",
     "ModelBuilder.userflag_def_count": "getUserflagDefCount",
-    "Link.closed": "isClosed"
+    "Link.closed": "isClosed",
+    "_geopackage.register": "registerGeoPackage",
+    "_geopackage.is_registered": "isGeoPackageRegistered"
   },
   "excluded": {
     "_access": "Python-internal owner registry and native-access locking; the TypeScript views use generation counters and guardedRaw (single-threaded WASM).",
@@ -36,7 +38,6 @@
   },
   "pending": {
     "_capabilities": "E",
-    "_geopackage": "D",
     "_heat": "E",
     "_reactions": "E",
     "_water_age": "E",
@@ -52,7 +53,6 @@
     "_split": "F",
     "_passive_exchange": "F",
     "_trace": "F",
-    "_solver.Solver.write_geopackage": "D",
     "_solver.Solver.groundwater2d": "E",
     "_solver.Solver.heat": "E",
     "_solver.Solver.process_components": "E",

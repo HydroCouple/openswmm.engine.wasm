@@ -112,6 +112,7 @@ export type {
   LidUsage,
 } from "./Infrastructure.js";
 export { LidNodeLayerKind, LidNodeLayer, LidLayerTreatment } from "./LidNodes.js";
+export { GeoPackage, registerGeoPackage, isGeoPackageRegistered } from "./GeoPackage.js";
 export type { XYArray } from "./Spatial.js";
 export type { AxisKey, NDArray, NumericData, Slice } from "./ndarray.js";
 export type {
