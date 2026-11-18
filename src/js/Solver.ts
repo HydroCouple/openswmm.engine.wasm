@@ -69,6 +69,10 @@ import { datetimeToOadate, oadateToDatetime } from "./dates.js";
 import { EventsView, SimulationOptions, UserFlags } from "./SolverViews.js";
 import { Snow } from "./Snow.js";
 import { Aquifers, Snowpacks } from "./NamedObjects.js";
+import { InitialQuality } from "./InitialQuality.js";
+import { MassBalance } from "./MassBalance.js";
+import { Pollutants } from "./Pollutants.js";
+import { Quality } from "./Quality.js";
 
 // =============================================================================
 // Solver
@@ -657,6 +661,26 @@ export class Solver {
   /** The `[SNOWPACKS]` entries (Python `solver.snowpacks`). */
   get snowpacks(): Snowpacks {
     return new Snowpacks(this);
+  }
+
+  /** The `[POLLUTANTS]` entries (Python `solver.pollutants`). */
+  get pollutants(): Pollutants {
+    return new Pollutants(this);
+  }
+
+  /** Land uses, buildup, washoff and treatment (Python `solver.quality`). */
+  get quality(): Quality {
+    return new Quality(this);
+  }
+
+  /** The `[INITIAL_QUALITY]` rows (Python `solver.initial_quality`). */
+  get initialQuality(): InitialQuality {
+    return new InitialQuality(this);
+  }
+
+  /** Continuity errors and totals (Python `solver.mass_balance`). */
+  get massBalance(): MassBalance {
+    return new MassBalance(this);
   }
 
   /**

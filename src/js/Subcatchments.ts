@@ -14,7 +14,7 @@ import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
 import type { ModelBuilder } from "./ModelBuilder.js";
 import type { Solver } from "./Solver.js";
-import { checkedAlloc, guardedRaw, withCString, withCStrings } from "./mem.js";
+import { checkedAlloc, guardedRaw, withCString } from "./mem.js";
 import { InfilModel } from "./enums.js";
 import {
   bulkRead,
@@ -23,6 +23,7 @@ import {
   getInt,
   getText,
   resolveIndex,
+  resolveSurfaceSpecies,
   type ElementCtx,
 } from "./element.js";
 import type { Gage } from "./Gages.js";
@@ -180,55 +181,16 @@ export class LoadingsView implements Iterable<string> {
   /** @internal */
   constructor(private readonly _sub: Subcatchment) {}
 
-  /** @internal A pollutant id/index, or a reaction species name (addressed after the pollutants). */
-  private _species(c: ElementCtx, key: number | string): number {
-    const np = c.raw.swmm_pollutant_count(c.engine);
-    const nm = c.raw.swmm_reaction_species_count(c.engine);
-    if (typeof key === "number") {
-      if (!Number.isInteger(key) || key < 0 || key >= np + nm) {
-        throw new ElementNotFoundError(
-          key,
-          `Pollutant/species index ${key} out of range [0, ${np + nm})`,
-        );
-      }
-      return key;
-    }
-    const i = c.raw.swmm_pollutant_index(c.engine, key);
-    if (i >= 0) return i;
-    const scratch = checkedAlloc(c.mod, 24);
-    try {
-      for (let m = 0; m < nm; m++) {
-        const [name] = withCStrings(c.mod, 256, 2, ([n, u], len) =>
-          c.raw.swmm_reaction_species_get(
-            c.engine,
-            m,
-            n,
-            len,
-            scratch,
-            u,
-            len,
-            scratch + 8,
-            scratch + 16,
-          ),
-        );
-        if (name === key) return np + m;
-      }
-    } finally {
-      c.mod._free(scratch);
-    }
-    throw new ElementNotFoundError(key, `Pollutant or species '${key}' not found`);
-  }
-
   /** Initial loading (mass per area) of a pollutant or species. */
   get(species: number | string): number {
     const c = this._sub._ctx();
-    const p = this._species(c, species);
+    const p = resolveSurfaceSpecies(c.mod, c.raw, c.engine, species);
     return getDouble(c, (e, i, out) => c.raw.swmm_subcatch_get_initial_loading(e, i, p, out));
   }
   /** Set the initial loading of a pollutant or species. */
   set(species: number | string, value: number): void {
     const c = this._sub._ctx();
-    const p = this._species(c, species);
+    const p = resolveSurfaceSpecies(c.mod, c.raw, c.engine, species);
     raiseForCode(c.raw.swmm_subcatch_set_initial_loading(c.engine, c.index, p, value));
   }
   /** Loadings cannot be deleted; set the value to 0 instead. @throws TypeError */

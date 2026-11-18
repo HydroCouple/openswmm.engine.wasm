@@ -167,8 +167,10 @@ function missingIn(module: string): { total: number; missing: string[]; pending:
       const key = `${module}.${cls}.${member}`;
       if (key in map.excluded) continue;
       total++;
+      // camelCase, or the Python name itself (constants such as WATER_AGE keep theirs).
       const candidates = map.dunders[member] ?? [
         map.memberAliases[`${cls}.${member}`] ?? camel(member),
+        member,
       ];
       if (!candidates.some((c) => hasName(members, c))) {
         miss(`${cls}.${member}`, key, `${module}.${cls}`);
