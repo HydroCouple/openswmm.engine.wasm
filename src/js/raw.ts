@@ -4668,6 +4668,129 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_EvapPreviewSample": {
+    "size": 40,
+    "fields": {
+      "date": {
+        "offset": 0,
+        "type": "double"
+      },
+      "source_rate": {
+        "offset": 8,
+        "type": "double"
+      },
+      "adjustment": {
+        "offset": 16,
+        "type": "double"
+      },
+      "effective_rate": {
+        "offset": 24,
+        "type": "double"
+      },
+      "status": {
+        "offset": 32,
+        "type": "int"
+      }
+    }
+  },
+  "SWMM_EvapPreviewSummary": {
+    "size": 40,
+    "fields": {
+      "source_type": {
+        "offset": 0,
+        "type": "int"
+      },
+      "available_count": {
+        "offset": 4,
+        "type": "int"
+      },
+      "held_count": {
+        "offset": 8,
+        "type": "int"
+      },
+      "missing_count": {
+        "offset": 12,
+        "type": "int"
+      },
+      "estimated_count": {
+        "offset": 16,
+        "type": "int"
+      },
+      "runtime_forcing_unknown": {
+        "offset": 20,
+        "type": "int"
+      },
+      "minimum_rate": {
+        "offset": 24,
+        "type": "double"
+      },
+      "maximum_rate": {
+        "offset": 32,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_EvapPreviewConfig": {
+    "size": 440,
+    "fields": {
+      "evap_type": {
+        "offset": 0,
+        "type": "int"
+      },
+      "evap_monthly": {
+        "offset": 8,
+        "type": "double[12]",
+        "count": 12
+      },
+      "pan_coeff": {
+        "offset": 104,
+        "type": "double[12]",
+        "count": 12
+      },
+      "adjust_evaporation": {
+        "offset": 200,
+        "type": "double[12]",
+        "count": 12
+      },
+      "evap_timeseries": {
+        "offset": 296,
+        "type": "const char*"
+      },
+      "temp_source": {
+        "offset": 300,
+        "type": "int"
+      },
+      "temp_timeseries": {
+        "offset": 304,
+        "type": "const char*"
+      },
+      "climate_file_path": {
+        "offset": 308,
+        "type": "const char*"
+      },
+      "climate_file_start": {
+        "offset": 312,
+        "type": "double"
+      },
+      "climate_file_temp_units": {
+        "offset": 320,
+        "type": "int"
+      },
+      "latitude": {
+        "offset": 328,
+        "type": "double"
+      },
+      "longitude_correction_minutes": {
+        "offset": 336,
+        "type": "double"
+      },
+      "adjust_temperature": {
+        "offset": 344,
+        "type": "double[12]",
+        "count": 12
+      }
+    }
+  },
   "SWMM_ImpactEntry": {
     "size": 16,
     "fields": {

@@ -82,6 +82,10 @@ STRUCTS_OF_INTEREST = [
     # Nodes (wave B): openswmm_nodes.h
     "SWMM_OutfallExportReceipt",
     "SWMM_DividerParams",
+    # Climate (wave C): openswmm_climate.h
+    "SWMM_EvapPreviewSample",
+    "SWMM_EvapPreviewSummary",
+    "SWMM_EvapPreviewConfig",
 ]
 
 WASM32 = {

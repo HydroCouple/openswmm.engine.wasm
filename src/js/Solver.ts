@@ -73,6 +73,8 @@ import { InitialQuality } from "./InitialQuality.js";
 import { MassBalance } from "./MassBalance.js";
 import { Pollutants } from "./Pollutants.js";
 import { Quality } from "./Quality.js";
+import { Climate } from "./Climate.js";
+import { Statistics } from "./Statistics.js";
 
 // =============================================================================
 // Solver
@@ -681,6 +683,16 @@ export class Solver {
   /** Continuity errors and totals (Python `solver.mass_balance`). */
   get massBalance(): MassBalance {
     return new MassBalance(this);
+  }
+
+  /** Temperature, evaporation, wind, humidity and snowmelt settings (Python `solver.climate`). */
+  get climate(): Climate {
+    return new Climate(this);
+  }
+
+  /** Run statistics and report summary tables (Python `solver.statistics`). */
+  get statistics(): Statistics {
+    return new Statistics(this);
   }
 
   /**

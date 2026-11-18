@@ -62,6 +62,12 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Climate and statistics** (wave C, part 2), mirroring Python:
+  `solver.climate` (temperature source, evaporation, wind, humidity, snowmelt,
+  areal depletion and monthly adjustments; `previewEvaporation` from the model
+  or a draft configuration) and `solver.statistics` (node, link and
+  subcatchment statistics as arrays or per element; report summary tables
+  with titles, columns, rows and values).
 - **Pollutants, quality, initial quality and mass balance** (wave C, part 1),
   mirroring Python: `solver.pollutants` (`Pollutant` concentrations, decay,
   units, snow-only, co-pollutant; add/rename, node and link quality),
