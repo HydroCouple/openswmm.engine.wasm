@@ -61,6 +61,7 @@ import { Transport } from "./Transport.js";
 import { Forcing } from "./Forcing.js";
 import { Fields } from "./Fields.js";
 import { Surface2D } from "./Surface2D.js";
+import { Patterns, Tables } from "./Tables.js";
 import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
 import type { RawApi } from "./raw.js";
 import { checkedAlloc, rawOf } from "./mem.js";
@@ -105,6 +106,8 @@ export class Solver {
     this.links.generation++;
     this.subcatchments.generation++;
     this.gages.generation++;
+    this.tables.generation++;
+    this.patterns.generation++;
   }
 
   // -------------------------------------------------------------------------
@@ -170,6 +173,12 @@ export class Solver {
    */
   readonly fields: Fields;
 
+  /** Time series and curves (Python `solver.tables`). */
+  readonly tables: Tables;
+
+  /** Time patterns (Python `solver.patterns`). */
+  readonly patterns: Patterns;
+
   // -------------------------------------------------------------------------
   // Constructor
   // -------------------------------------------------------------------------
@@ -203,6 +212,8 @@ export class Solver {
     this.forcing = new Forcing(mod, h, () => this._assertAlive());
     this.surface2d = new Surface2D(mod, h, () => this._assertAlive());
     this.fields = new Fields(mod, () => this.handle);
+    this.tables = new Tables(mod, h, this, () => this._assertAlive());
+    this.patterns = new Patterns(mod, h, this, () => this._assertAlive());
   }
 
   // -------------------------------------------------------------------------

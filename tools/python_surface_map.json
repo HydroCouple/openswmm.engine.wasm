@@ -12,22 +12,21 @@
     "__call__": ["call"]
   },
   "classAliases": {
-    "Infiltration2DView": "Infiltration2D"
+    "Infiltration2DView": "Infiltration2D",
+    "_PointTable": "PointTable"
   },
-  "memberAliases": {},
+  "memberAliases": {
+    "ModelBuilder.add_subcatch": "addSubcatchment",
+    "ModelBuilder.get_file_path": "filePathGet",
+    "ModelBuilder.set_file_path": "filePathSet",
+    "ModelBuilder.userflag_def_count": "getUserflagDefCount"
+  },
   "excluded": {
     "_access": "Python-internal owner registry and native-access locking; the TypeScript views use generation counters and guardedRaw (single-threaded WASM)."
   },
   "pending": {
     "_solver": "A",
-    "_tables": "A",
-    "_xsect": "A",
-    "_geometry": "A",
-    "_datetime": "A",
-    "_dates": "A",
-    "_capabilities": "A",
-    "_exceptions": "A",
-    "_model": "A",
+    "_capabilities": "E",
     "_nodes": "B",
     "_links": "B",
     "_subcatchments": "B",

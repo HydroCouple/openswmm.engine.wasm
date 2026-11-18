@@ -64,6 +64,18 @@ export class Link {
     }
   }
 
+  /** @internal A new native copy of this link's cross-section, for `XSectionGeometry.fromLink`. */
+  _newXsectHandle(): [OpenSwmmWasmModule, number] {
+    this._checkStale();
+    const out = checkedAlloc(this._mod, 4);
+    try {
+      raiseForCode(this._raw.swmm_link_create_xsect(this._engine, this.index, out));
+      return [this._mod, this._mod.HEAPU32[out >> 2]];
+    } finally {
+      this._mod._free(out);
+    }
+  }
+
   // -------------------------------------------------------------------------
   // Identity
   // -------------------------------------------------------------------------

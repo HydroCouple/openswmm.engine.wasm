@@ -37,6 +37,16 @@ built from the pinned engine (`tools/check_version.py`): Python
   checkpoints are available. Without zlib, like the native build, so the files
   open in native readers. About 3.3 MB more `.wasm`. Smoke test:
   `tests/smoke/hdf5.mjs`.
+- **Tables, patterns, cross-sections and dates** mirroring Python's
+  `_tables`, `_xsect`, `_geometry`, `_dates` and `_datetime`:
+  `solver.tables` (`TimeSeries`, `Curve`, point editing, validated replacement,
+  lookup), `solver.patterns`, `XSectionGeometry` (shapes, transects, shape
+  curves, streets, a link's geometry; scalar or array queries), `CrossSection`,
+  `oadateToDatetime`/`datetimeToOadate` and the engine's DateTime functions
+  (`encodeDate(mod, ...)` ...). Also `GeoPackageError`. The parity gate maps
+  Python's `ModelBuilder.add_subcatch`, `get_file_path`, `set_file_path` and
+  `userflag_def_count` onto the existing `addSubcatchment`, `filePathGet`,
+  `filePathSet` and `getUserflagDefCount`.
 - **Python API parity gate.** `tools/gen_python_surface.py` records the
   pinned engine's public Python surface (stubs and pure-Python modules) in
   `tests/fixtures/python_surface.json`; `tests/python_surface.test.ts` checks

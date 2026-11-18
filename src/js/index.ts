@@ -82,6 +82,7 @@ export {
   DependencyError,
   ElementNotFoundError,
   StaleObjectError,
+  GeoPackageError,
   raiseForCode,
 } from "./errors.js";
 
@@ -90,6 +91,20 @@ export {
 // ---------------------------------------------------------------------------
 export type { OpenSwmmWasmModule, EmscriptenFS } from "./types.js";
 export { oadateToDate, dateToOadate } from "./types.js";
+export { oadateToDatetime, datetimeToOadate } from "./dates.js";
+export {
+  encodeDate,
+  encodeTime,
+  decodeDate,
+  decodeTime,
+  addSeconds,
+  timeDiff,
+} from "./datetime.js";
+export { CrossSection } from "./geometry.js";
+export { PointTable, TimeSeries, Curve, Tables, Pattern, Patterns } from "./Tables.js";
+export type { TablePoint, PointRows } from "./Tables.js";
+export { XSectionGeometry, shapeName } from "./XSectionGeometry.js";
+export type { XSectUnits } from "./XSectionGeometry.js";
 
 // ---------------------------------------------------------------------------
 // Raw layer (generated) — for advanced users; also published as "./raw"

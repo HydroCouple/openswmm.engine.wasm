@@ -112,7 +112,11 @@ function readTypeScriptSurface(dir: string) {
 
 const tsSurface = readTypeScriptSurface(resolve(__dirname, "..", "src", "js"));
 
+/** Members a class inherits from JavaScript built-ins it extends. */
+const BUILTIN_MEMBERS: Record<string, string[]> = { Error: ["message", "name", "stack", "cause"] };
+
 function allMembers(name: string, seen = new Set<string>()): Set<string> {
+  if (name in BUILTIN_MEMBERS) return new Set(BUILTIN_MEMBERS[name]);
   const type = tsSurface.types.get(name);
   if (!type || seen.has(name)) return new Set();
   seen.add(name);
@@ -128,15 +132,25 @@ const hasName = (names: Iterable<string>, wanted: string) => {
   return false;
 };
 
-/** Python entries of one module with no TypeScript counterpart. */
-function missingIn(module: string): { total: number; missing: string[] } {
+/**
+ * Python entries of one module with no TypeScript counterpart. Entries whose
+ * `module.Class.member`, `module.Class` or `module.function` key is pending go
+ * to `pending` (with their wave) instead of `missing`.
+ */
+function missingIn(module: string): { total: number; missing: string[]; pending: string[] } {
   const py = surface[module];
   const missing: string[] = [];
+  const pending: string[] = [];
   let total = 0;
+  const miss = (label: string, ...keys: string[]) => {
+    const wave = keys.map((k) => map.pending[k]).find(Boolean);
+    if (wave) pending.push(`${label} (wave ${wave})`);
+    else missing.push(label);
+  };
   for (const fn of py.functions) {
     if (`${module}.${fn}` in map.excluded) continue;
     total++;
-    if (!hasName(tsSurface.functions, camel(fn))) missing.push(`${fn}()`);
+    if (!hasName(tsSurface.functions, camel(fn))) miss(`${fn}()`, `${module}.${fn}`);
   }
   for (const [cls, spec] of Object.entries(py.classes)) {
     if (`${module}.${cls}` in map.excluded) continue;
@@ -144,49 +158,44 @@ function missingIn(module: string): { total: number; missing: string[] } {
     const type = tsSurface.types.get(tsName);
     total++;
     if (spec.bases.some((b) => ENUM_BASES.has(b))) {
-      if (type?.kind !== "enum") missing.push(`${cls} (enum)`);
+      if (type?.kind !== "enum") miss(`${cls} (enum)`, `${module}.${cls}`);
       continue;
     }
-    if (!type) {
-      missing.push(cls);
-      const members = Object.keys(spec.members).filter(
-        (m) => !(`${module}.${cls}.${m}` in map.excluded),
-      );
-      total += members.length;
-      missing.push(...members.map((m) => `${cls}.${m}`));
-      continue;
-    }
-    const members = allMembers(tsName);
+    const members = type ? allMembers(tsName) : new Set<string>();
+    if (!type) miss(cls, `${module}.${cls}`);
     for (const member of Object.keys(spec.members)) {
-      if (`${module}.${cls}.${member}` in map.excluded) continue;
+      const key = `${module}.${cls}.${member}`;
+      if (key in map.excluded) continue;
       total++;
       const candidates = map.dunders[member] ?? [
         map.memberAliases[`${cls}.${member}`] ?? camel(member),
       ];
-      if (!candidates.some((c) => hasName(members, c))) missing.push(`${cls}.${member}`);
+      if (!candidates.some((c) => hasName(members, c))) {
+        miss(`${cls}.${member}`, key, `${module}.${cls}`);
+      }
     }
   }
-  return { total, missing };
+  return { total, missing, pending };
 }
 
 const modules = Object.keys(surface).sort();
 const isExcludedModule = (m: string) => m in map.excluded;
 
+/** True when a `module`, `module.Class`, `module.function` or `module.Class.member` key exists. */
+function resolves(key: string): boolean {
+  const [m, cls, member] = key.split(".");
+  const py = surface[m];
+  if (!py) return false;
+  if (cls === undefined) return true;
+  if (member === undefined) return cls in py.classes || py.functions.includes(cls);
+  return member in (py.classes[cls]?.members ?? {});
+}
+
 describe("Python public surface", () => {
   it("map entries refer to the current Python surface and TypeScript classes", () => {
     const stale: string[] = [];
-    for (const m of Object.keys(map.pending)) if (!(m in surface)) stale.push(`pending ${m}`);
-    for (const key of Object.keys(map.excluded)) {
-      const [m, cls, member] = key.split(".");
-      const py = surface[m];
-      const ok =
-        !!py &&
-        (cls === undefined ||
-          (member === undefined
-            ? cls in py.classes || py.functions.includes(cls)
-            : member in (py.classes[cls]?.members ?? {})));
-      if (!ok) stale.push(`excluded ${key}`);
-    }
+    for (const key of Object.keys(map.pending)) if (!resolves(key)) stale.push(`pending ${key}`);
+    for (const key of Object.keys(map.excluded)) if (!resolves(key)) stale.push(`excluded ${key}`);
     const pyClasses = new Set(modules.flatMap((m) => Object.keys(surface[m].classes)));
     for (const [py, tsName] of Object.entries(map.classAliases)) {
       if (!pyClasses.has(py) || !tsSurface.types.has(tsName)) stale.push(`classAlias ${py}`);
@@ -199,8 +208,8 @@ describe("Python public surface", () => {
     expect(stale).toEqual([]);
   });
 
-  it("no module is both pending and excluded", () => {
-    expect(Object.keys(map.pending).filter(isExcludedModule)).toEqual([]);
+  it("no key is both pending and excluded", () => {
+    expect(Object.keys(map.pending).filter((k) => k in map.excluded)).toEqual([]);
   });
 
   for (const module of modules) {
@@ -225,13 +234,15 @@ describe("Python public surface", () => {
         continue;
       }
       const r = missingIn(module);
+      const absent = r.missing.length + r.pending.length;
       total += r.total;
-      present += r.total - r.missing.length;
+      present += r.total - absent;
       report[module] = {
         status: map.pending[module] ? `pending wave ${map.pending[module]}` : "checked",
-        present: r.total - r.missing.length,
+        present: r.total - absent,
         total: r.total,
         missing: r.missing,
+        pending: r.pending,
       };
     }
     const work = resolve(__dirname, "_work");

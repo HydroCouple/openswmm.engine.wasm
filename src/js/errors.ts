@@ -134,6 +134,19 @@ export class FileError extends EngineError {
 }
 
 /**
+ * A GeoPackage operation failed: opening the file, a query or a write
+ * (`SWMM_ERR_IO`). The GeoPackage C API reports failures without a code; the
+ * message carries the library's reason.
+ */
+export class GeoPackageError extends EngineError {
+  constructor(message?: string) {
+    super(ErrorCode.IO, message ?? "GeoPackage operation failed");
+    this.name = "GeoPackageError";
+    Object.setPrototypeOf(this, new.target.prototype);
+  }
+}
+
+/**
  * Input file parse error (`SWMM_ERR_PARSE`).
  */
 export class ParseError extends EngineError {
