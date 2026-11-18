@@ -33,6 +33,8 @@
  * @license  Apache-2.0
  */
 
+import { MeshSnow } from "./Snow2D.js";
+import { SurfaceQuality } from "./SurfaceQuality.js";
 import {
   ForcingPersist,
   SurfaceBoundaryType,
@@ -794,6 +796,16 @@ export class Surface2D {
   get infiltration(): Infiltration2D {
     this._infiltration ??= new Infiltration2D(this.mod, this.handle, this.raw);
     return this._infiltration;
+  }
+
+  /** Mesh snow configuration and cell snapshots (Python `surface2d.snow`). */
+  get snow(): MeshSnow {
+    return new MeshSnow(this.mod, this.handle, this.raw);
+  }
+
+  /** Coverages, loadings, curb lengths and buildup (Python `surface2d.quality`). */
+  get quality(): SurfaceQuality {
+    return new SurfaceQuality(this.mod, this.handle, this.raw);
   }
 
   // ---- helpers -------------------------------------------------------------------------

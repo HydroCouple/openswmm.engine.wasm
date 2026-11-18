@@ -62,6 +62,14 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Process components, water age, mesh snow and surface quality** (wave E,
+  part 2), mirroring Python: `solver.processComponents` (register, remove,
+  arguments, `known`, `libraries`, `addSearchPath`), `solver.waterAge`
+  (`globals`, `nodeOverrides`, `save`), `surface2d.snow` (`MeshSnow`) and
+  `surface2d.quality` (`SurfaceQuality` with coverage, loading and
+  curb-length rows and `buildup`), plus `capabilities(mod)`, which returns
+  the same JSON document as Python's `capabilities()`, and `VERSION`
+  (checked against package.json by `tools/check_version.py`).
 - **Transport, threads and the catalog** (wave E, part 1), mirroring Python:
   `Transport.previewMatrix`, `detailedOutput`, conduit dispersion, boundary
   and source rows; `solver.transportMatrix`, `solver.threadInfo`,
