@@ -257,6 +257,22 @@ export type {
 } from "./ProcessComponents.js";
 export { WaterAge, WaterAgeGlobals, WaterAgeOverrides } from "./WaterAge.js";
 export type { WaterAgeOverride, WaterAgeSourceKey } from "./WaterAge.js";
+export {
+  Reactions,
+  ReactionSpecies,
+  ReactionCoefficient,
+  ReactionTerm,
+  SpeciesCollection,
+  CoefficientCollection,
+  TermCollection,
+  InitialQualityRows,
+} from "./Reactions.js";
+export type {
+  ReactionHydVar,
+  ReactionFunction,
+  ReactionInitialEntry,
+  ExpressionDiagnostic,
+} from "./Reactions.js";
 export { MeshSnow } from "./Snow2D.js";
 export type { MeshSnowRow } from "./Snow2D.js";
 export {

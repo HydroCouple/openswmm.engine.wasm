@@ -47,3 +47,79 @@ RAINFALL_MODE SYSTEM
 [REPORT]
 INPUT NO
 `;
+
+/** The `.rxn` of python/tests/engine/test_reactions.py (`_reactions_model`). */
+export const REACTIONS_RXN = `[REACTION_OPTIONS]
+RATE_UNITS SEC
+[REACTION_SPECIES]
+BULK X MG
+BULK Y MG
+[REACTION_COEFFICIENTS]
+CONSTANT Kb 0.05
+[REACTION_TERMS]
+Kf 0.5 * DT
+[REACTION_PIPES]
+RATE X -Kb * Kf * X
+RATE Y -Kb * X
+[REACTION_TANKS]
+RATE X -Kb * X
+RATE Y 0
+[REACTION_QUALITY]
+GLOBAL X 8
+`;
+
+/** Text that parses as `.rxn` but does not compile (from the same Python test). */
+export const UNCOMPILABLE_RXN = `[REACTION_OPTIONS]
+RATE_UNITS SEC
+[REACTION_SPECIES]
+BULK Z MG
+[REACTION_PIPES]
+RATE Z -NO_SUCH_COEF * Z
+`;
+
+/** The reaction-enabled `.inp` of the same Python test, bound to `rxnName`. */
+export function reactionsInp(rxnName: string): string {
+  return `[TITLE]
+Python reactions-binding round-trip deck
+
+[OPTIONS]
+FLOW_UNITS           CFS
+FLOW_ROUTING         DYNWAVE
+QUALITY_SOLVER       EULERIAN_ARD
+START_DATE           01/01/2026
+START_TIME           00:00:00
+END_DATE             01/01/2026
+END_TIME             01:00:00
+ROUTING_STEP         5
+REPORT_STEP          00:05:00
+
+[JUNCTIONS]
+;;Name Elev MaxDepth InitDepth SurDepth Aponded
+J0  10.0  10  1.5  0  0
+J1   9.4  10  1.5  0  0
+
+[OUTFALLS]
+OUT  7.0  FREE  NO
+
+[CONDUITS]
+C1  J0  J1   500  0.013  0  0  0
+C2  J1  OUT  500  0.013  0  0  0
+
+[XSECTIONS]
+C1  CIRCULAR  2.0  0  0  0
+C2  CIRCULAR  2.0  0  0  0
+
+[INFLOWS]
+J0  FLOW  ""  FLOW  1.0  1.0  5
+
+[POLLUTANTS]
+;;Name Units Crain Cgw Crdii Kdecay SnowOnly CoPollut CoFrac Cdwf Cinit
+TSS   MG/L  0  0  0  0  NO  *  0  0  10
+
+[PROCESS_COMPONENTS]
+org.hydrocouple.openswmm.reactions config="${rxnName}"
+
+[REPORT]
+INPUT NO
+`;
+}
