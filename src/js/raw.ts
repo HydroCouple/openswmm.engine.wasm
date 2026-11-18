@@ -4956,6 +4956,56 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_OutfallExportReceipt": {
+    "size": 32,
+    "fields": {
+      "exported_m3": {
+        "offset": 0,
+        "type": "double"
+      },
+      "reversed_m3": {
+        "offset": 8,
+        "type": "double"
+      },
+      "exported_heat_j": {
+        "offset": 16,
+        "type": "double"
+      },
+      "flags": {
+        "offset": 24,
+        "type": "unsigned"
+      }
+    }
+  },
+  "SWMM_DividerParams": {
+    "size": 40,
+    "fields": {
+      "method": {
+        "offset": 0,
+        "type": "int"
+      },
+      "diversion_link": {
+        "offset": 4,
+        "type": "int"
+      },
+      "curve": {
+        "offset": 8,
+        "type": "int"
+      },
+      "cutoff_flow": {
+        "offset": 16,
+        "type": "double"
+      },
+      "weir_height": {
+        "offset": 24,
+        "type": "double"
+      },
+      "weir_coefficient": {
+        "offset": 32,
+        "type": "double"
+      }
+    }
+  },
   "SWMM_UebSnowpack": {
     "size": 48,
     "fields": {

@@ -62,6 +62,16 @@ built from the pinned engine (`tools/check_version.py`): Python
   `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
   As in Python, adding or renaming an element invalidates that collection's
   earlier views.
+- **Nodes and links** (wave B, part 2), mirroring Python: node tag, virtual
+  and inlet flags with their eligibility codes, rim/surcharge/ponded/initial
+  depths, crown elevation, full volume, degree, quality and mass flux, and the
+  `storage`, `outfall` (incl. `exportReceipt`) and `divider` sub-views; link
+  geometry and hydraulics (length, roughness, offsets, losses, flap gate,
+  seepage, culvert, barrels, ...), `fromNode`/`toNode`/`setNodes`, the `xsect`,
+  `stats`, `pump`, `weir`, `orifice` and `outlet` sub-views; collection
+  `add`/`popLast`/`rename`/`ids`/`has`, bulk inflows/outflows/losses,
+  volumes, settings, hydraulic power, qualities and pump statistics. Sub-views
+  of the wrong element type throw `TypeError`.
 - **Structs by layout:** `readStruct`/`writeStruct`/`withStruct` read and write
   engine structs through the generated wasm32 layouts; the generator now
   handles nested structs and lays out the snow and radiation structs (all

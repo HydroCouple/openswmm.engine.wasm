@@ -15,21 +15,21 @@
     "Infiltration2DView": "Infiltration2D",
     "_PointTable": "PointTable",
     "_OptionsExtView": "OptionsExtView",
-    "Event": "SimulationEvent"
+    "Event": "SimulationEvent",
+    "NodeStatsView": "NodeStats"
   },
   "memberAliases": {
     "ModelBuilder.add_subcatch": "addSubcatchment",
     "ModelBuilder.get_file_path": "filePathGet",
     "ModelBuilder.set_file_path": "filePathSet",
-    "ModelBuilder.userflag_def_count": "getUserflagDefCount"
+    "ModelBuilder.userflag_def_count": "getUserflagDefCount",
+    "Link.closed": "isClosed"
   },
   "excluded": {
     "_access": "Python-internal owner registry and native-access locking; the TypeScript views use generation counters and guardedRaw (single-threaded WASM)."
   },
   "pending": {
     "_capabilities": "E",
-    "_nodes": "B",
-    "_links": "B",
     "_subcatchments": "B",
     "_hotstart": "C",
     "_checkpoint": "C",

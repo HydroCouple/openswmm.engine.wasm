@@ -59,6 +59,9 @@ const SCALAR_SIZE: Record<string, number> = {
   int: 4,
   long: 4,
   uint32_t: 4,
+  unsigned: 4,
+  "unsigned int": 4,
+  "unsigned long": 4,
   uint64_t: 8,
   float: 4,
   double: 8,
@@ -71,6 +74,9 @@ function readScalar(mod: OpenSwmmWasmModule, base: string, at: number): number {
     case "float":
       return mod.HEAPF32[at >> 2];
     case "uint32_t":
+    case "unsigned":
+    case "unsigned int":
+    case "unsigned long":
       return mod.HEAPU32[at >> 2];
     case "uint64_t":
       return mod.HEAPU32[at >> 2] + mod.HEAPU32[(at >> 2) + 1] * 2 ** 32;
@@ -88,6 +94,9 @@ function writeScalar(mod: OpenSwmmWasmModule, base: string, at: number, value: n
       mod.HEAPF32[at >> 2] = value;
       break;
     case "uint32_t":
+    case "unsigned":
+    case "unsigned int":
+    case "unsigned long":
       mod.HEAPU32[at >> 2] = value;
       break;
     case "uint64_t":

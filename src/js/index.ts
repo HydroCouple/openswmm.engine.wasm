@@ -45,10 +45,20 @@ export type { UserFlagDef, FilePaths, PluginEntry } from "./ModelBuilder.js";
 // ---------------------------------------------------------------------------
 // Domain collections and element accessors
 // ---------------------------------------------------------------------------
-export { Nodes, Node } from "./Nodes.js";
+export { Nodes, Node, StorageView, OutfallView, DividerView } from "./Nodes.js";
+export type { OutfallExportReceipt } from "./Nodes.js";
 export type { NodeStats } from "./Nodes.js";
 
-export { Links, Link } from "./Links.js";
+export {
+  Links,
+  Link,
+  LinkStatsView,
+  XSection,
+  PumpView,
+  WeirView,
+  OrificeView,
+  OutletView,
+} from "./Links.js";
 
 export { Subcatchments, Subcatchment } from "./Subcatchments.js";
 

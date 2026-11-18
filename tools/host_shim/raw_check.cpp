@@ -1672,6 +1672,18 @@ static_assert(offsetof(SWMM_InletUsage, flow_limit) == 32, "SWMM_InletUsage.flow
 static_assert(offsetof(SWMM_InletUsage, local_depress) == 40, "SWMM_InletUsage.local_depress: offset");
 static_assert(offsetof(SWMM_InletUsage, local_width) == 48, "SWMM_InletUsage.local_width: offset");
 static_assert(offsetof(SWMM_InletUsage, placement) == 56, "SWMM_InletUsage.placement: offset");
+static_assert(sizeof(SWMM_OutfallExportReceipt) == 32, "SWMM_OutfallExportReceipt: size");
+static_assert(offsetof(SWMM_OutfallExportReceipt, exported_m3) == 0, "SWMM_OutfallExportReceipt.exported_m3: offset");
+static_assert(offsetof(SWMM_OutfallExportReceipt, reversed_m3) == 8, "SWMM_OutfallExportReceipt.reversed_m3: offset");
+static_assert(offsetof(SWMM_OutfallExportReceipt, exported_heat_j) == 16, "SWMM_OutfallExportReceipt.exported_heat_j: offset");
+static_assert(offsetof(SWMM_OutfallExportReceipt, flags) == 24, "SWMM_OutfallExportReceipt.flags: offset");
+static_assert(sizeof(SWMM_DividerParams) == 40, "SWMM_DividerParams: size");
+static_assert(offsetof(SWMM_DividerParams, method) == 0, "SWMM_DividerParams.method: offset");
+static_assert(offsetof(SWMM_DividerParams, diversion_link) == 4, "SWMM_DividerParams.diversion_link: offset");
+static_assert(offsetof(SWMM_DividerParams, curve) == 8, "SWMM_DividerParams.curve: offset");
+static_assert(offsetof(SWMM_DividerParams, cutoff_flow) == 16, "SWMM_DividerParams.cutoff_flow: offset");
+static_assert(offsetof(SWMM_DividerParams, weir_height) == 24, "SWMM_DividerParams.weir_height: offset");
+static_assert(offsetof(SWMM_DividerParams, weir_coefficient) == 32, "SWMM_DividerParams.weir_coefficient: offset");
 static_assert(sizeof(SWMM_UebSnowpack) == 48, "SWMM_UebSnowpack: size");
 static_assert(offsetof(SWMM_UebSnowpack, model) == 0, "SWMM_UebSnowpack.model: offset");
 static_assert(offsetof(SWMM_UebSnowpack, forest_fraction) == 8, "SWMM_UebSnowpack.forest_fraction: offset");
