@@ -4668,6 +4668,19 @@ export const STRUCTS = {
       }
     }
   },
+  "SWMM_NodeCoupling2DParam": {
+    "size": 8,
+    "fields": {
+      "key": {
+        "offset": 0,
+        "type": "const char*"
+      },
+      "value": {
+        "offset": 4,
+        "type": "const char*"
+      }
+    }
+  },
   "SWMM_CheckpointSessionOptions": {
     "size": 24,
     "fields": {
@@ -5297,6 +5310,28 @@ export const STRUCTS = {
       },
       "dest": {
         "offset": 48,
+        "type": "int"
+      }
+    }
+  },
+  "SWMM_Infil2DAuthoredRow": {
+    "size": 4168,
+    "fields": {
+      "cell": {
+        "offset": 0,
+        "type": "int"
+      },
+      "tag": {
+        "offset": 4,
+        "type": "char[4096]",
+        "count": 4096
+      },
+      "row": {
+        "offset": 4104,
+        "type": "SWMM_Infil2DRow"
+      },
+      "dest_explicit": {
+        "offset": 4160,
         "type": "int"
       }
     }
@@ -6169,6 +6204,107 @@ export const STRUCTS = {
       },
       "energy_residual_kj": {
         "offset": 88,
+        "type": "double"
+      }
+    }
+  },
+  "SWMM_SurfaceOwnerObject": {
+    "size": 1104,
+    "fields": {
+      "subcatch": {
+        "offset": 0,
+        "type": "int"
+      },
+      "reviewed": {
+        "offset": 4,
+        "type": "int"
+      },
+      "lumped": {
+        "offset": 8,
+        "type": "int"
+      },
+      "status": {
+        "offset": 12,
+        "type": "int"
+      },
+      "declared_area": {
+        "offset": 16,
+        "type": "double"
+      },
+      "polygon_area": {
+        "offset": 24,
+        "type": "double"
+      },
+      "lid_area": {
+        "offset": 32,
+        "type": "double"
+      },
+      "pervious_area": {
+        "offset": 40,
+        "type": "double"
+      },
+      "impervious_area": {
+        "offset": 48,
+        "type": "double"
+      },
+      "native_lid_area": {
+        "offset": 56,
+        "type": "double"
+      },
+      "inside_area": {
+        "offset": 64,
+        "type": "double"
+      },
+      "outside_area": {
+        "offset": 72,
+        "type": "double"
+      },
+      "name": {
+        "offset": 80,
+        "type": "char[256]",
+        "count": 256
+      },
+      "tag": {
+        "offset": 336,
+        "type": "char[256]",
+        "count": 256
+      },
+      "reason": {
+        "offset": 592,
+        "type": "char[512]",
+        "count": 512
+      }
+    }
+  },
+  "SWMM_SurfaceOwnerShare": {
+    "size": 48,
+    "fields": {
+      "subcatch": {
+        "offset": 0,
+        "type": "int"
+      },
+      "cell": {
+        "offset": 4,
+        "type": "int"
+      },
+      "weather_area": {
+        "offset": 8,
+        "type": "double"
+      },
+      "pervious_area": {
+        "offset": 16,
+        "type": "double"
+      },
+      "impervious_area": {
+        "offset": 24,
+        "type": "double"
+      },
+      "lid_area": {
+        "offset": 32,
+        "type": "double"
+      },
+      "native_lid_area": {
+        "offset": 40,
         "type": "double"
       }
     }

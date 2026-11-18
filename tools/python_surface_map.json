@@ -53,7 +53,6 @@
   "pending": {
     "_groundwater": "E",
     "_gw_transport": "E",
-    "_2d": "E",
     "_coupling": "F",
     "_split": "F",
     "_passive_exchange": "F",
@@ -62,6 +61,16 @@
     "_solver.Solver.coupling": "F",
     "_solver.Solver.material_split": "F",
     "_solver.Solver.passive_exchange": "F",
-    "_solver.Solver.split": "F"
+    "_solver.Solver.split": "F",
+    "_2d.Surface2D.sources": "F",
+    "_2d.Surface2D.set_head_boundary": "F",
+    "_2d.Surface2D.set_flow_boundary": "F",
+    "_2d.Surface2D.boundary_receipt": "F",
+    "_2d.Surface2D.species_ledger": "F",
+    "_2d.Surface2D.set_water_source": "F",
+    "_2d.Surface2D.set_heat_source": "F",
+    "_2d.Surface2D.set_species_source": "F",
+    "_2d.Surface2D.clear_source": "F",
+    "_2d.Surface2D.source_receipt": "F"
   }
 }

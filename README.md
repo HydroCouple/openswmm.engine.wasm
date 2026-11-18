@@ -451,7 +451,9 @@ if (mesh.isActive) {
 | State | `getDepths()`, `getHeads()`, `getVelocities()` (independent X/Y arrays in m/s), `getCouplingFluxes()`, `getRainfallBulk()`, `getRainVolumeBulk()`, `getCouplingVolumeBulk()`, `getEdgeFluxBulk()`, `getEdgeGeometryBulk()`, `getVertexHeads()`, `getVertexRenderDepths()` and the single-cell getters |
 | Summary | `maxDepth`, `totalVolume`, `totalExchangeFlow`, `solverSteps`, `solverLastStep`, `runStats`, `continuityError`, `getMassBalance()`, `getStatMaxDepths()`, `getStatMaxVelocities()`, `getStatMaxContinuityErr()` |
 | Forcing | `forceRainfall`, `forceRainfallUniform`, `forceEvap`, `forceEvapUniform`, `forceCouplingFlux` (options `{ mode, persist }`, default `OVERRIDE`/`RESET` as in Python), `forceClearAll()` |
-| Infiltration | `surface2d.infiltration`: `infilStep`, `defaults`, `setDefault`, `cell`, `setCell`, `setCells`, `rate()`, `cumulative()`, `totalVolume` |
+| Infiltration | `surface2d.infiltration`: `infilStep`, `defaults` (a live `Infil2DDefaults` mapping), `setDefault`, `cell`, `setCell`, `setCells`, `authoredRows`/`replaceAuthoredRows`, `ownership`/`ownershipBulk`, `rate()`, `cumulative()`, `totalVolume` |
+| Quality and edges | `species`, `concentrations(i)`, initial, initial-bed and boundary quality rows, `setEdgeBcConcentrations`, `clearEdgeBc`/`clearBoundary`, `boundaryFlow`, `edgeIsExterior`, `setEdgeBcGroup`, wall drag, initial HGL |
+| Coupling, owners, output | node coupling type/parameters (`validateNodeCoupling`, `replaceNodeCoupling`, ...), surface owners (`getSurfaceOwners`, `previewSurfaceOwners`, `replaceSurfaceOwners`), `setResultsFile`, `setAutoBackendCpu`, `geometryScaleToSi`, `getReportRainfallBulk`, and the `snow` and `quality` sub-views. Runtime sources and boundary receipts (`sources`, `setHeadBoundary`, ...) arrive with the coupling wave. |
 
 Notes:
 

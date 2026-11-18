@@ -114,6 +114,11 @@ STRUCTS_OF_INTEREST = [
     "SWMM_ChannelGroundStatus",
     "SWMM_ChannelGroundContact",
     "SWMM_ChannelGroundPreview",
+    # 2D remainder (wave E): authored infiltration rows, node coupling, surface owners
+    "SWMM_Infil2DAuthoredRow",
+    "SWMM_NodeCoupling2DParam",
+    "SWMM_SurfaceOwnerObject",
+    "SWMM_SurfaceOwnerShare",
 ]
 
 WASM32 = {
