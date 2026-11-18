@@ -83,6 +83,9 @@ import { Spatial } from "./Spatial.js";
 import { ModelEditor } from "./Edit.js";
 import { Infrastructure } from "./Infrastructure.js";
 
+/** Plugin id of the built-in GeoPackage model writer. */
+const GEOPACKAGE_PLUGIN_ID = "org.hydrocouple.openswmm.plugins.geopackage";
+
 // =============================================================================
 // Solver
 // =============================================================================
@@ -726,6 +729,17 @@ export class Solver {
   /** Transects, streets, inlets, inlet placements and LIDs (Python `solver.infrastructure`). */
   get infrastructure(): Infrastructure {
     return new Infrastructure(this);
+  }
+
+  /**
+   * Write the model to an OGC GeoPackage (`.gpkg`) with the built-in writer:
+   * nodes, links, subcatchments and rain gages as feature layers. A `crs`
+   * (e.g. `"EPSG:2284"`) is applied through `spatial.crs` first so features
+   * carry that SRS; without one the model's CRS is kept.
+   */
+  writeGeopackage(path: string, crs: string | null = null): void {
+    if (crs !== null) this.spatial.crs = crs;
+    this.writeWithPlugin(path, GEOPACKAGE_PLUGIN_ID);
   }
 
   /** Coordinates, polygons, `[MAP]` and the CRS (Python `solver.spatial`). */

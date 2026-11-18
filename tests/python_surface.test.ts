@@ -150,7 +150,8 @@ function missingIn(module: string): { total: number; missing: string[]; pending:
   for (const fn of py.functions) {
     if (`${module}.${fn}` in map.excluded) continue;
     total++;
-    if (!hasName(tsSurface.functions, camel(fn))) miss(`${fn}()`, `${module}.${fn}`);
+    const tsName = map.memberAliases[`${module}.${fn}`] ?? camel(fn);
+    if (!hasName(tsSurface.functions, tsName)) miss(`${fn}()`, `${module}.${fn}`);
   }
   for (const [cls, spec] of Object.entries(py.classes)) {
     if (`${module}.${cls}` in map.excluded) continue;
@@ -204,7 +205,9 @@ describe("Python public surface", () => {
     }
     for (const key of Object.keys(map.memberAliases)) {
       const [cls, member] = key.split(".");
-      const found = modules.some((m) => member in (surface[m].classes[cls]?.members ?? {}));
+      const found =
+        modules.some((m) => member in (surface[m].classes[cls]?.members ?? {})) ||
+        (surface[cls]?.functions.includes(member) ?? false); // module.function
       if (!found) stale.push(`memberAlias ${key}`);
     }
     expect(stale).toEqual([]);
