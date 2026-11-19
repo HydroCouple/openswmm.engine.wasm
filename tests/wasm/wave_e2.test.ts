@@ -45,7 +45,8 @@ describe.skipIf(!built)(
       expect(caps.catalog_revision).toBe(pkg.catalog.revision());
       expect(caps.features).toEqual({ "2d": true, geopackage: true, hdf5_2d_output: true });
       expect(caps.checkpoints).toContain("inspection");
-      expect(caps.checkpoints).not.toContain("save_new");
+      expect(caps.checkpoints).toContain("save_new"); // exclusive publication under Emscripten
+      expect(caps.checkpoints).toContain("bundle_export");
       expect(caps.threads.omp_available).toBe(false);
       expect(caps.component_libraries).toEqual([]);
       evidence.capabilities = caps;

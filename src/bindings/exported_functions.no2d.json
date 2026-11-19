@@ -170,6 +170,8 @@
 "_swmm_get_warning_at",
 "_swmm_get_thread_info",
 "_swmm_get_effective_threads",
+"_swmm_backend_info",
+"_swmm_fv_device_supported",
 "_swmm_get_transport_matrix",
 "_swmm_preview_transport_matrix",
 "_swmm_transport_domain_name",

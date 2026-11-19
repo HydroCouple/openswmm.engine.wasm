@@ -2,10 +2,10 @@
  * Real module, wave C part 4: hot start files, the save schedule and
  * checkpoint sessions on tests/fixtures/smoke.inp.
  *
- * Checkpoint saving needs an atomic no-replace rename that the engine only
- * compiles for Windows, macOS and Linux (io/CheckpointDirectory.cpp), so this
- * build reports no SAVE_NEW / BUNDLE_EXPORT capability and save() refuses; the
- * test pins that until the engine gains an Emscripten branch.
+ * Checkpoints are published without replacing anything: under Emscripten the
+ * engine claims the destination with an exclusive create and renames onto the
+ * claim (io/CheckpointDirectory.cpp, engine 118c552a), so this build reports
+ * SAVE_NEW and BUNDLE_EXPORT.
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -96,23 +96,44 @@ describe.skipIf(!built)(title("real module: wave C part 4"), () => {
     }
   });
 
-  it("starts a checkpoint session; saving waits for an engine publication primitive", async () => {
-    const { pkg, solver } = await opened("");
+  it("saves a checkpoint without replacing anything and continues a fresh session from it", async () => {
+    const { mod, pkg, solver: source } = await opened("");
+    const target = new pkg.Solver(mod);
     try {
-      const cp = solver.checkpoints;
+      target.open("/smoke.inp", "/target.rpt", "");
+      const cp = source.checkpoints;
       const caps = cp.capabilities;
       expect(caps & 1).toBe(1); // inspection
-      expect(caps & SAVE_NEW).toBe(0);
-      expect(caps & BUNDLE_EXPORT).toBe(0);
+      expect(caps & SAVE_NEW).toBe(SAVE_NEW);
+      expect(caps & BUNDLE_EXPORT).toBe(BUNDLE_EXPORT);
       cp.startSession(0);
       expect(cp.sessionStatus & 1).toBe(1); // attached
-      solver.until(600);
-      expect(() => cp.save("/cp.chk")).toThrow(/Exclusive checkpoint publication unavailable/);
-      expect(() => pkg.Checkpoints.exportBundle(solver.module, "/cp.chk", "/bundle")).toThrow(
+      target.checkpoints.startSession(0);
+      source.until(600);
+      cp.save("/cp.chk");
+      expect(() => cp.save("/cp.chk")).toThrow(/already exists/);
+      mod.FS.writeFile("/existing.chk", "keep me");
+      expect(() => cp.save("/existing.chk")).toThrow(/already exists/);
+      expect(mod.FS.readFile("/existing.chk", { encoding: "utf8" })).toBe("keep me");
+      expect(mod.FS.readdir("/").filter((f) => f.includes("-part-"))).toEqual([]);
+
+      target.checkpoints.restore("/cp.chk");
+      expect(target.elapsed).toBe(source.elapsed);
+      for (let i = 0; i < 20; i++) {
+        source.step();
+        target.step();
+      }
+      const depths = (s: typeof source) =>
+        Array.from({ length: s.nodes.length }, (_, i) => s.nodes.get(i).depth);
+      expect(target.elapsed).toBe(source.elapsed);
+      expect(depths(target)).toEqual(depths(source));
+      // A session without file outputs has no file-backed checkpoint to bundle.
+      expect(() => pkg.Checkpoints.exportBundle(mod, "/cp.chk", "/bundle")).toThrow(
         pkg.EngineError,
       );
     } finally {
-      solver.destroy();
+      target.destroy();
+      source.destroy();
     }
   });
 });
