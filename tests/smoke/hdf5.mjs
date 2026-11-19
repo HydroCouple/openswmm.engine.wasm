@@ -162,9 +162,23 @@ try {
 }
 
 // ---- 3. .h5 model ---------------------------------------------------------------
-// Only the write is checked: reopening an .h5 model fails in the engine itself
-// (natively too, 2026-11-17: its 2D section parser rejects the saved model), so
-// the round trip waits for that engine fix.
+// Save the model as .h5, reopen it with the HDF5 input plugin named (the
+// built-in .inp reader would parse the file as text), and run both to the end.
+/** Run a model to the end; returns the final depth of every node. */
+function runToEnd(path, plugin = "") {
+  const s = new Solver(mod);
+  try {
+    s.open(path, "/roundtrip.rpt", "/roundtrip.out", plugin);
+    s.initialize();
+    s.start(false);
+    while (s.step() > 0);
+    const depths = Array.from({ length: s.nodes.length }, (_, i) => s.nodes.get(i).depth);
+    s.end();
+    return depths;
+  } finally {
+    s.destroy();
+  }
+}
 {
   const s = new Solver(mod);
   s.writeFile("/smoke.inp", readFileSync(resolve(root, "tests/fixtures/smoke.inp"), "utf8"));
@@ -181,6 +195,18 @@ console.log(`hdf5: .h5 model written, ${model.length} bytes`);
 assert(
   signature.join(",") === [0x89, 0x48, 0x44, 0x46, 0x0d, 0x0a, 0x1a, 0x0a].join(","),
   "the .h5 model is not an HDF5 file",
+);
+const fromInp = runToEnd("/smoke.inp");
+const fromH5 = runToEnd("/smoke-model.h5", HDF5_MODEL_PLUGIN);
+evidence.model.finalDepths = { inp: fromInp, h5: fromH5 };
+assert(
+  fromInp.length > 0 &&
+    fromH5.length === fromInp.length &&
+    fromH5.every((d, i) => d === fromInp[i]),
+  `the reopened .h5 model ran differently: ${fromH5} vs ${fromInp}`,
+);
+console.log(
+  `hdf5: .h5 model reopened with its plugin and ran like the .inp (${fromH5.length} nodes)`,
 );
 
 writeFileSync(resolve(work, "hdf5.json"), JSON.stringify(evidence, null, 1) + "\n");
