@@ -221,3 +221,48 @@ export function withStruct<T>(
 ): T {
   return withStructs(mod, name, init ? [init] : [], fn);
 }
+
+/** `swe_m` → `sweM`, `ground_heat_wm2` → `groundHeatWm2`. */
+const camelName = (field: string) =>
+  field.replace(/_([a-z0-9])/gi, (_, c: string) => c.toUpperCase());
+
+/** A struct `name` read by {@link readStruct}, with camelCase keys (nested structs too). */
+export function camelStruct(name: StructName | string, row: StructValue): StructValue {
+  const out: StructValue = {};
+  for (const [field, f] of Object.entries(layoutOf(name).fields)) {
+    if (!(field in row)) continue;
+    const base = baseType(f.type);
+    const value = row[field];
+    out[camelName(field)] =
+      base in LAYOUTS
+        ? Array.isArray(value)
+          ? (value as StructValue[]).map((v) => camelStruct(base, v))
+          : camelStruct(base, value as StructValue)
+        : value;
+  }
+  return out;
+}
+
+/**
+ * camelCase values of struct `name` keyed by its C field names (nested
+ * structs too), for {@link writeStruct}. The names come from the layout, so
+ * they need not round-trip through a naming rule.
+ * @throws RangeError for a key that is not a field of the struct.
+ */
+export function structFields(name: StructName | string, values: object): StructValue {
+  const fields = layoutOf(name).fields;
+  const byCamel = new Map(Object.keys(fields).map((field) => [camelName(field), field]));
+  const out: StructValue = {};
+  for (const [key, value] of Object.entries(values)) {
+    const field = byCamel.get(key);
+    if (!field) throw new RangeError(`${name} has no field ${key}`);
+    const base = baseType(fields[field].type);
+    out[field] =
+      base in LAYOUTS
+        ? Array.isArray(value)
+          ? value.map((v: object) => structFields(base, v))
+          : structFields(base, value as object)
+        : (value as StructField);
+  }
+  return out;
+}
