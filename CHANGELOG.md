@@ -19,13 +19,15 @@ built from the pinned engine (`tools/check_version.py`): Python
   settable; `simStartTime` / `simEndTime` give the resolved times the engine
   runs (what `startDatetime` returned before; the two agree once a model is
   open). Dates are rounded to the millisecond.
-- **Engine pin advanced** from `ed32a16f` to `swmm6_rel` `85c47981`. The raw
-  layer grows from 1,414 to 1,527 C functions (1,265 without the 2D headers):
+- **Engine pin advanced** from `ed32a16f` to `swmm6_rel` `80e19614`. The raw
+  layer grows from 1,414 to 1,533 C functions (1,270 without the 2D headers):
   hot-start contents and legacy hot starts, recorded deletes and type
   conversion (`swmm_convert_types`), LID extras and storage LIDs, summary
   tables (`swmm_summary_*`), divider parameters, 2D initial HGL and results
-  path, process-component arguments, and the new split, material-split, split
-  packet and passive-exchange headers. Adds the `SWMM_PhaseCallback` typedef
+  path, process-component arguments, frozen ground (`swmm_frozen_ground_*`,
+  `swmm_subcatch_get_frozen_ground`, `swmm_infil2d_get_frozen_ground_bulk`),
+  and the new split, material-split, split packet and passive-exchange
+  headers. Adds the `SWMM_PhaseCallback` typedef
   (`"viiddi"`) and the `SplitRole`, `SplitPhase`, `LidExtraField`,
   `SummaryTable` and `SummaryObject` enums; `GroundwaterVariable` gains `QX`
   and `QY`. No function was removed or changed signature.
@@ -35,6 +37,12 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ### Added
 
+- **Frozen ground**, mirroring Python: `solver.frozenGroundRows()`,
+  `setFrozenGround()` and `removeFrozenGround()` for the `[FROZEN_GROUND]`
+  and (with `mesh`) `[2D_FROZEN_GROUND]` rows, `Subcatchment.frozenGround`
+  (temperature, frozen fraction and infiltration factor, or `null` without a
+  row) and `surface2d.infiltration.frozenGround()` per triangle
+  (`tests/wasm/frozen_ground.test.ts`, identical to native Python).
 - **Coupling family** (wave F), mirroring Python's `_coupling`, `_split`,
   `_passive_exchange` and `_trace`; with it, every one of the 2,484 public
   Python members has a TypeScript counterpart (`pending` is empty).

@@ -683,6 +683,7 @@ static_assert(std::is_same_v<decltype(&swmm_infil2d_get_cell), int (*)(SWMM_Engi
 static_assert(std::is_same_v<decltype(&swmm_infil2d_set_cell), int (*)(SWMM_Engine, int, const SWMM_Infil2DRow*)>, "swmm_infil2d_set_cell: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_infil2d_set_cells), int (*)(SWMM_Engine, const int*, int, const SWMM_Infil2DRow*)>, "swmm_infil2d_set_cells: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_infil2d_get_rate_bulk), int (*)(SWMM_Engine, double*, int)>, "swmm_infil2d_get_rate_bulk: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_infil2d_get_frozen_ground_bulk), int (*)(SWMM_Engine, double*, double*, double*, int)>, "swmm_infil2d_get_frozen_ground_bulk: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_infil2d_get_cum_bulk), int (*)(SWMM_Engine, double*, int)>, "swmm_infil2d_get_cum_bulk: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_infil2d_get_total_volume), int (*)(SWMM_Engine, double*)>, "swmm_infil2d_get_total_volume: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_ext_inflow_add), int (*)(SWMM_Engine, int, const char*, const char*, const char*, double, double, double, const char*)>, "swmm_ext_inflow_add: prototype drift");
@@ -1415,6 +1416,11 @@ static_assert(std::is_same_v<decltype(&swmm_subcatch_get_runoff), int (*)(SWMM_E
 static_assert(std::is_same_v<decltype(&swmm_subcatch_get_groundwater), int (*)(SWMM_Engine, int, double*)>, "swmm_subcatch_get_groundwater: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_subcatch_get_rainfall), int (*)(SWMM_Engine, int, double*)>, "swmm_subcatch_get_rainfall: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_subcatch_get_snow_depth), int (*)(SWMM_Engine, int, double*)>, "swmm_subcatch_get_snow_depth: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_subcatch_get_frozen_ground), int (*)(SWMM_Engine, int, int*, double*, double*, double*)>, "swmm_subcatch_get_frozen_ground: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_frozen_ground_count), int (*)(SWMM_Engine, int, int*)>, "swmm_frozen_ground_count: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_frozen_ground_get), int (*)(SWMM_Engine, int, int, char*, int, double*)>, "swmm_frozen_ground_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_frozen_ground_set), int (*)(SWMM_Engine, int, const char*, const double*)>, "swmm_frozen_ground_set: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_frozen_ground_remove), int (*)(SWMM_Engine, int, const char*)>, "swmm_frozen_ground_remove: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_subcatch_get_evap), int (*)(SWMM_Engine, int, double*)>, "swmm_subcatch_get_evap: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_subcatch_set_aquifer), int (*)(SWMM_Engine, int, int)>, "swmm_subcatch_set_aquifer: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_subcatch_get_aquifer), int (*)(SWMM_Engine, int, int*)>, "swmm_subcatch_get_aquifer: prototype drift");

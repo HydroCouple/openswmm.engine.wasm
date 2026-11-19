@@ -1278,6 +1278,8 @@ export interface RawApi {
   /** `openswmm_infil2d.h` */
   swmm_infil2d_get_rate_bulk(engine: number, f: number, n: number): number;
   /** `openswmm_infil2d.h` */
+  swmm_infil2d_get_frozen_ground_bulk(engine: number, temperature: number, frozen_fraction: number, infiltration_factor: number, n: number): number;
+  /** `openswmm_infil2d.h` */
   swmm_infil2d_get_cum_bulk(engine: number, F: number, n: number): number;
   /** `openswmm_infil2d.h` */
   swmm_infil2d_get_total_volume(engine: number, volume: number): number;
@@ -2742,6 +2744,16 @@ export interface RawApi {
   /** `openswmm_subcatchments.h` */
   swmm_subcatch_get_snow_depth(engine: number, idx: number, depth: number): number;
   /** `openswmm_subcatchments.h` */
+  swmm_subcatch_get_frozen_ground(engine: number, idx: number, active: number, temperature: number, frozen_fraction: number, infiltration_factor: number): number;
+  /** `openswmm_subcatchments.h` */
+  swmm_frozen_ground_count(engine: number, target: number, count: number): number;
+  /** `openswmm_subcatchments.h` */
+  swmm_frozen_ground_get(engine: number, target: number, idx: number, name: number, name_size: number, values: number): number;
+  /** `openswmm_subcatchments.h` */
+  swmm_frozen_ground_set(engine: number, target: number, name: string | null, values: number): number;
+  /** `openswmm_subcatchments.h` */
+  swmm_frozen_ground_remove(engine: number, target: number, name: string | null): number;
+  /** `openswmm_subcatchments.h` */
   swmm_subcatch_get_evap(engine: number, idx: number, evap: number): number;
   /** `openswmm_subcatchments.h` */
   swmm_subcatch_set_aquifer(engine: number, idx: number, aquifer_idx: number): number;
@@ -3763,6 +3775,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_infil2d_set_cell", "number", ["number", "number", "number"]);
   bind("swmm_infil2d_set_cells", "number", ["number", "number", "number", "number"]);
   bind("swmm_infil2d_get_rate_bulk", "number", ["number", "number", "number"]);
+  bind("swmm_infil2d_get_frozen_ground_bulk", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_infil2d_get_cum_bulk", "number", ["number", "number", "number"]);
   bind("swmm_infil2d_get_total_volume", "number", ["number", "number"]);
   bind("swmm_ext_inflow_add", "number", ["number", "number", "string", "string", "string", "number", "number", "number", "string"]);
@@ -4495,6 +4508,11 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_subcatch_get_groundwater", "number", ["number", "number", "number"]);
   bind("swmm_subcatch_get_rainfall", "number", ["number", "number", "number"]);
   bind("swmm_subcatch_get_snow_depth", "number", ["number", "number", "number"]);
+  bind("swmm_subcatch_get_frozen_ground", "number", ["number", "number", "number", "number", "number", "number"]);
+  bind("swmm_frozen_ground_count", "number", ["number", "number", "number"]);
+  bind("swmm_frozen_ground_get", "number", ["number", "number", "number", "number", "number", "number"]);
+  bind("swmm_frozen_ground_set", "number", ["number", "number", "string", "number"]);
+  bind("swmm_frozen_ground_remove", "number", ["number", "number", "string"]);
   bind("swmm_subcatch_get_evap", "number", ["number", "number", "number"]);
   bind("swmm_subcatch_set_aquifer", "number", ["number", "number", "number"]);
   bind("swmm_subcatch_get_aquifer", "number", ["number", "number", "number"]);
@@ -7391,4 +7409,4 @@ export const CALLBACK_SIGNATURES = {
 } as const;
 
 /** Number of C functions in this layer. */
-export const RAW_FUNCTION_COUNT = 1527;
+export const RAW_FUNCTION_COUNT = 1533;
