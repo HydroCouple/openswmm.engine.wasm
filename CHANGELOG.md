@@ -70,7 +70,8 @@ built from the pinned engine (`tools/check_version.py`): Python
   readable through `swmm_output2d_*`, and `.h5` model output and HDF5
   checkpoints are available. Without zlib, like the native build, so the files
   open in native readers. About 3.3 MB more `.wasm`. Smoke test:
-  `tests/smoke/hdf5.mjs`.
+  `tests/smoke/hdf5.mjs`, which also reopens the `.h5` model with
+  `org.hydrocouple.openswmm.plugins.hdf5` and runs it like the `.inp`.
 - **Tables, patterns, cross-sections and dates** mirroring Python's
   `_tables`, `_xsect`, `_geometry`, `_dates` and `_datetime`:
   `solver.tables` (`TimeSeries`, `Curve`, point editing, validated replacement,

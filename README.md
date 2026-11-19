@@ -681,8 +681,9 @@ amalgamation). HDF5 2.1.1, the native engine's vcpkg release, is downloaded
 per build directory; about 3.3 MB of `.wasm`). It gives the 2D results file,
 `.h5` model I/O and HDF5 checkpoints. Like the native vcpkg build it has no
 zlib or szip, so files are written uncompressed and native builds can read
-them. Reopening an `.h5` model currently fails in the engine's 2D section
-parser, natively too; writing one works. `-DOPENSWMM_WASM_HDF5=OFF` leaves
+them. Reopen an `.h5` model by naming its input plugin:
+`solver.open(path, rpt, out, "org.hydrocouple.openswmm.plugins.hdf5")`
+(without it the built-in `.inp` reader is used). `-DOPENSWMM_WASM_HDF5=OFF` leaves
 HDF5 out (`OUTPUT_FILE` is then ignored with a warning). The GPU plugin is not
 part of the WASM build.
 
