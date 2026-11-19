@@ -12,36 +12,24 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ## [Unreleased]
 
-### Changed
+## [6.0.0-alpha.4.dev.2]
 
-- **`Solver.startDatetime` / `endDatetime` are the configured `[OPTIONS]`
-  dates**, as Python's `start_datetime` / `end_datetime`, and are now
-  settable; `simStartTime` / `simEndTime` give the resolved times the engine
-  runs (what `startDatetime` returned before; the two agree once a model is
-  open). Dates are rounded to the millisecond.
-- **Engine pin advanced** from `ed32a16f` to `swmm6_rel` `80e19614`. The raw
-  layer grows from 1,414 to 1,533 C functions (1,270 without the 2D headers):
-  hot-start contents and legacy hot starts, recorded deletes and type
-  conversion (`swmm_convert_types`), LID extras and storage LIDs, summary
-  tables (`swmm_summary_*`), divider parameters, 2D initial HGL and results
-  path, process-component arguments, frozen ground (`swmm_frozen_ground_*`,
-  `swmm_subcatch_get_frozen_ground`, `swmm_infil2d_get_frozen_ground_bulk`),
-  and the new split, material-split, split packet and passive-exchange
-  headers. Adds the `SWMM_PhaseCallback` typedef
-  (`"viiddi"`) and the `SplitRole`, `SplitPhase`, `LidExtraField`,
-  `SummaryTable` and `SummaryObject` enums; `GroundwaterVariable` gains `QX`
-  and `QY`. No function was removed or changed signature.
-- **Snow records use camelCase keys** like every other record (`sweM`,
-  `forestFraction`, `stepSeconds`, `geometryEnergyKj`; mesh snow rows
-  `groundHeatWm2`, `extinctionDepthM`, `slopeDeg`, `aspectDeg`; snowpack rows
-  `removalSubcatch`). Reads convert the engine's C field names and writes map
-  back through each struct's own field list, so a C name is refused.
-- **Version qualifier follows the Python bindings**: `6.0.0-alpha.4.dev.2`
-  for Python `6.0.0a4.dev2`; dev-qualified versions publish under the `dev`
-  dist-tag.
+First release of the package.
 
 ### Added
 
+- **Raw C API** generated from the engine headers (`tools/gen_bindings.py`):
+  1,533 functions (1,270 without the 2D headers), struct layouts and the
+  callback typedefs with their `addFunction()` signatures, exported as
+  `@hydrocouple/openswmm-engine-wasm/raw`.
+- **TypeScript layer** mirroring the Python API member for member (all 2,484
+  public members, checked by `tests/python_surface.test.ts`), the 97 enum
+  classes and the engine error hierarchy; the entries below list it by area.
+- **2D surface routing** built in; with HDF5 (below) the `OUTPUT_FILE` results
+  file is written as well.
+- **GeoPackage** support, with SQLite compiled from the pinned amalgamation.
+- **Smoke tests** for 1D and 2D runs that compare against native reference
+  reports built with the WASM arithmetic (`tools/native_reference.sh`).
 - **Frozen ground**, mirroring Python: `solver.frozenGroundRows()`,
   `setFrozenGround()` and `removeFrozenGround()` for the `[FROZEN_GROUND]`
   and (with `mesh`) `[2D_FROZEN_GROUND]` rows, `Subcatchment.frozenGround`
@@ -270,6 +258,35 @@ built from the pinned engine (`tools/check_version.py`): Python
   through one edge, with no 1D network. Featured in the README and run by
   `npm run smoke`.
 
+### Changed
+
+- Licence changed from MIT to Apache-2.0.
+- **`Solver.startDatetime` / `endDatetime` are the configured `[OPTIONS]`
+  dates**, as Python's `start_datetime` / `end_datetime`, and are now
+  settable; `simStartTime` / `simEndTime` give the resolved times the engine
+  runs (what `startDatetime` returned before; the two agree once a model is
+  open). Dates are rounded to the millisecond.
+- **Engine pin advanced** from `ed32a16f` to `swmm6_rel` `80e19614`. The raw
+  layer grows from 1,414 to 1,533 C functions (1,270 without the 2D headers):
+  hot-start contents and legacy hot starts, recorded deletes and type
+  conversion (`swmm_convert_types`), LID extras and storage LIDs, summary
+  tables (`swmm_summary_*`), divider parameters, 2D initial HGL and results
+  path, process-component arguments, frozen ground (`swmm_frozen_ground_*`,
+  `swmm_subcatch_get_frozen_ground`, `swmm_infil2d_get_frozen_ground_bulk`),
+  and the new split, material-split, split packet and passive-exchange
+  headers. Adds the `SWMM_PhaseCallback` typedef
+  (`"viiddi"`) and the `SplitRole`, `SplitPhase`, `LidExtraField`,
+  `SummaryTable` and `SummaryObject` enums; `GroundwaterVariable` gains `QX`
+  and `QY`. No function was removed or changed signature.
+- **Snow records use camelCase keys** like every other record (`sweM`,
+  `forestFraction`, `stepSeconds`, `geometryEnergyKj`; mesh snow rows
+  `groundHeatWm2`, `extinctionDepthM`, `slopeDeg`, `aspectDeg`; snowpack rows
+  `removalSubcatch`). Reads convert the engine's C field names and writes map
+  back through each struct's own field list, so a C name is refused.
+- **Version qualifier follows the Python bindings**: `6.0.0-alpha.4.dev.2`
+  for Python `6.0.0a4.dev2`; dev-qualified versions publish under the `dev`
+  dist-tag.
+
 ### Fixed
 
 - **Raw functions with 64-bit integer arguments threw** "Cannot convert … to
@@ -292,33 +309,9 @@ built from the pinned engine (`tools/check_version.py`): Python
   reports elapsed seconds, not an OADate. It is now start + elapsed, as in
   Python's `current_datetime`.
 
-## [6.0.0-alpha.4.dev.2]
-
-First release of the package.
-
-### Added
-
-- **Raw C API** generated from the engine headers (`tools/gen_bindings.py`):
-  1,244 functions (1,048 without the 2D module), struct layouts and the
-  callback typedefs with their `addFunction()` signatures, exported as
-  `@hydrocouple/openswmm-engine-wasm/raw`.
-- **TypeScript layer** mirroring the Python API for the solver lifecycle,
-  nodes, links, subcatchments, gages, controls, runtime forcing, ARD transport,
-  `ModelBuilder` and 2D surface routing (`Surface2D`, mesh infiltration);
-  81 enum classes and the engine error hierarchy.
-- **2D surface routing** built in, without the HDF5 results writer
-  (`OUTPUT_FILE` is ignored with a warning; read results through `surface2d`).
-- **GeoPackage** support, with SQLite compiled from the pinned amalgamation.
-- **Smoke tests** for 1D and 2D runs that compare against native reference
-  reports built with the WASM arithmetic (`tools/native_reference.sh`).
-
 ### Build
 
 - Engine pinned to the published `swmm6_rel` branch.
 - ESLint 9, Prettier and Ruff; CI workflows for build/test (Node 20, 22,
   24), lint, CLA and tag-driven releases to npm, GitHub Packages and GitHub
   Releases.
-
-### Changed
-
-- Licence changed from MIT to Apache-2.0.
