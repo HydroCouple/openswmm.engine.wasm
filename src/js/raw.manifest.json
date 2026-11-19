@@ -11942,6 +11942,32 @@
     ]
    ]
   },
+  "swmm_infil2d_get_frozen_ground_bulk": {
+   "header": "openswmm_infil2d.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double*",
+     "temperature"
+    ],
+    [
+     "double*",
+     "frozen_fraction"
+    ],
+    [
+     "double*",
+     "infiltration_factor"
+    ],
+    [
+     "int",
+     "n"
+    ]
+   ]
+  },
   "swmm_infil2d_get_cum_bulk": {
    "header": "openswmm_infil2d.h",
    "ret": "int",
@@ -26404,6 +26430,124 @@
     [
      "double*",
      "depth"
+    ]
+   ]
+  },
+  "swmm_subcatch_get_frozen_ground": {
+   "header": "openswmm_subcatchments.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "int*",
+     "active"
+    ],
+    [
+     "double*",
+     "temperature"
+    ],
+    [
+     "double*",
+     "frozen_fraction"
+    ],
+    [
+     "double*",
+     "infiltration_factor"
+    ]
+   ]
+  },
+  "swmm_frozen_ground_count": {
+   "header": "openswmm_subcatchments.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "target"
+    ],
+    [
+     "int*",
+     "count"
+    ]
+   ]
+  },
+  "swmm_frozen_ground_get": {
+   "header": "openswmm_subcatchments.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "target"
+    ],
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "char*",
+     "name"
+    ],
+    [
+     "int",
+     "name_size"
+    ],
+    [
+     "double*",
+     "values"
+    ]
+   ]
+  },
+  "swmm_frozen_ground_set": {
+   "header": "openswmm_subcatchments.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "target"
+    ],
+    [
+     "const char*",
+     "name"
+    ],
+    [
+     "const double*",
+     "values"
+    ]
+   ]
+  },
+  "swmm_frozen_ground_remove": {
+   "header": "openswmm_subcatchments.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "target"
+    ],
+    [
+     "const char*",
+     "name"
     ]
    ]
   },

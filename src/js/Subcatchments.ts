@@ -278,6 +278,32 @@ export class Subcatchment {
   // -------------------------------------------------------------------------
 
   /** Current surface runoff rate (flow units). */
+  /**
+   * Frozen-ground state of the pervious area after the last runoff step, as
+   * `[temperatureC, frozenFraction, infiltrationFactor]`, or `null` without a
+   * `[FROZEN_GROUND]` row.
+   */
+  get frozenGround(): [number, number, number] | null {
+    this._checkStale();
+    const ptr = checkedAlloc(this._mod, 32);
+    try {
+      raiseForCode(
+        this._raw.swmm_subcatch_get_frozen_ground(
+          this._engine,
+          this.index,
+          ptr,
+          ptr + 8,
+          ptr + 16,
+          ptr + 24,
+        ),
+      );
+      const values = this._mod.HEAPF64.subarray((ptr + 8) >> 3, (ptr + 32) >> 3);
+      return this._mod.HEAP32[ptr >> 2] ? [values[0], values[1], values[2]] : null;
+    } finally {
+      this._mod._free(ptr);
+    }
+  }
+
   get runoff(): number {
     this._checkStale();
     const ptr = checkedAlloc(this._mod, 8);

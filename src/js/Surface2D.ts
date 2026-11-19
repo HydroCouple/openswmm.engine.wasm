@@ -1566,6 +1566,24 @@ export class Infiltration2D {
     });
   }
 
+  /**
+   * Frozen-ground state of every triangle: ground slab temperature (°C), the
+   * frozen share of its freezable water (0 to 1) and the multiplier applied to
+   * the cell's intake (0 to 1). A cell no `[2D_FROZEN_GROUND]` row covers
+   * reports 0, 0 and 1.
+   */
+  frozenGround(): [Float64Array, Float64Array, Float64Array] {
+    const n = withInt(this.mod, (p) => this.raw.swmm_2d_triangle_count(this.handle, p));
+    const m = Math.max(n, 1);
+    return scratch(this.mod, 24 * m, (p) => {
+      raiseForCode(
+        this.raw.swmm_infil2d_get_frozen_ground_bulk(this.handle, p, p + 8 * m, p + 16 * m, m),
+      );
+      const col = (k: number) => new Float64Array(this.mod.HEAPU8.buffer, p + 8 * m * k, n).slice();
+      return [col(0), col(1), col(2)];
+    });
+  }
+
   /** Set (or with `null`, remove) the default row for a triangle tag. */
   setDefault(tag: string, row: Infil2DRow | null): void {
     if (row === null) {

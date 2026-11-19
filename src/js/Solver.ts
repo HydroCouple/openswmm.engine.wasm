@@ -72,7 +72,15 @@ import { Surface2D } from "./Surface2D.js";
 import { Patterns, Tables } from "./Tables.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import { CALLBACK_SIGNATURES, type RawApi } from "./raw.js";
-import { checkedAlloc, rawOf, withCString, withCStrings, withDouble, withInt } from "./mem.js";
+import {
+  checkedAlloc,
+  rawOf,
+  withCString,
+  withCStrings,
+  withDouble,
+  withDoubleInput,
+  withInt,
+} from "./mem.js";
 import { datetimeToOadate, oadateToDatetime } from "./dates.js";
 import { EventsView, SimulationOptions, UserFlags } from "./SolverViews.js";
 import { Snow } from "./Snow.js";
@@ -796,6 +804,50 @@ export class Solver {
   /** Heat-transport configuration and diagnostics (Python `solver.heat`). */
   get heat(): Heat {
     return new Heat(this);
+  }
+
+  /**
+   * Authored frozen-ground rows as `{ name: values }`: `[FROZEN_GROUND]`
+   * (subcatchments or `*`), or with `mesh` `[2D_FROZEN_GROUND]` (mesh tags or
+   * `*`). Each row has ten values: thickness (m), conductivity (W/m/K), heat
+   * capacity (J/m³/K), freezable water content, deep temperature (°C), deep
+   * depth (m), initial temperature (°C), exponent, snow conductivity (W/m/K)
+   * and snow density (kg/m³).
+   */
+  frozenGroundRows(mesh = false): Record<string, number[]> {
+    const h = this.handle;
+    const target = mesh ? 1 : 0;
+    const n = withInt(this._mod, (p) => this._raw.swmm_frozen_ground_count(h, target, p));
+    const values = checkedAlloc(this._mod, 80);
+    try {
+      const rows: Record<string, number[]> = {};
+      for (let i = 0; i < n; i++) {
+        const name = withCString(this._mod, 256, (buf, len) =>
+          this._raw.swmm_frozen_ground_get(h, target, i, buf, len, values),
+        );
+        rows[name] = Array.from(this._mod.HEAPF64.subarray(values >> 3, (values >> 3) + 10));
+      }
+      return rows;
+    } finally {
+      this._mod._free(values);
+    }
+  }
+
+  /**
+   * Add or replace one frozen-ground row (see {@link frozenGroundRows}). The
+   * row is authored input and takes effect when the model is next initialized.
+   */
+  setFrozenGround(name: string, values: ArrayLike<number>, mesh = false): void {
+    if (values.length !== 10) throw new RangeError("a frozen-ground row has ten values");
+    const h = this.handle;
+    withDoubleInput(this._mod, Array.from(values), (p) =>
+      this._raw.swmm_frozen_ground_set(h, mesh ? 1 : 0, name, p),
+    );
+  }
+
+  /** Remove the frozen-ground row with this name. */
+  removeFrozenGround(name: string, mesh = false): void {
+    raiseForCode(this._raw.swmm_frozen_ground_remove(this.handle, mesh ? 1 : 0, name));
   }
 
   /** Runtime exchange sources, boundaries and forcing of the default provider (Python `solver.coupling`). */

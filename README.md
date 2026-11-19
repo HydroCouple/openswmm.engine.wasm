@@ -758,8 +758,8 @@ See also: [CLA.md](CLA.md) · [CCLA.md](CCLA.md)
 ## Compatibility and gaps
 
 The engine submodule is the reproducible source of truth for generation and
-compilation. Generation against the pinned engine yields **1,527 C functions**
-(1,265 without the 2D headers), **97 enum classes** and the fourteen callback
+compilation. Generation against the pinned engine yields **1,533 C functions**
+(1,270 without the 2D headers), **97 enum classes** and the fourteen callback
 typedefs (`openswmm_callbacks.h` and those next to the API that takes them)
 with their `addFunction()` signatures; no header is excluded.
 The sibling engine working tree can contain newer uncommitted APIs; those are
