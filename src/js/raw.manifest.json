@@ -6054,6 +6054,46 @@
     ]
    ]
   },
+  "swmm_backend_info": {
+   "header": "openswmm_engine.h",
+   "ret": "int",
+   "params": [
+    [
+     "int",
+     "solver"
+    ],
+    [
+     "const char*",
+     "backend"
+    ],
+    [
+     "SWMM_BackendInfo*",
+     "out"
+    ]
+   ]
+  },
+  "swmm_fv_device_supported": {
+   "header": "openswmm_engine.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int*",
+     "supported"
+    ],
+    [
+     "char*",
+     "why"
+    ],
+    [
+     "int",
+     "buflen"
+    ]
+   ]
+  },
   "swmm_get_transport_matrix": {
    "header": "openswmm_engine.h",
    "ret": "int",

@@ -376,6 +376,8 @@ static_assert(std::is_same_v<decltype(&swmm_get_warning_count), int (*)(SWMM_Eng
 static_assert(std::is_same_v<decltype(&swmm_get_warning_at), const char* (*)(SWMM_Engine, int)>, "swmm_get_warning_at: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_get_thread_info), int (*)(SWMM_ThreadInfo*)>, "swmm_get_thread_info: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_get_effective_threads), int (*)(SWMM_Engine, int, int*, int*, int*)>, "swmm_get_effective_threads: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_backend_info), int (*)(int, const char*, SWMM_BackendInfo*)>, "swmm_backend_info: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_fv_device_supported), int (*)(SWMM_Engine, int*, char*, int)>, "swmm_fv_device_supported: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_get_transport_matrix), int (*)(SWMM_Engine, SWMM_TransportMatrix*)>, "swmm_get_transport_matrix: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_preview_transport_matrix), int (*)(SWMM_Engine, const SWMM_TransportDraft*, SWMM_TransportMatrix*)>, "swmm_preview_transport_matrix: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_transport_domain_name), const char* (*)(int)>, "swmm_transport_domain_name: prototype drift");

@@ -5,6 +5,7 @@
  * python/tests/engine/test_passive_material.py on
  * tests/unit/engine/data/passive_exchange_c/positive.inp.
  *
+ * Checkpoints save and restore the passive state, as in the Python test.
  * The material peer needs an engine built with HydroCouple
  * (OPENSWMM_HAS_HYDROCOUPLE), which the wasm build is not; its paired run is
  * skipped there, as in the Python test.
@@ -113,11 +114,20 @@ describe.skipIf(!built)(
           leg,
           attempt,
         };
+        solver.checkpoints.save("/passive checkpoint.bin");
+        const restored = new pkg.Solver(solver.module);
         try {
-          solver.checkpoints.save("/passive checkpoint.bin");
-          evidence.checkpoint = "saved";
-        } catch (err) {
-          evidence.checkpoint = `refused: ${(err as Error).name}: ${(err as Error).message}`;
+          restored.open("/native.inp", "/restored.rpt", "");
+          restored.initialize();
+          restored.start(false);
+          restored.passiveExchange.enable(64);
+          restored.passiveExchange.enableCheckpoint();
+          restored.checkpoints.restore("/passive checkpoint.bin");
+          expect(restored.passiveExchange.status()).toEqual(exchange.status());
+          expect(restored.passiveExchange.pool(0)).toEqual(exchange.pool(0));
+          evidence.checkpoint = { restoredStatus: restored.passiveExchange.status() };
+        } finally {
+          restored.destroy();
         }
       } finally {
         solver.destroy();

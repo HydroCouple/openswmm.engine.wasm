@@ -19,7 +19,7 @@ First release of the package.
 ### Added
 
 - **Raw C API** generated from the engine headers (`tools/gen_bindings.py`):
-  1,533 functions (1,270 without the 2D headers), struct layouts and the
+  1,535 functions (1,272 without the 2D headers), struct layouts and the
   callback typedefs with their `addFunction()` signatures, exported as
   `@hydrocouple/openswmm-engine-wasm/raw`.
 - **TypeScript layer** mirroring the Python API member for member (all 2,484
@@ -181,9 +181,10 @@ First release of the package.
   node/link/subcatchment records with species, state edits, apply;
   `close()`/`using`), `solver.saveSchedule` (`[SAVE HOTSTART]` entries and
   formats) and `solver.checkpoints` (capabilities, session start/status,
-  inspect, restore). Checkpoint saving and bundle export are refused in this
-  build: the engine compiles its atomic no-replace publication only for
-  Windows, macOS and Linux, so the capabilities omit SAVE_NEW/BUNDLE_EXPORT.
+  inspect, save, restore). Saving never replaces an existing file: under
+  Emscripten the engine claims the destination with an exclusive create and
+  renames onto the claim (engine `118c552a`), so the capabilities include
+  SAVE_NEW and BUNDLE_EXPORT.
 - **Inflows** (wave C, part 3), mirroring Python: `solver.inflows` for
   external inflows (time series, scale, baseline, pattern), dry-weather
   inflows (average and four patterns), RDII rows, unit-hydrograph groups
@@ -266,15 +267,16 @@ First release of the package.
   settable; `simStartTime` / `simEndTime` give the resolved times the engine
   runs (what `startDatetime` returned before; the two agree once a model is
   open). Dates are rounded to the millisecond.
-- **Engine pin advanced** from `ed32a16f` to `swmm6_rel` `80e19614`. The raw
-  layer grows from 1,414 to 1,533 C functions (1,270 without the 2D headers):
+- **Engine pin advanced** from `ed32a16f` to `swmm6_rel` `d07ac62e`. The raw
+  layer grows from 1,414 to 1,535 C functions (1,272 without the 2D headers):
   hot-start contents and legacy hot starts, recorded deletes and type
   conversion (`swmm_convert_types`), LID extras and storage LIDs, summary
   tables (`swmm_summary_*`), divider parameters, 2D initial HGL and results
   path, process-component arguments, frozen ground (`swmm_frozen_ground_*`,
   `swmm_subcatch_get_frozen_ground`, `swmm_infil2d_get_frozen_ground_bulk`),
-  and the new split, material-split, split packet and passive-exchange
-  headers. Adds the `SWMM_PhaseCallback` typedef
+  compute-backend information (`swmm_backend_info`,
+  `swmm_fv_device_supported`), and the new split, material-split, split
+  packet and passive-exchange headers. Adds the `SWMM_PhaseCallback` typedef
   (`"viiddi"`) and the `SplitRole`, `SplitPhase`, `LidExtraField`,
   `SummaryTable` and `SummaryObject` enums; `GroundwaterVariable` gains `QX`
   and `QY`. No function was removed or changed signature.

@@ -664,6 +664,10 @@ export interface RawApi {
   /** `openswmm_engine.h` */
   swmm_get_effective_threads(engine: number, threads_option: number, global_threads: number, dw_threads: number, twod_threads: number): number;
   /** `openswmm_engine.h` */
+  swmm_backend_info(solver: number, backend: string | null, out: number): number;
+  /** `openswmm_engine.h` */
+  swmm_fv_device_supported(engine: number, supported: number, why: number, buflen: number): number;
+  /** `openswmm_engine.h` */
   swmm_get_transport_matrix(engine: number, out: number): number;
   /** `openswmm_engine.h` */
   swmm_preview_transport_matrix(engine: number, draft: number, out: number): number;
@@ -3468,6 +3472,8 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_get_warning_at", "string", ["number", "number"]);
   bind("swmm_get_thread_info", "number", ["number"]);
   bind("swmm_get_effective_threads", "number", ["number", "number", "number", "number", "number"]);
+  bind("swmm_backend_info", "number", ["number", "string", "number"]);
+  bind("swmm_fv_device_supported", "number", ["number", "number", "number", "number"]);
   bind("swmm_get_transport_matrix", "number", ["number", "number"]);
   bind("swmm_preview_transport_matrix", "number", ["number", "number", "number"]);
   bind("swmm_transport_domain_name", "string", ["number"]);
@@ -7409,4 +7415,4 @@ export const CALLBACK_SIGNATURES = {
 } as const;
 
 /** Number of C functions in this layer. */
-export const RAW_FUNCTION_COUNT = 1533;
+export const RAW_FUNCTION_COUNT = 1535;
