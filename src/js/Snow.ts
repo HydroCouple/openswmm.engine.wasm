@@ -5,8 +5,8 @@
  * `solver.snow`: the snow model (degree-day or UEB), UEB options and packs,
  * radiation and cloud configuration, per-subcatchment snow state and the UEB
  * ledger. New process quantities are SI; unavailable UEB quantities are NaN.
- * Records are plain objects keyed by the C field names (`swe_m`,
- * `forest_fraction`, ...), as in Python's dictionaries.
+ * Records are plain objects with the C field names in camelCase (`sweM`,
+ * `forestFraction`, ...); Python's dictionaries use the C names themselves.
  *
  * @license  Apache-2.0
  */
@@ -16,7 +16,14 @@ import { BadParamError, ElementNotFoundError, StaleObjectError, raiseForCode } f
 import { checkedAlloc, guardedRaw, withDouble, withInt } from "./mem.js";
 import type { RawApi } from "./raw.js";
 import type { Solver } from "./Solver.js";
-import { readStruct, withStruct, withStructs, type StructValue } from "./structs.js";
+import {
+  camelStruct,
+  readStruct,
+  structFields,
+  withStruct,
+  withStructs,
+  type StructValue,
+} from "./structs.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 
 /** A snow record (pack, state, ledger, radiation, cloud, meteorology summary). */
@@ -29,7 +36,8 @@ export interface SnowpackRow {
   surface: number[][];
   /** The 6 legacy removal parameters. */
   removal: number[];
-  removal_subcatch?: string;
+  removalSubcatch?: string;
+  /** UEB parameters by camelCase field name (see {@link Snow.pack}). */
   ueb: Record<string, number>;
 }
 
@@ -150,12 +158,15 @@ export class Snow {
     return i;
   }
 
-  /** UEB parameters of a named snowpack (`model`, `forest_fraction`, ...). */
+  /** UEB parameters of a named snowpack (`model`, `forestFraction`, ...). */
   pack(name: string): SnowRecord {
     const i = this._packIndex(name);
     return withStruct(this._mod, "SWMM_UebSnowpack", (p) => {
       raiseForCode(this._raw.swmm_snowpack_get_ueb(this._h, i, p));
-      return readStruct(this._mod, "SWMM_UebSnowpack", p) as SnowRecord;
+      return camelStruct(
+        "SWMM_UebSnowpack",
+        readStruct(this._mod, "SWMM_UebSnowpack", p),
+      ) as SnowRecord;
     });
   }
 
@@ -170,7 +181,7 @@ export class Snow {
       this._mod,
       "SWMM_UebSnowpack",
       (p) => raiseForCode(this._raw.swmm_snowpack_set_ueb(this._h, i, p)),
-      { ...current, ...changes } as StructValue,
+      structFields("SWMM_UebSnowpack", { ...current, ...changes }),
     );
   }
 
@@ -181,7 +192,10 @@ export class Snow {
     if (i < 0) throw new ElementNotFoundError(subcatch);
     return withStruct(this._mod, "SWMM_SnowState", (p) => {
       raiseForCode(this._raw.swmm_subcatch_get_snow_process_state(h, i, surface, p));
-      return readStruct(this._mod, "SWMM_SnowState", p) as SnowRecord;
+      return camelStruct(
+        "SWMM_SnowState",
+        readStruct(this._mod, "SWMM_SnowState", p),
+      ) as SnowRecord;
     });
   }
 
@@ -189,7 +203,10 @@ export class Snow {
   ledger(): SnowRecord {
     return withStruct(this._mod, "SWMM_SnowLedger", (p) => {
       raiseForCode(this._raw.swmm_snow_get_ueb_ledger(this._h, p));
-      return readStruct(this._mod, "SWMM_SnowLedger", p) as SnowRecord;
+      return camelStruct(
+        "SWMM_SnowLedger",
+        readStruct(this._mod, "SWMM_SnowLedger", p),
+      ) as SnowRecord;
     });
   }
 
@@ -226,7 +243,7 @@ export class Snow {
             cap,
           ),
         ),
-      record as StructValue,
+      structFields("SWMM_ClimateCloudConfig", record),
     );
   }
 
@@ -234,7 +251,10 @@ export class Snow {
   get radiation(): SnowRecord {
     return withStruct(this._mod, "SWMM_RadiationConfig", (p) => {
       raiseForCode(this._raw.swmm_climate_get_radiation(this._h, p));
-      return readStruct(this._mod, "SWMM_RadiationConfig", p) as SnowRecord;
+      return camelStruct(
+        "SWMM_RadiationConfig",
+        readStruct(this._mod, "SWMM_RadiationConfig", p),
+      ) as SnowRecord;
     });
   }
   set radiation(values: SnowRecord) {
@@ -242,7 +262,7 @@ export class Snow {
       this._mod,
       "SWMM_RadiationConfig",
       (p) => raiseForCode(this._raw.swmm_climate_set_radiation(this._h, p)),
-      values as StructValue,
+      structFields("SWMM_RadiationConfig", values),
     );
   }
 
@@ -264,7 +284,11 @@ export class Snow {
       const series = this._text((buf, cap) =>
         this._raw.swmm_climate_get_cloud(this._h, p, buf, cap),
       );
-      return { ...(readStruct(this._mod, "SWMM_ClimateCloudConfig", p) as SnowRecord), series };
+      const record = camelStruct(
+        "SWMM_ClimateCloudConfig",
+        readStruct(this._mod, "SWMM_ClimateCloudConfig", p),
+      );
+      return { ...(record as SnowRecord), series };
     });
   }
 
@@ -274,7 +298,10 @@ export class Snow {
       this._diagnosed((d, cap) =>
         this._raw.swmm_climate_preview_meteorology(this._h, path, p, d, cap),
       );
-      return readStruct(this._mod, "SWMM_ClimateMetSummary", p) as SnowRecord;
+      return camelStruct(
+        "SWMM_ClimateMetSummary",
+        readStruct(this._mod, "SWMM_ClimateMetSummary", p),
+      ) as SnowRecord;
     });
   }
 
@@ -293,8 +320,8 @@ export class Snow {
         name: row.name,
         surface: surface.flat(),
         removal,
-        removal_subcatch: row.removal_subcatch ?? "",
-        ueb: row.ueb,
+        removal_subcatch: row.removalSubcatch ?? "",
+        ueb: structFields("SWMM_UebSnowpack", row.ueb),
       } as StructValue;
     });
     withStructs(this._mod, "SWMM_SnowpackEdit", edits, (p) =>

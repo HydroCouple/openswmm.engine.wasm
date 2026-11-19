@@ -113,7 +113,7 @@ describe.skipIf(!built)(title("real module: wave B part 1"), () => {
       expect(() => (snow.monthlyRanges = [1, 2])).toThrow(pkg.BadParamError);
       const radiation = snow.radiation;
       expect(radiation).toHaveProperty("latitude");
-      snow.radiation = { ...radiation, explicit_site: 1, latitude: 45 }; // site used only when explicit
+      snow.radiation = { ...radiation, explicitSite: 1, latitude: 45 }; // site used only when explicit
       expect(snow.radiation.latitude).toBe(45);
       expect(snow.cloud).toHaveProperty("series");
 
@@ -124,18 +124,20 @@ describe.skipIf(!built)(title("real module: wave B part 1"), () => {
       ];
       const ueb = {
         model: 0,
-        forest_fraction: 0.2,
-        drift_factor: 1,
-        ground_heat_wm2: 2,
-        extinction_depth_m: 0.1,
-        initial_energy_kjm2: 0,
+        forestFraction: 0.2,
+        driftFactor: 1,
+        groundHeatWm2: 2,
+        extinctionDepthM: 0.1,
+        initialEnergyKjm2: 0,
       };
       snow.applyPacks([{ name: "SP1", surface, removal: [1, 0, 0, 0, 0, 0], ueb }]);
       const fresh = solver.snow; // the edit invalidated the earlier view
       expect(() => snow.pack("SP1")).toThrow(pkg.StaleObjectError);
-      expect(fresh.pack("SP1").forest_fraction).toBe(0.2);
-      fresh.setPack("SP1", { drift_factor: 1.5 });
-      expect(fresh.pack("SP1").drift_factor).toBe(1.5);
+      expect(fresh.pack("SP1").forestFraction).toBe(0.2);
+      fresh.setPack("SP1", { driftFactor: 1.5 });
+      expect(fresh.pack("SP1").driftFactor).toBe(1.5);
+      expect(() => fresh.setPack("SP1", { drift_factor: 1 })).toThrow(pkg.BadParamError);
+      expect(() => (fresh.radiation = { explicit_site: 1 })).toThrow(RangeError);
       expect(() => fresh.setPack("SP1", { nope: 1 })).toThrow(pkg.BadParamError);
       expect(() => fresh.applyPacks([{ name: "bad", surface: [[1]], removal: [], ueb }])).toThrow(
         pkg.BadParamError,

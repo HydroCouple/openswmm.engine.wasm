@@ -14,7 +14,7 @@ import { raiseForCode } from "./errors.js";
 import { checkedAlloc, withInt } from "./mem.js";
 import { STRUCTS, type RawApi } from "./raw.js";
 import type { SnowRecord } from "./Snow.js";
-import { readStruct } from "./structs.js";
+import { camelStruct, readStruct } from "./structs.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 
 const SECTIONS = ["options", "defaults", "cells"] as const;
@@ -27,10 +27,10 @@ export interface MeshSnowRow {
   pack: string;
   forest: number;
   drift: number;
-  ground_heat_wm2: number;
-  extinction_depth_m: number;
-  slope_deg: number;
-  aspect_deg: number;
+  groundHeatWm2: number;
+  extinctionDepthM: number;
+  slopeDeg: number;
+  aspectDeg: number;
 }
 
 /** Mesh snow assignments and accepted cell snapshots. */
@@ -107,14 +107,18 @@ export class MeshSnow {
       raiseForCode(this.raw.swmm_snow2d_get_states(this.handle, 0, n, p));
       return Array.from(
         { length: n },
-        (_, i) => readStruct(this.mod, "SWMM_SnowState", p + i * size) as SnowRecord,
+        (_, i) =>
+          camelStruct(
+            "SWMM_SnowState",
+            readStruct(this.mod, "SWMM_SnowState", p + i * size),
+          ) as SnowRecord,
       );
     } finally {
       this.mod._free(p);
     }
   }
 
-  /** Water and energy ledgers of every cell, with `geometry_energy_kj`. */
+  /** Water and energy ledgers of every cell, with `geometryEnergyKj`. */
   ledgers(): SnowRecord[] {
     const n = this._cells();
     if (!n) return [];
@@ -126,8 +130,11 @@ export class MeshSnow {
       raiseForCode(this.raw.swmm_snow2d_get_ledgers(this.handle, 0, n, p));
       raiseForCode(this.raw.swmm_snow2d_get_geometry_energy(this.handle, 0, n, g));
       return Array.from({ length: n }, (_, i) => ({
-        ...(readStruct(mod, "SWMM_MeshSnowLedger", p + i * size) as SnowRecord),
-        geometry_energy_kj: mod.HEAPF64[(g >> 3) + i],
+        ...(camelStruct(
+          "SWMM_MeshSnowLedger",
+          readStruct(mod, "SWMM_MeshSnowLedger", p + i * size),
+        ) as SnowRecord),
+        geometryEnergyKj: mod.HEAPF64[(g >> 3) + i],
       }));
     } finally {
       mod._free(p);
@@ -136,14 +143,14 @@ export class MeshSnow {
   }
 
   /** Mode AUTO/YES/NO and step in seconds (zero inherits the shared step). */
-  get options(): { mode: (typeof MODES)[number]; step_seconds: number } {
+  get options(): { mode: (typeof MODES)[number]; stepSeconds: number } {
     const mod = this.mod;
     const p = checkedAlloc(mod, 16);
     try {
       mod.HEAP32[p >> 2] = 0;
       mod.HEAPF64[(p + 8) >> 3] = 0;
       raiseForCode(this.raw.swmm_snow2d_get_options(this.handle, p, p + 8));
-      return { mode: MODES[mod.HEAP32[p >> 2]], step_seconds: mod.HEAPF64[(p + 8) >> 3] };
+      return { mode: MODES[mod.HEAP32[p >> 2]], stepSeconds: mod.HEAPF64[(p + 8) >> 3] };
     } finally {
       mod._free(p);
     }
@@ -175,10 +182,10 @@ export class MeshSnow {
             cell: mod.HEAP32[cell >> 2],
             tag: mod.UTF8ToString(tag, size),
             pack: mod.UTF8ToString(pack, size),
-            ...(readStruct(mod, "SWMM_MeshSnowOverrides", values) as Omit<
-              MeshSnowRow,
-              "cell" | "tag" | "pack"
-            >),
+            ...(camelStruct(
+              "SWMM_MeshSnowOverrides",
+              readStruct(mod, "SWMM_MeshSnowOverrides", values),
+            ) as Omit<MeshSnowRow, "cell" | "tag" | "pack">),
           });
           break;
         } finally {

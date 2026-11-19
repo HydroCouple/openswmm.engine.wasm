@@ -31,6 +31,11 @@ built from the pinned engine (`tools/check_version.py`): Python
   (`"viiddi"`) and the `SplitRole`, `SplitPhase`, `LidExtraField`,
   `SummaryTable` and `SummaryObject` enums; `GroundwaterVariable` gains `QX`
   and `QY`. No function was removed or changed signature.
+- **Snow records use camelCase keys** like every other record (`sweM`,
+  `forestFraction`, `stepSeconds`, `geometryEnergyKj`; mesh snow rows
+  `groundHeatWm2`, `extinctionDepthM`, `slopeDeg`, `aspectDeg`; snowpack rows
+  `removalSubcatch`). Reads convert the engine's C field names and writes map
+  back through each struct's own field list, so a C name is refused.
 - **Version qualifier follows the Python bindings**: `6.0.0-alpha.4.dev.2`
   for Python `6.0.0a4.dev2`; dev-qualified versions publish under the `dev`
   dist-tag.
