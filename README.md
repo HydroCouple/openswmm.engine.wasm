@@ -65,7 +65,7 @@ Other channels carry the same build:
   the `.wasm` and the compiled wrappers) and `SHA256SUMS`. The npm package is
   also served by CDNs, e.g.
   `https://cdn.jsdelivr.net/npm/@hydrocouple/openswmm-engine-wasm@next/dist/openswmm_engine.js`.
-- Builds of every push are available as GitHub Actions artefacts on the
+- Builds of every push are available as GitHub Actions artifacts on the
   [`build` workflow](https://github.com/HydroCouple/openswmm.engine.wasm/actions).
 
 ---
@@ -241,7 +241,7 @@ The main lifecycle controller.
 | `start(saveResults?)` | Prepare the solver for stepping. |
 | `step()` | Advance by one routing step. Returns elapsed seconds (0 when done). |
 | `stride(n)` | Advance by `n` routing steps. |
-| `end()` | Finalise the simulation. |
+| `end()` | Finalize the simulation. |
 | `report()` | Write the .rpt file. |
 | `close()` | Release simulation resources. |
 | `destroy()` | Free the engine context. |
@@ -459,7 +459,7 @@ if (mesh.isActive) {
 
 Notes:
 
-- **Units.** The 2D solver runs in SI whatever the model's flow units: metres,
+- **Units.** The 2D solver runs in SI whatever the model's flow units: meters,
   m/s, m³ and m³/s.
 - **Results file.** `[2D_OPTIONS] OUTPUT_FILE` is written to the virtual
   filesystem as CF/UGRID HDF5, uncompressed like the native engine's, so native
@@ -726,7 +726,7 @@ The OpenSWMM Engine C++ source is included as a git submodule:
 extern/openswmm.engine/   →  github.com/HydroCouple/openswmm.engine  (branch: swmm6_rel)
 ```
 
-After cloning, initialise it with:
+After cloning, initialize it with:
 
 ```bash
 git submodule update --init --recursive

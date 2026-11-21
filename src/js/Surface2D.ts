@@ -15,7 +15,7 @@
  *
  * ### Units
  * The solver runs in SI whatever the model's flow units: depths and heads
- * are metres; rainfall, evaporation, net source and the per-cell 1D coupling
+ * are meters; rainfall, evaporation, net source and the per-cell 1D coupling
  * flux are rates in m/s (the coupling flux is per unit cell area); volumes are
  * m³ and the total exchange flow m³/s.
  *

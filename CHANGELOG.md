@@ -261,7 +261,7 @@ First release of the package.
 
 ### Changed
 
-- Licence changed from MIT to Apache-2.0.
+- License changed from MIT to Apache-2.0.
 - **`Solver.startDatetime` / `endDatetime` are the configured `[OPTIONS]`
   dates**, as Python's `start_datetime` / `end_datetime`, and are now
   settable; `simStartTime` / `simEndTime` give the resolved times the engine
