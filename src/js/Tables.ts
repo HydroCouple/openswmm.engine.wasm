@@ -132,7 +132,7 @@ export class PointTable<P = TablePoint> {
   /**
    * Replace every point and the relative-row metadata at once.
    *
-   * @param fileToken `undefined` keeps the table's FILE reference, `""`
+   * @param options.fileToken `undefined` keeps the table's FILE reference, `""`
    *   detaches it, any other value sets it.
    * @throws StaleObjectError when the index now names a different table.
    */

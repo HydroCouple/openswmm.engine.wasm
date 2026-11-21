@@ -1,6 +1,8 @@
 # Build artifacts
 tests/_work/
 build/
+docs/_build/
+docs/api/generated/
 tools/host_shim/out/
 dist/
 *.wasm

@@ -52,7 +52,7 @@ export class Snow {
   /** @internal */
   private readonly _generation: number;
 
-  /** @param owner The solver whose snow configuration this edits. */
+  /** @param _owner The solver whose snow configuration this edits. */
   constructor(private readonly _owner: Solver) {
     this._mod = _owner.module;
     this._raw = guardedRaw(this._mod, () => void _owner.handle);

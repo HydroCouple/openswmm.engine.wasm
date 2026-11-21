@@ -388,7 +388,7 @@ export class XSectionGeometry {
     );
   }
 
-  /** Depth of flow for `area`, the inverse of {@link area}. */
+  /** Depth of flow for `area`, the inverse of {@link XSectionGeometry.area}. */
   depthFromArea(area: number): number;
   depthFromArea(area: ArrayLike<number>): Float64Array;
   depthFromArea(area: number | ArrayLike<number>): number | Float64Array {

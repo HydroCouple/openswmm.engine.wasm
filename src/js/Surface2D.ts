@@ -181,7 +181,7 @@ function scratch<T>(mod: OpenSwmmWasmModule, bytes: number, use: (p: number) => 
  * if (mesh.isActive) {
  *   solver.start();
  *   while (solver.step() > 0) {
- *     const depths = mesh.getDepths();   // Float64Array, metres
+ *     const depths = mesh.getDepths();   // Float64Array, meters
  *   }
  * }
  * ```
@@ -246,7 +246,7 @@ export class Surface2D {
     );
   }
 
-  /** Neighbour cell across each local edge (`-1` on the boundary). */
+  /** Neighbor cell across each local edge (`-1` on the boundary). */
   getCellNeighbours(idx: number): number[] {
     return this.cellInts(idx, (n, nv) =>
       this.raw.swmm_2d_cell_get_neighbours(this.handle, idx, n, nv),
@@ -260,7 +260,7 @@ export class Surface2D {
     );
   }
 
-  /** The three neighbours of a triangle (`-1` on the boundary). */
+  /** The three neighbors of a triangle (`-1` on the boundary). */
   getTriangleNeighbours(idx: number): [number, number, number] {
     return this.ints3((p) =>
       this.raw.swmm_2d_triangle_get_neighbours(this.handle, idx, p, p + 4, p + 8),
@@ -269,7 +269,7 @@ export class Surface2D {
 
   // ---- mesh geometry -------------------------------------------------------
 
-  /** Vertex coordinates (metres after initialize). */
+  /** Vertex coordinates (meters after initialize). */
   getVertexCoords(): { x: Float64Array; y: Float64Array; z: Float64Array } {
     const n = this.nVertices;
     if (n <= 0) return { x: new Float64Array(0), y: new Float64Array(0), z: new Float64Array(0) };
@@ -814,7 +814,7 @@ export class Surface2D {
     raiseForCode(this.raw.swmm_2d_set_results_file(this.handle, path));
   }
 
-  /** Multiply mesh coordinates by this factor to obtain metres. */
+  /** Multiply mesh coordinates by this factor to obtain meters. */
   get geometryScaleToSi(): number {
     return withDouble(this.mod, (p) => this.raw.swmm_2d_geometry_scale_to_si(this.handle, p));
   }
