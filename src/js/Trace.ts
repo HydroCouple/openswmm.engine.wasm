@@ -443,7 +443,7 @@ export class FlowTracer {
   }
 
   /**
-   * Scan the complete reporting periods of a growing or cancelled output (no
+   * Scan the complete reporting periods of a growing or canceled output (no
    * footer or cache needed). Appends during the scan are ignored; call again
    * to refresh. Truncation raises a {@link TraceError} with `MISMATCH`.
    */

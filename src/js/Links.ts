@@ -132,7 +132,7 @@ export class XSection {
     return this.asTuple()[4];
   }
 
-  /** The labelled {@link CrossSection}. */
+  /** The labeled {@link CrossSection}. */
   info(): CrossSection {
     const [s, g1, g2, g3, g4] = this.asTuple();
     return CrossSection.fromRaw(s, g1, g2, g3, g4);
@@ -870,7 +870,7 @@ export class Links implements Iterable<Link> {
     this.generation++;
   }
 
-  /** A link's cross-section as a labelled {@link CrossSection}. */
+  /** A link's cross-section as a labeled {@link CrossSection}. */
   getXsectInfo(key: number | string): CrossSection {
     return this.get(key).xsect.info();
   }
