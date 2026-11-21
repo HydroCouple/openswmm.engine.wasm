@@ -1,0 +1,6 @@
+# Sphinx side of the manual. The API reference is generated first with
+# `npm run docs:api` (TypeDoc, pinned in package.json); see docs/conf.py.
+sphinx>=7.0
+pydata-sphinx-theme>=0.15.0
+myst-parser>=3.0
+sphinx-design>=0.6.0

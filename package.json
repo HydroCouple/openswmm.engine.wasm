@@ -66,7 +66,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "lint:py": "ruff check tools && ruff format --check tools",
-    "check": "npm run typecheck && npm run lint && npm run format:check && npm run lint:py && npm test"
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run lint:py && npm test",
+    "docs:api": "typedoc --options docs/typedoc.config.mjs"
   },
   "publishConfig": {
     "access": "public"
@@ -78,6 +79,8 @@
     "eslint": "9.39.5",
     "globals": "17.13.0",
     "prettier": "3.9.10",
+    "typedoc": "0.28.20",
+    "typedoc-plugin-markdown": "4.14.1",
     "typescript": "^5.5.0",
     "typescript-eslint": "8.71.1",
     "vitest": "^3.2.7"

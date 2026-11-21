@@ -10,6 +10,8 @@ export default tseslint.config(
       "dist/",
       "build*/",
       "coverage/",
+      "docs/_build/",
+      "docs/_hydrocouple/",
       "extern/",
       "node_modules/",
       "tests/_work/",

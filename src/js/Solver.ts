@@ -466,7 +466,7 @@ export class Solver {
   }
 
   /**
-   * Finalise the simulation (compute mass balances, etc.).
+   * Finalize the simulation (compute mass balances, etc.).
    *
    * @throws {@link LifecycleError} if not in `RUNNING` or `STARTED` state.
    */
@@ -527,7 +527,7 @@ export class Solver {
   /**
    * Run a complete simulation from open to close in a single call.
    *
-   * The engine is opened, initialised, started, stepped until completion,
+   * The engine is opened, initialized, started, stepped until completion,
    * ended, reported, and closed. The handle remains valid for inspection or
    * re-opening; call {@link Solver.destroy} when done.
    *

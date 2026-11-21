@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>OpenSWMM Engine in the browser</title>
+  </head>
+  <body>
+    <pre id="out">Running...</pre>
+    <script type="module">
+      // The unzipped browser archive of a GitHub Release, next to this page.
+      const pkg = "./openswmm-engine-wasm-6.0.0-alpha.4.dev.2";
+      const { default: createOpenSwmmModule } = await import(`${pkg}/openswmm_engine.js`);
+      const { Solver } = await import(`${pkg}/index.js`);
+
+      const inp = await (await fetch("./trivial_2d.inp")).text();
+      const solver = new Solver(await createOpenSwmmModule());
+      solver.writeFile("/trivial_2d.inp", inp);
+      solver.open("/trivial_2d.inp", "/trivial_2d.rpt", "/trivial_2d.out");
+      solver.initialize();
+      solver.start();
+      let peak = 0;
+      while (solver.step() > 0) peak = Math.max(peak, solver.surface2d.maxDepth);
+      const balance = solver.surface2d.getMassBalance();
+      solver.end();
+      solver.close();
+      solver.destroy();
+
+      document.getElementById("out").textContent =
+        `peak depth ${peak.toFixed(4)} m\n` +
+        `rainfall in ${balance.rainfallIn.toFixed(3)} m³\n` +
+        `edge outflow ${balance.boundaryOut.toFixed(3)} m³`;
+    </script>
+  </body>
+</html>

@@ -164,7 +164,7 @@ export class Gage {
     raiseForCode(this._raw.swmm_gage_set_snow_factor(this._engine, this.index, value));
   }
 
-  /** Rain depth unit for a file source: 0 = inches, 1 = millimetres. */
+  /** Rain depth unit for a file source: 0 = inches, 1 = millimeters. */
   get rainUnits(): number {
     this._checkStale();
     const ptr = checkedAlloc(this._mod, 4);

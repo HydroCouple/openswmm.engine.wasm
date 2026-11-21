@@ -1,6 +1,9 @@
 dist/
 build*/
 coverage/
+docs/_build/
+docs/_hydrocouple/
+docs/api/generated/
 extern/
 node_modules/
 tests/_work/
