@@ -22,8 +22,8 @@ import { ElementNotFoundError, FileError, StaleObjectError, raiseForCode } from 
 import { checkedAlloc, rawOf, withDouble } from "./mem.js";
 import type { RawApi } from "./raw.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import { MS_PER_DAY } from "./units.js";
 
-const MS_PER_DAY = 86_400_000;
 const OA_EPOCH_MS = Date.UTC(1899, 11, 30);
 
 /** A SWMM DateTime as a `Date`, truncated to the whole second like Python. */

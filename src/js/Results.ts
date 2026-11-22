@@ -29,6 +29,7 @@ import {
 import { Output2DReader } from "./Output2D.js";
 import { OutputReader } from "./OutputReader.js";
 import type { OpenSwmmWasmModule } from "./types.js";
+import { SECONDS_PER_DAY } from "./units.js";
 
 /** Entries of one axis: all (`null`), a slice, one index or id, or a list of them. */
 export type Selector = null | undefined | Slice | number | string | readonly (number | string)[];
@@ -564,7 +565,7 @@ export class SurfaceResults {
     const units = this.reader.attributes("/time").units ?? "";
     const m = /^(days|hours|minutes|seconds) since (.+)$/.exec(units);
     if (!m) throw new RangeError(`Unsupported or missing time units: '${units}'`);
-    const scale = { days: 86400, hours: 3600, minutes: 60, seconds: 1 }[m[1]]!;
+    const scale = { days: SECONDS_PER_DAY, hours: 3600, minutes: 60, seconds: 1 }[m[1]]!;
     if (!values.every(Number.isFinite)) throw new RangeError("Non-finite report dates in output");
     const base = cfReference(m[2]);
     return Array.from(

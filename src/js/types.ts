@@ -21,6 +21,8 @@
 /**
  * Low-level Emscripten filesystem API exposed for .inp/.rpt/.out file I/O.
  */
+import { MS_PER_DAY } from "./units.js";
+
 export interface EmscriptenFS {
   mkdir(path: string): void;
   writeFile(path: string, data: Uint8Array | string): void;
@@ -87,7 +89,7 @@ const OA_EPOCH_MS = Date.UTC(1899, 11, 30); // 30 Dec 1899
  * @param oadate OADate value from the engine.
  */
 export function oadateToDate(oadate: number): Date {
-  return new Date(OA_EPOCH_MS + oadate * 86400000);
+  return new Date(OA_EPOCH_MS + oadate * MS_PER_DAY);
 }
 
 /**
@@ -96,5 +98,5 @@ export function oadateToDate(oadate: number): Date {
  * @param date JavaScript `Date` object.
  */
 export function dateToOadate(date: Date): number {
-  return (date.getTime() - OA_EPOCH_MS) / 86400000;
+  return (date.getTime() - OA_EPOCH_MS) / MS_PER_DAY;
 }

@@ -56,6 +56,7 @@ import { Nodes } from "./Nodes.js";
 import { Links } from "./Links.js";
 import { Subcatchments } from "./Subcatchments.js";
 import { Gages } from "./Gages.js";
+import { SECONDS_PER_DAY } from "./units.js";
 import { Controls } from "./Controls.js";
 import {
   Transport,
@@ -437,7 +438,7 @@ export class Solver {
         raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
       }
       // Elapsed is in OA days; convert to seconds.
-      return this._mod.getValue(ptr, "double") * 86400.0;
+      return this._mod.getValue(ptr, "double") * SECONDS_PER_DAY;
     } finally {
       this._mod._free(ptr);
     }
@@ -459,7 +460,7 @@ export class Solver {
       if (rc !== 0) {
         raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
       }
-      return this._mod.getValue(ptr, "double") * 86400.0;
+      return this._mod.getValue(ptr, "double") * SECONDS_PER_DAY;
     } finally {
       this._mod._free(ptr);
     }

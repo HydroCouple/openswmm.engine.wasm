@@ -11,7 +11,8 @@
  * @license  Apache-2.0
  */
 
-const MS_PER_DAY = 86_400_000;
+import { MS_PER_DAY } from "./units.js";
+
 const OA_EPOCH_MS = Date.UTC(1899, 11, 30);
 
 /** Convert a SWMM DateTime to a `Date` (UTC wall clock). */
