@@ -128,7 +128,7 @@ export class DeleteRecord {
   restore(): void {
     if (this._restored) throw new RangeError("This delete record was already restored.");
     if (!this._record) throw new RangeError("This delete record was closed.");
-    let handle = 0;
+    let handle: number;
     try {
       handle = this._owner.handle;
     } catch {
