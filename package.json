@@ -53,7 +53,7 @@
     "configure:wasm": "emcmake cmake -B build -DCMAKE_BUILD_TYPE=Release",
     "build:wasm": "cmake --build build --parallel",
     "build:ts": "tsc --project tsconfig.json",
-    "build": "npm run build:ts",
+    "build": "npm run build:ts && node tools/copy_catalog_defaults.mjs",
     "test": "vitest run",
     "smoke": "node tests/smoke/exports.mjs && node tests/smoke/smoke.mjs && node tests/smoke/fileio.mjs && node tests/smoke/junction_storage.mjs && node tests/smoke/snow_factors.mjs && node tests/smoke/smoke2d.mjs && node tests/smoke/hdf5.mjs && node tests/smoke/groundwater.mjs && node examples/trivial_2d.mjs",
     "test:watch": "vitest",
