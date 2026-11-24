@@ -29,10 +29,37 @@ endif()
 # native WebAssembly exception proposal (supported by Node >= 18 and all
 # current browsers). Must be set for BOTH compile and link of every TU,
 # including the engine submodule, hence the global flags.
+# CMake 4.2.0–4.2.5 and 4.3.0–4.3.2 mark Emscripten as unable to link shared libraries,
+# and the engine tree declares its legacy shared library unconditionally. Only the
+# static engine goes into openswmm_wasm, so let configure accept the declaration.
+set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
+
 set(OPENSWMM_WASM_EH_FLAG "-fwasm-exceptions")
 string(APPEND CMAKE_CXX_FLAGS " ${OPENSWMM_WASM_EH_FLAG}")
 string(APPEND CMAKE_C_FLAGS   " ${OPENSWMM_WASM_EH_FLAG}")
 string(APPEND CMAKE_EXE_LINKER_FLAGS " ${OPENSWMM_WASM_EH_FLAG}")
+
+# Multi-threaded variant: WebAssembly threads (pthreads over SharedArrayBuffer) plus
+# Emscripten's OpenMP runtime, so the engine's `#pragma omp` solver loops run on
+# every core the page may use. The page must be crossOriginIsolated (COOP/COEP) for
+# SharedArrayBuffer; the single-threaded build stays the fallback. Every object,
+# including the HDF5 and SQLite builds below, must carry -pthread, or linking a
+# shared memory is refused.
+option(OPENSWMM_WASM_THREADS "Build with WebAssembly threads and OpenMP" OFF)
+if(OPENSWMM_WASM_THREADS)
+    string(APPEND CMAKE_CXX_FLAGS " -pthread -fopenmp")
+    string(APPEND CMAKE_C_FLAGS   " -pthread")
+    string(APPEND CMAKE_EXE_LINKER_FLAGS " -pthread -fopenmp")
+    # FindOpenMP's probe under Emscripten records the probe's whole implicit system
+    # library list (a debug, legacy-exception libc++abi among them) as the OpenMP
+    # libraries, which then contradicts -fwasm-exceptions at link time. emcc links
+    # libomp from -fopenmp alone, so hand the engine's find_package(OpenMP) the
+    # flags directly and no library names.
+    foreach(lang C CXX)
+        set(OpenMP_${lang}_FLAGS "-fopenmp" CACHE STRING "OpenMP flags for Emscripten" FORCE)
+        set(OpenMP_${lang}_LIB_NAMES "" CACHE STRING "OpenMP libraries for Emscripten (none: emcc adds libomp)" FORCE)
+    endforeach()
+endif()
 
 # ---------------------------------------------------------------------------
 # SQLite3 (for the GeoPackage module) — built from the amalgamation.
@@ -93,7 +120,7 @@ if(OPENSWMM_WASM_HDF5)
     set(OPENSWMM_WASM_HDF5_VERSION 2.1.1)
     set(_hdf5_options
         -DCMAKE_BUILD_TYPE=Release
-        "-DCMAKE_C_FLAGS=${OPENSWMM_WASM_EH_FLAG}"
+        "-DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}"   # wasm-EH, and -pthread for the threaded variant
         -DHDF_PACKAGE_NAMESPACE:STRING=hdf5::
         -DBUILD_SHARED_LIBS=OFF -DBUILD_STATIC_LIBS=ON -DBUILD_TESTING=OFF
         -DHDF5_BUILD_EXAMPLES=OFF -DHDF5_BUILD_TOOLS=OFF -DHDF5_BUILD_HL_LIB=OFF
@@ -211,7 +238,7 @@ set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS "${OPENSWMM_WASM_
 set(OPENSWMM_WASM_RUNTIME_METHODS
     "ccall,cwrap,stringToUTF8,UTF8ToString,lengthBytesUTF8,getValue,setValue,"
     "HEAP8,HEAPU8,HEAP16,HEAPU16,HEAP32,HEAPU32,HEAPF32,HEAPF64,"
-    "FS,addFunction,removeFunction")
+    "FS,addFunction,removeFunction,ENV")   # ENV: engine/OpenMP tuning variables from JS (preRun)
 string(REPLACE ";" "" OPENSWMM_WASM_RUNTIME_METHODS "${OPENSWMM_WASM_RUNTIME_METHODS}")
 
 target_link_options(openswmm_wasm PRIVATE
@@ -233,6 +260,12 @@ target_link_options(openswmm_wasm PRIVATE
     "-sASSERTIONS=0"
     "--no-entry"                                # library module: no main()
 )
+if(OPENSWMM_WASM_THREADS)
+    # Workers for the OpenMP team are created up front, one per logical core.
+    target_link_options(openswmm_wasm PRIVATE
+        "-sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency"
+        "-sPTHREAD_POOL_SIZE_STRICT=0")
+endif()
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
     target_compile_options(openswmm_wasm PRIVATE -O0 -g3)
