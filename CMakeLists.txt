@@ -179,7 +179,11 @@ endif()
 # in the TypeScript layer).
 option(OPENSWMM_WASM_2D "Build the 2D surface module into the WASM" ON)
 
-set(ENGINE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/extern/openswmm.engine")
+# The engine source: the pinned submodule by default; a developer may point a separate build
+# directory at another checkout (an engine worktree with unreleased changes).
+set(OPENSWMM_ENGINE_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/extern/openswmm.engine" CACHE PATH
+    "openswmm.engine source tree to build")
+set(ENGINE_ROOT "${OPENSWMM_ENGINE_ROOT}")
 if(NOT EXISTS "${ENGINE_ROOT}/CMakeLists.txt")
     message(FATAL_ERROR
         "openswmm.engine submodule not found at ${ENGINE_ROOT}.\n"
@@ -200,6 +204,13 @@ set(OPENSWMM_BUILD_2D         ${OPENSWMM_WASM_2D} CACHE BOOL "" FORCE)
 set(OPENSWMM_2D_HDF5_OUTPUT   ${OPENSWMM_WASM_HDF5} CACHE BOOL "" FORCE)
 set(OPENSWMM_WITH_HDF5        ${OPENSWMM_WASM_HDF5} CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_GPU_PLUGIN OFF CACHE BOOL "" FORCE)
+# The WebGPU 2D marcher ([2D_OPTIONS] BACKEND WEBGPU, opt-in). The engine thread blocks while a
+# dedicated GPU pthread drives WebGPU, so it needs the threads build.
+option(OPENSWMM_WASM_WEBGPU "Build the WebGPU 2D marcher (requires OPENSWMM_WASM_THREADS)" OFF)
+if(OPENSWMM_WASM_WEBGPU AND (NOT OPENSWMM_WASM_THREADS OR NOT OPENSWMM_WASM_2D))
+    message(FATAL_ERROR "OPENSWMM_WASM_WEBGPU requires OPENSWMM_WASM_THREADS=ON and OPENSWMM_WASM_2D=ON")
+endif()
+set(OPENSWMM_ENABLE_WEBGPU    ${OPENSWMM_WASM_WEBGPU} CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_TESTS      OFF CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
 set(OPENSWMM_BUILD_PYTHON     OFF CACHE BOOL "" FORCE)
