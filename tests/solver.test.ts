@@ -26,6 +26,7 @@ import {
   ForcingMode,
   ForcingPersist,
   ForcingTarget,
+  ForcingType,
   XSectShape,
   // Errors
   EngineError,
@@ -662,6 +663,28 @@ describe("Solver", () => {
     solver.forcing.nodeLatInflow(3, 0.5, ForcingMode.ADD, true);
     expect(calls[0].slice(1)).toEqual([3, 0.5, ForcingMode.REPLACE, ForcingPersist.RESET]);
     expect(calls[1].slice(1)).toEqual([3, 0.5, ForcingMode.ADD, ForcingPersist.PERSIST]);
+  });
+
+  it("forcing.clear clears every channel of the object's kind", () => {
+    const mod = makeMockModule();
+    const calls: number[][] = [];
+    mod._swmm_forcing_clear = (...args: number[]) => {
+      calls.push(args.slice(1));
+      return 0;
+    };
+    const solver = new Solver(mod);
+    solver.forcing.clear(ForcingTarget.GAGE, 2);
+    expect(calls).toEqual([[ForcingType.GAGE_RAINFALL, 2]]);
+    calls.length = 0;
+    solver.forcing.clear(ForcingTarget.NODE, 1);
+    expect(calls).toEqual([
+      [ForcingType.NODE_LAT_INFLOW, 1],
+      [ForcingType.NODE_HEAD_BOUNDARY, 1],
+      [ForcingType.NODE_QUALITY, 1],
+    ]);
+    calls.length = 0;
+    solver.forcing.clear(ForcingTarget.CLIMATE, 7);
+    expect(calls.map((c) => c[1])).toEqual([0, 0, 0]);
   });
 
   it("state returns EngineState value", () => {

@@ -17,7 +17,7 @@
  * @license  Apache-2.0
  */
 
-import { ForcingMode, ForcingTarget, HeatElemKind } from "./enums.js";
+import { ForcingMode, ForcingTarget, ForcingType, HeatElemKind } from "./enums.js";
 import { BadParamError, ElementNotFoundError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
@@ -25,6 +25,27 @@ import { checkedAlloc, guardedRaw, withDouble, withInt } from "./mem.js";
 
 // Re-export for convenience when consumers import from "./Forcing.js"
 export { ForcingMode, ForcingTarget };
+
+/** The forcing channels that apply to each kind of object. */
+const FORCING_CHANNELS: Record<number, readonly ForcingType[]> = {
+  [ForcingTarget.NODE]: [
+    ForcingType.NODE_LAT_INFLOW,
+    ForcingType.NODE_HEAD_BOUNDARY,
+    ForcingType.NODE_QUALITY,
+  ],
+  [ForcingTarget.LINK]: [ForcingType.LINK_FLOW, ForcingType.LINK_SETTING, ForcingType.LINK_QUALITY],
+  [ForcingTarget.SUBCATCH]: [
+    ForcingType.SUBCATCH_RAINFALL,
+    ForcingType.SUBCATCH_EVAP,
+    ForcingType.SUBCATCH_SNOWFALL,
+  ],
+  [ForcingTarget.GAGE]: [ForcingType.GAGE_RAINFALL],
+  [ForcingTarget.CLIMATE]: [
+    ForcingType.CLIMATE_TEMPERATURE,
+    ForcingType.CLIMATE_WIND,
+    ForcingType.CLIMATE_EVAP,
+  ],
+};
 
 // =============================================================================
 // Forcing
@@ -218,13 +239,21 @@ export class Forcing {
   // -------------------------------------------------------------------------
 
   /**
-   * Clear the forcing for a specific object.
+   * Clear every forcing channel on one object.
+   *
+   * `swmm_forcing_clear` takes a channel ({@link ForcingType}), not an object kind, so each
+   * channel that applies to the kind is cleared, as the Python binding's `Forcing.clear` does
+   * (passing the target through cleared another channel: GAGE is LINK_FLOW's code).
    *
    * @param type  Object type ({@link ForcingTarget}).
-   * @param idx   Zero-based object index.
+   * @param idx   Zero-based object index (ignored for CLIMATE).
    */
   clear(type: ForcingTarget, idx: number): void {
-    raiseForCode(this._raw.swmm_forcing_clear(this._engine, type, idx));
+    const channels = FORCING_CHANNELS[type];
+    if (!channels) throw new RangeError(`Unknown ForcingTarget ${type}`);
+    const index = type === ForcingTarget.CLIMATE ? 0 : idx;
+    for (const channel of channels)
+      raiseForCode(this._raw.swmm_forcing_clear(this._engine, channel, index));
   }
 
   /**
