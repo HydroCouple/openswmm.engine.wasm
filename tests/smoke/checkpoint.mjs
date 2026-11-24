@@ -11,7 +11,10 @@ const root = resolve(dirname(fileURLToPath(import.meta.url)), "..", "..");
 const { default: createOpenSwmmModule } = await import(resolve(root, "dist/openswmm_engine.js"));
 const { Solver } = await import(resolve(root, "dist/index.js"));
 const mod = await createOpenSwmmModule();
-mod.FS.writeFile("/checkpoint.inp", readFileSync(resolve(root, "tests/fixtures/smoke.inp"), "utf8"));
+mod.FS.writeFile(
+  "/checkpoint.inp",
+  readFileSync(resolve(root, "tests/fixtures/smoke.inp"), "utf8"),
+);
 
 const BINARY = 1;
 /** Run a checkpoint session; save at `saveAt` seconds and stop, or restore `restore` first. */
@@ -51,4 +54,6 @@ if (rest.out.length !== whole.out.length || rest.out.some((b, i) => b !== whole.
     `A run resumed at ${first.at} s wrote a different .out (${rest.out.length} bytes, ` +
       `uninterrupted ${whole.out.length})`,
   );
-console.log(`checkpoint smoke: saved at ${first.at} s, resumed .out identical (${rest.out.length} bytes)`);
+console.log(
+  `checkpoint smoke: saved at ${first.at} s, resumed .out identical (${rest.out.length} bytes)`,
+);
