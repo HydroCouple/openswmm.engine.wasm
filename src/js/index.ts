@@ -34,7 +34,8 @@
 // ---------------------------------------------------------------------------
 // Solver (main lifecycle controller)
 // ---------------------------------------------------------------------------
-export { Solver, abiTag, run, runWithCallback } from "./Solver.js";
+export { Solver, abiTag, backendInfo, run, runWithCallback } from "./Solver.js";
+export type { BackendInfo } from "./Solver.js";
 
 // ---------------------------------------------------------------------------
 // Model builder (programmatic model construction)
@@ -131,11 +132,18 @@ export type { EvapPreview, EvapPreviewSample } from "./Climate.js";
 export { Statistics } from "./Statistics.js";
 export type { ReportTable, SummaryColumn, SummaryRow } from "./Statistics.js";
 export { Inflows } from "./Inflows.js";
-export { HotStart, SaveSchedule } from "./HotStart.js";
+export {
+  HotStart,
+  RestartSettings,
+  SaveSchedule,
+  inspectRestartFile,
+  probeRestartFile,
+} from "./HotStart.js";
 export type {
   HotStartNodeRecord,
   HotStartLinkRecord,
   HotStartSubcatchmentRecord,
+  RestartFileKind,
   SaveScheduleEntry,
 } from "./HotStart.js";
 export { Checkpoints } from "./Checkpoints.js";

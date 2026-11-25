@@ -470,3 +470,177 @@ export class SaveSchedule extends SolverView implements Iterable<SaveScheduleEnt
     return Array.from({ length: this.length }, (_, i) => this.get(i))[Symbol.iterator]();
   }
 }
+
+// =============================================================================
+// Restart records in GeoPackage and HDF5 files (Python `solver.restart`,
+// `probe_restart_file`, `inspect_restart_file`)
+// =============================================================================
+
+/** What a restart file holds, judged from its first bytes. */
+export type RestartFileKind = "NONE" | "HOTSTART" | "GEOPACKAGE" | "HDF5" | "OTHER";
+
+const RESTART_BACKENDS: RestartFileKind[] = ["NONE", "HOTSTART", "GEOPACKAGE", "HDF5", "OTHER"];
+
+/** Raise a restart file error with the engine's reason. */
+function checkRestart(raw: RawApi, rc: number): void {
+  if (rc !== 0) raiseForCode(rc, raw.swmm_restart_last_error() || undefined);
+}
+
+/**
+ * What `path` (in the module's virtual filesystem) holds, judged from its
+ * first bytes, without changing it: `"NONE"` (missing or empty), `"HOTSTART"`,
+ * `"GEOPACKAGE"`, `"HDF5"` or `"OTHER"`.
+ */
+export function probeRestartFile(mod: OpenSwmmWasmModule, path: string): RestartFileKind {
+  const raw = rawOf(mod);
+  return RESTART_BACKENDS[withInt(mod, (p) => raw.swmm_restart_probe(path, p))];
+}
+
+/**
+ * Runs and restart records of a GeoPackage or HDF5 file, read-only: the decoded
+ * JSON of `swmm_restart_inspect_json` (`path`, `backend` and `runs`; each run has
+ * `run_id`, provenance fields and `records`; each record has `record_id`,
+ * `model_datetime` in decimal days, `elapsed_seconds`, `continuation`, `status`
+ * and more). Only records whose `status` is `"complete"` can be restored. Throws
+ * with the engine's reason for a missing file or one that is not a GeoPackage
+ * or HDF5 file.
+ */
+export function inspectRestartFile(mod: OpenSwmmWasmModule, path: string): Record<string, unknown> {
+  const raw = rawOf(mod);
+  const need = checkedAlloc(mod, 4);
+  try {
+    mod.HEAPU32[need >> 2] = 0;
+    checkRestart(raw, raw.swmm_restart_inspect_json(path, 0, 0, need));
+    const size = mod.HEAPU32[need >> 2];
+    const buf = checkedAlloc(mod, Math.max(1, size));
+    try {
+      checkRestart(raw, raw.swmm_restart_inspect_json(path, buf, size, need));
+      return JSON.parse(mod.UTF8ToString(buf, size)) as Record<string, unknown>;
+    } finally {
+      mod._free(buf);
+    }
+  } finally {
+    mod._free(need);
+  }
+}
+
+/**
+ * `solver.restart`: the model's `[RESTART]` section, the saved state the run
+ * starts from and where it records its own. Whether the settings agree is
+ * checked when the run initializes.
+ *
+ * ```ts
+ * const r = solver.restart;
+ * r.sourceFile = "/previous.gpkg";
+ * r.sourceRecord = "LATEST";
+ * r.mode = "INITIAL_CONDITIONS"; // or "CONTINUE"
+ * r.recordFile = "/states.h5";
+ * r.recordFormat = "HDF5"; // or "GEOPACKAGE"
+ * r.recordAt = ["END", new Date(Date.UTC(2020, 0, 1, 0, 30))];
+ * r.recordEvery = 900; // seconds; 0 for none
+ * ```
+ */
+export class RestartSettings extends SolverView {
+  /** @internal */
+  private _get(key: string): string {
+    return withCString(this._mod, 256, (buf, len) =>
+      this._raw.swmm_restart_get(this._h, key, buf, len),
+    );
+  }
+
+  /** @internal */
+  private _set(key: string, value: string): void {
+    raiseForCode(this._raw.swmm_restart_set(this._h, key, value));
+  }
+
+  /** Restart file to start from; empty turns restoring off. */
+  get sourceFile(): string {
+    return this._get("SOURCE_FILE");
+  }
+  set sourceFile(value: string) {
+    this._set("SOURCE_FILE", value);
+  }
+
+  /** Run in the source file; empty selects its only run. */
+  get sourceRun(): string {
+    return this._get("SOURCE_RUN");
+  }
+  set sourceRun(value: string) {
+    this._set("SOURCE_RUN", value);
+  }
+
+  /** Record ID, or `"LATEST"`. */
+  get sourceRecord(): string {
+    return this._get("SOURCE_RECORD");
+  }
+  set sourceRecord(value: string) {
+    this._set("SOURCE_RECORD", value);
+  }
+
+  /** `"INITIAL_CONDITIONS"` or `"CONTINUE"`. */
+  get mode(): string {
+    return this._get("MODE");
+  }
+  set mode(value: string) {
+    this._set("MODE", value);
+  }
+
+  /** File this run records its states into; empty turns recording off. */
+  get recordFile(): string {
+    return this._get("RECORD_FILE");
+  }
+  set recordFile(value: string) {
+    this._set("RECORD_FILE", value);
+  }
+
+  /** `"GEOPACKAGE"`, `"HDF5"` or empty; never inferred. */
+  get recordFormat(): string {
+    return this._get("RECORD_FORMAT");
+  }
+  set recordFormat(value: string) {
+    this._set("RECORD_FORMAT", value);
+  }
+
+  /** Interval between records in seconds; 0 for none. */
+  get recordEvery(): number {
+    return Number(this._get("RECORD_EVERY"));
+  }
+  set recordEvery(seconds: number) {
+    this._set("RECORD_EVERY", String(Number(seconds)));
+  }
+
+  /** Records carry the engine checkpoint so they can CONTINUE. */
+  get recordContinuation(): boolean {
+    return this._get("RECORD_CONTINUATION") === "YES";
+  }
+  set recordContinuation(value: boolean) {
+    this._set("RECORD_CONTINUATION", value ? "YES" : "NO");
+  }
+
+  /**
+   * True when the initialized run restores or records an engine checkpoint.
+   * Such a run that saves binary results needs a new output file.
+   */
+  get usesCheckpoint(): boolean {
+    return withInt(this._mod, (p) => this._raw.swmm_restart_uses_checkpoint(this._h, p)) !== 0;
+  }
+
+  /** Requested record times: `"END"` or a `Date` (UTC wall clock) each. */
+  get recordAt(): ("END" | Date)[] {
+    const n = withInt(this._mod, (p) => this._raw.swmm_restart_record_at_count(this._h, p));
+    return Array.from({ length: n }, (_, i) => {
+      const when = withDouble(this._mod, (p) =>
+        this._raw.swmm_restart_record_at_get(this._h, i, p),
+      );
+      return when === 0 ? "END" : oadateToDatetime(when);
+    });
+  }
+  set recordAt(values: ("END" | Date)[]) {
+    raiseForCode(this._raw.swmm_restart_record_at_clear(this._h));
+    for (const v of values) {
+      const when =
+        typeof v === "string" && v.toUpperCase() === "END" ? 0 : datetimeToOadate(v as Date);
+      raiseForCode(this._raw.swmm_restart_record_at_add(this._h, when));
+    }
+  }
+}

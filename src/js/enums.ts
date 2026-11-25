@@ -85,6 +85,11 @@ export enum NodeType {
   DIVIDER = 3,
 }
 
+export enum BackendSolver {
+  FV_NETWORK = 0,
+  SURFACE_2D = 1,
+}
+
 export enum LinkType {
   CONDUIT = 0,
   PUMP = 1,

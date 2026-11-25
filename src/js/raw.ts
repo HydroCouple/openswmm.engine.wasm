@@ -1790,6 +1790,8 @@ export interface RawApi {
   /** `openswmm_massbalance.h` */
   swmm_get_routing_continuity_error(engine: number, error: number): number;
   /** `openswmm_massbalance.h` */
+  swmm_get_routing_report_continuity_error(engine: number, error: number): number;
+  /** `openswmm_massbalance.h` */
   swmm_get_quality_continuity_error(engine: number, pollutant_idx: number, error: number): number;
   /** `openswmm_massbalance.h` */
   swmm_get_runoff_total(engine: number, component: number, volume: number): number;
@@ -2383,6 +2385,26 @@ export interface RawApi {
   swmm_reaction_function_count(): number;
   /** `openswmm_reactions.h` */
   swmm_reaction_function_get(idx: number, name: number, name_len: number, arity: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_get(engine: number, key: string | null, buf: number, buflen: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_set(engine: number, key: string | null, value: string | null): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_record_at_count(engine: number, count: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_record_at_get(engine: number, idx: number, datetime: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_record_at_add(engine: number, datetime: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_record_at_clear(engine: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_uses_checkpoint(engine: number, uses: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_probe(path: string | null, backend: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_inspect_json(path: string | null, utf8: number, capacity: number, required: number): number;
+  /** `openswmm_restart.h` */
+  swmm_restart_last_error(): string;
   /** `openswmm_snow.h` */
   swmm_snow_get_model(engine: number, model: number): number;
   /** `openswmm_snow.h` */
@@ -4035,6 +4057,7 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_link_set_tag", "number", ["number", "number", "string"]);
   bind("swmm_get_runoff_continuity_error", "number", ["number", "number"]);
   bind("swmm_get_routing_continuity_error", "number", ["number", "number"]);
+  bind("swmm_get_routing_report_continuity_error", "number", ["number", "number"]);
   bind("swmm_get_quality_continuity_error", "number", ["number", "number", "number"]);
   bind("swmm_get_runoff_total", "number", ["number", "number", "number"]);
   bind("swmm_get_routing_total", "number", ["number", "number", "number"]);
@@ -4332,6 +4355,16 @@ export function bindRaw(mod: RawModule): RawApi {
   bind("swmm_reaction_hydvar_get", "number", ["number", "number", "number", "number", "number"]);
   bind("swmm_reaction_function_count", "number", []);
   bind("swmm_reaction_function_get", "number", ["number", "number", "number", "number"]);
+  bind("swmm_restart_get", "number", ["number", "string", "number", "number"]);
+  bind("swmm_restart_set", "number", ["number", "string", "string"]);
+  bind("swmm_restart_record_at_count", "number", ["number", "number"]);
+  bind("swmm_restart_record_at_get", "number", ["number", "number", "number"]);
+  bind("swmm_restart_record_at_add", "number", ["number", "number"]);
+  bind("swmm_restart_record_at_clear", "number", ["number"]);
+  bind("swmm_restart_uses_checkpoint", "number", ["number", "number"]);
+  bind("swmm_restart_probe", "number", ["string", "number"]);
+  bind("swmm_restart_inspect_json", "number", ["string", "number", "number", "number"]);
+  bind("swmm_restart_last_error", "string", []);
   bind("swmm_snow_get_model", "number", ["number", "number"]);
   bind("swmm_snow_set_model", "number", ["number", "number"]);
   bind("swmm_snow_get_step", "number", ["number", "number"]);
@@ -7415,4 +7448,4 @@ export const CALLBACK_SIGNATURES = {
 } as const;
 
 /** Number of C functions in this layer. */
-export const RAW_FUNCTION_COUNT = 1535;
+export const RAW_FUNCTION_COUNT = 1546;

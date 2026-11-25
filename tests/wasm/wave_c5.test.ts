@@ -3,10 +3,11 @@
  * report-statistics model (storage, a variable-speed pump, a flooded storage
  * unit), checked against the .rpt the same run writes.
  *
- * The routing continuity error is the engine's exact ledger
+ * The snapshot's routing continuity error is the engine's exact ledger
  * (`swmm_get_routing_continuity_error`), while the printed Flow Routing
  * Continuity block uses legacy half-step totals, so on this deck the two differ
- * (0.052 % vs -0.173 %); the test checks it against the snapshot's own totals.
+ * (0.052 % vs -0.173 %); the test checks the snapshot against its own totals and
+ * `massBalance.routingReportContinuityError` against the printed value.
  */
 import { describe, it, expect } from "vitest";
 import { readFileSync, writeFileSync } from "node:fs";
@@ -40,6 +41,7 @@ describe.skipIf(!built)(title("real module: wave C part 5 (report snapshot)"), (
         /* run to the end */
       }
       solver.end();
+      const reportError = solver.massBalance.routingReportContinuityError;
       const snap = pkg.getReportSnapshot(solver);
       solver.report();
       const rpt = solver.readFile("/rs.rpt", "utf8") as string;
@@ -67,6 +69,10 @@ describe.skipIf(!built)(title("real module: wave C part 5 (report snapshot)"), (
         rc.seepageLoss +
         rc.finalStorage;
       expect(rc.continuityErrorPct).toBeCloseTo((100 * (tin - tout)) / tin, 10);
+      // The report prints three decimals of the value the engine forms from its printed totals.
+      const printed = rptValue(rpt, "Flow Routing Continuity", "Continuity Error \\(%\\)");
+      expect(Math.abs(100 * reportError - printed)).toBeLessThanOrEqual(0.0005 + 1e-9);
+      expect(Math.abs(100 * reportError - rc.continuityErrorPct)).toBeGreaterThan(0.1);
       expect(snap.qualityContinuity).toEqual([]);
       expect(snap.routingDiagnostics.nSteps).toBeGreaterThan(0);
 

@@ -37,6 +37,7 @@
 #include "openswmm/engine/openswmm_process_components.h"
 #include "openswmm/engine/openswmm_quality.h"
 #include "openswmm/engine/openswmm_reactions.h"
+#include "openswmm/engine/openswmm_restart.h"
 #include "openswmm/engine/openswmm_snow.h"
 #include "openswmm/engine/openswmm_snow2d.h"
 #include "openswmm/engine/openswmm_spatial.h"
@@ -939,6 +940,7 @@ static_assert(std::is_same_v<decltype(&swmm_link_get_tag), int (*)(SWMM_Engine, 
 static_assert(std::is_same_v<decltype(&swmm_link_set_tag), int (*)(SWMM_Engine, int, const char*)>, "swmm_link_set_tag: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_get_runoff_continuity_error), int (*)(SWMM_Engine, double*)>, "swmm_get_runoff_continuity_error: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_get_routing_continuity_error), int (*)(SWMM_Engine, double*)>, "swmm_get_routing_continuity_error: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_get_routing_report_continuity_error), int (*)(SWMM_Engine, double*)>, "swmm_get_routing_report_continuity_error: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_get_quality_continuity_error), int (*)(SWMM_Engine, int, double*)>, "swmm_get_quality_continuity_error: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_get_runoff_total), int (*)(SWMM_Engine, int, double*)>, "swmm_get_runoff_total: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_get_routing_total), int (*)(SWMM_Engine, int, double*)>, "swmm_get_routing_total: prototype drift");
@@ -1236,6 +1238,16 @@ static_assert(std::is_same_v<decltype(&swmm_reaction_hydvar_count), int (*)(void
 static_assert(std::is_same_v<decltype(&swmm_reaction_hydvar_get), int (*)(int, char*, int, char*, int)>, "swmm_reaction_hydvar_get: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_reaction_function_count), int (*)(void)>, "swmm_reaction_function_count: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_reaction_function_get), int (*)(int, char*, int, int*)>, "swmm_reaction_function_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_get), int (*)(SWMM_Engine, const char*, char*, int)>, "swmm_restart_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_set), int (*)(SWMM_Engine, const char*, const char*)>, "swmm_restart_set: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_record_at_count), int (*)(SWMM_Engine, int*)>, "swmm_restart_record_at_count: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_record_at_get), int (*)(SWMM_Engine, int, double*)>, "swmm_restart_record_at_get: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_record_at_add), int (*)(SWMM_Engine, double)>, "swmm_restart_record_at_add: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_record_at_clear), int (*)(SWMM_Engine)>, "swmm_restart_record_at_clear: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_uses_checkpoint), int (*)(SWMM_Engine, int*)>, "swmm_restart_uses_checkpoint: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_probe), int (*)(const char*, int*)>, "swmm_restart_probe: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_inspect_json), int (*)(const char*, char*, size_t, size_t*)>, "swmm_restart_inspect_json: prototype drift");
+static_assert(std::is_same_v<decltype(&swmm_restart_last_error), const char* (*)(void)>, "swmm_restart_last_error: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_snow_get_model), int (*)(SWMM_Engine, int*)>, "swmm_snow_get_model: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_snow_set_model), int (*)(SWMM_Engine, int)>, "swmm_snow_set_model: prototype drift");
 static_assert(std::is_same_v<decltype(&swmm_snow_get_step), int (*)(SWMM_Engine, double*)>, "swmm_snow_get_step: prototype drift");

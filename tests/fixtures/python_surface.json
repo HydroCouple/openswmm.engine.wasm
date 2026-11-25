@@ -606,6 +606,12 @@
     ],
     "members": {}
    },
+   "BackendSolver": {
+    "bases": [
+     "IntEnum"
+    ],
+    "members": {}
+   },
    "BuildupFunc": {
     "bases": [
      "IntEnum"
@@ -1901,6 +1907,21 @@
      "runoff": "property"
     }
    },
+   "RestartSettings": {
+    "bases": [],
+    "members": {
+     "mode": "property",
+     "record_at": "property",
+     "record_continuation": "property",
+     "record_every": "property",
+     "record_file": "property",
+     "record_format": "property",
+     "source_file": "property",
+     "source_record": "property",
+     "source_run": "property",
+     "uses_checkpoint": "property"
+    }
+   },
    "SaveSchedule": {
     "bases": [
      "MutableSequence[SaveScheduleEntry]"
@@ -1928,7 +1949,10 @@
     }
    }
   },
-  "functions": []
+  "functions": [
+   "inspect_restart_file",
+   "probe_restart_file"
+  ]
  },
  "_inflows": {
   "classes": {
@@ -2383,6 +2407,7 @@
      "quality_seep_loss": "method",
      "routing_continuity_error": "property",
      "routing_diagnostics": "property",
+     "routing_report_continuity_error": "property",
      "routing_total": "method",
      "runoff_continuity_error": "property",
      "runoff_total": "method"
@@ -3376,6 +3401,7 @@
      "flow_units": "property",
      "forcing": "property",
      "frozen_ground_rows": "method",
+     "fv_device_supported": "method",
      "gages": "property",
      "generation": "property",
      "groundwater2d": "property",
@@ -3409,6 +3435,7 @@
      "remove_frozen_ground": "method",
      "report": "method",
      "report_start_datetime": "property",
+     "restart": "property",
      "routing_step": "property",
      "run": "method",
      "save_runoff_step": "method",
@@ -3495,6 +3522,7 @@
   },
   "functions": [
    "abi_tag",
+   "backend_info",
    "run",
    "run_with_callback"
   ]

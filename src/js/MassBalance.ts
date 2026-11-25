@@ -35,6 +35,15 @@ export class MassBalance extends SolverView {
     return this._d(this._raw.swmm_get_routing_continuity_error);
   }
 
+  /**
+   * Flow routing continuity error as the report prints it, as a fraction. The
+   * report forms it from its printed totals with the SWMM 5 rules;
+   * {@link routingContinuityError} is the exact ledger's residual.
+   */
+  get routingReportContinuityError(): number {
+    return this._d(this._raw.swmm_get_routing_report_continuity_error);
+  }
+
   /** Quality routing continuity error of a pollutant, as a signed fraction. */
   qualityContinuityError(pollutant: number | string): number {
     const p = this._pollutant(pollutant);

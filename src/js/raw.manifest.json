@@ -17366,6 +17366,20 @@
     ]
    ]
   },
+  "swmm_get_routing_report_continuity_error": {
+   "header": "openswmm_massbalance.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double*",
+     "error"
+    ]
+   ]
+  },
   "swmm_get_quality_continuity_error": {
    "header": "openswmm_massbalance.h",
    "ret": "int",
@@ -22918,6 +22932,157 @@
      "arity"
     ]
    ]
+  },
+  "swmm_restart_get": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "const char*",
+     "key"
+    ],
+    [
+     "char*",
+     "buf"
+    ],
+    [
+     "int",
+     "buflen"
+    ]
+   ]
+  },
+  "swmm_restart_set": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "const char*",
+     "key"
+    ],
+    [
+     "const char*",
+     "value"
+    ]
+   ]
+  },
+  "swmm_restart_record_at_count": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int*",
+     "count"
+    ]
+   ]
+  },
+  "swmm_restart_record_at_get": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int",
+     "idx"
+    ],
+    [
+     "double*",
+     "datetime"
+    ]
+   ]
+  },
+  "swmm_restart_record_at_add": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "double",
+     "datetime"
+    ]
+   ]
+  },
+  "swmm_restart_record_at_clear": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ]
+   ]
+  },
+  "swmm_restart_uses_checkpoint": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "SWMM_Engine",
+     "engine"
+    ],
+    [
+     "int*",
+     "uses"
+    ]
+   ]
+  },
+  "swmm_restart_probe": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "const char*",
+     "path"
+    ],
+    [
+     "int*",
+     "backend"
+    ]
+   ]
+  },
+  "swmm_restart_inspect_json": {
+   "header": "openswmm_restart.h",
+   "ret": "int",
+   "params": [
+    [
+     "const char*",
+     "path"
+    ],
+    [
+     "char*",
+     "utf8"
+    ],
+    [
+     "size_t",
+     "capacity"
+    ],
+    [
+     "size_t*",
+     "required"
+    ]
+   ]
+  },
+  "swmm_restart_last_error": {
+   "header": "openswmm_restart.h",
+   "ret": "const char*",
+   "params": []
   },
   "swmm_snow_get_model": {
    "header": "openswmm_snow.h",

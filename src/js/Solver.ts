@@ -50,7 +50,7 @@
  * @license  Apache-2.0
  */
 
-import { EngineState, FilePathRole, FlowUnits, InpProfile } from "./enums.js";
+import { BackendSolver, EngineState, FilePathRole, FlowUnits, InpProfile } from "./enums.js";
 import { BadHandleError, EngineError, LifecycleError, raiseForCode } from "./errors.js";
 import { Nodes } from "./Nodes.js";
 import { Links } from "./Links.js";
@@ -94,7 +94,7 @@ import { Climate } from "./Climate.js";
 import { Statistics } from "./Statistics.js";
 import { Inflows } from "./Inflows.js";
 import { Checkpoints } from "./Checkpoints.js";
-import { SaveSchedule } from "./HotStart.js";
+import { RestartSettings, SaveSchedule } from "./HotStart.js";
 import { Results } from "./Results.js";
 import { Spatial } from "./Spatial.js";
 import { ModelEditor } from "./Edit.js";
@@ -881,6 +881,25 @@ export class Solver {
     return new WaterAge(this);
   }
 
+  /**
+   * Whether the model's options are in the 1D finite volume device backend's
+   * scope: `[supported, why]`, where `why` names the first option out of scope
+   * and is empty when supported. A model out of scope still runs; the CPU
+   * solver integrates it.
+   */
+  fvDeviceSupported(): [boolean, string] {
+    const flag = checkedAlloc(this._mod, 4);
+    try {
+      this._mod.HEAP32[flag >> 2] = 0;
+      const why = withCString(this._mod, 256, (buf, len) =>
+        rawOf(this._mod).swmm_fv_device_supported(this.handle, flag, buf, len),
+      );
+      return [this._mod.HEAP32[flag >> 2] !== 0, why];
+    } finally {
+      this._mod._free(flag);
+    }
+  }
+
   /** Process-wide hardware and OpenMP limits (Python `solver.thread_info`). */
   get threadInfo(): ThreadInfo {
     return threadInfo(this._mod);
@@ -925,6 +944,14 @@ export class Solver {
   /** The `[SAVE HOTSTART]` schedule (Python `solver.save_schedule`). */
   get saveSchedule(): SaveSchedule {
     return new SaveSchedule(this);
+  }
+
+  /**
+   * The `[RESTART]` section (Python `solver.restart`): the saved state the run
+   * starts from and where it records its own.
+   */
+  get restart(): RestartSettings {
+    return new RestartSettings(this);
   }
 
   /**
@@ -1327,6 +1354,46 @@ export class Solver {
 // =============================================================================
 // Module-level functions (Python `abi_tag`, `run`, `run_with_callback`)
 // =============================================================================
+
+/** Whether a compute backend is installed and usable (Python `backend_info`). */
+export interface BackendInfo {
+  /** True when a run can use the backend. */
+  usable: boolean;
+  /** Device the backend would run on; empty when none. */
+  deviceName: string;
+  /** Device memory in bytes; 0 when unknown or a host backend. */
+  deviceMemBytes: number;
+  /** Why the backend is not usable; empty when usable. */
+  reason: string;
+}
+
+/**
+ * Whether a compute backend is installed and usable, without a model. `backend`
+ * is a name as written in an input file (`"CPU"`, `"AUTO"`, `"OMP"`, `"CUDA"`,
+ * `"HIP"`, `"SYCL"`, ...). A model that asks for an unusable backend still runs
+ * on the CPU solver.
+ */
+export function backendInfo(
+  mod: OpenSwmmWasmModule,
+  solver: BackendSolver,
+  backend: string,
+): BackendInfo {
+  // SWMM_BackendInfo on wasm32: int usable @0, char device_name[128] @4,
+  // unsigned long long device_mem_bytes @136, char reason[256] @144; 400 bytes.
+  const p = checkedAlloc(mod, 400);
+  try {
+    mod.HEAPU8.fill(0, p, p + 400);
+    raiseForCode(rawOf(mod).swmm_backend_info(solver, String(backend), p));
+    return {
+      usable: mod.HEAP32[p >> 2] !== 0,
+      deviceName: mod.UTF8ToString(p + 4, 128),
+      deviceMemBytes: mod.HEAPU32[(p + 136) >> 2] + mod.HEAPU32[(p + 140) >> 2] * 2 ** 32,
+      reason: mod.UTF8ToString(p + 144, 256),
+    };
+  } finally {
+    mod._free(p);
+  }
+}
 
 /** The engine's ABI tag, the identity plugins and bindings are checked against. */
 export function abiTag(mod: OpenSwmmWasmModule): string {
