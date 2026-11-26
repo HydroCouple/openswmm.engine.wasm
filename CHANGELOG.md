@@ -23,6 +23,10 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ### Fixed
 
+- A threads build (`-DOPENSWMM_WASM_THREADS=ON`) loads on Node 20. Its
+  worker pool was sized from `navigator.hardwareConcurrency`, which Node 20
+  does not define; it now takes the core count Emscripten gives the OpenMP
+  team (`os.cpus()` under Node.js, `navigator` in a browser or worker).
 - The generated raw layer and Python surface fixture are current for the
   pinned engine again; pins since 9965040 had moved the engine without
   regenerating them, which failed the "Generated binding drift" check.

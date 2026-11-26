@@ -686,7 +686,7 @@ them. Reopen an `.h5` model by naming its input plugin:
 (without it the built-in `.inp` reader is used). `-DOPENSWMM_WASM_HDF5=OFF` leaves
 HDF5 out (`OUTPUT_FILE` is then ignored with a warning). The native GPU plugin is
 not part of the WASM build. `-DOPENSWMM_WASM_THREADS=ON` builds a threaded module
-(WebAssembly threads and OpenMP, for cross-origin-isolated pages and Node 22+), and
+(WebAssembly threads and OpenMP, for cross-origin-isolated pages and Node.js 20+), and
 `-DOPENSWMM_WASM_WEBGPU=ON` adds the WebGPU 2D marcher to it, chosen per model with
 `[2D_OPTIONS] BACKEND WEBGPU`; see `docs/development/building.md`.
 

@@ -272,9 +272,11 @@ target_link_options(openswmm_wasm PRIVATE
     "--no-entry"                                # library module: no main()
 )
 if(OPENSWMM_WASM_THREADS)
-    # Workers for the OpenMP team are created up front, one per logical core.
+    # Workers for the OpenMP team are created up front, one per logical core. The count is the
+    # same expression as Emscripten's emscripten_num_logical_cores(), which sizes the team: Node
+    # asks its os module (Node 20 has no navigator), browsers and workers ask navigator.
     target_link_options(openswmm_wasm PRIVATE
-        "-sPTHREAD_POOL_SIZE=navigator.hardwareConcurrency"
+        "-sPTHREAD_POOL_SIZE=ENVIRONMENT_IS_NODE?require('node:os').cpus().length:navigator.hardwareConcurrency"
         "-sPTHREAD_POOL_SIZE_STRICT=0")
 endif()
 

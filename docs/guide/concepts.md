@@ -138,8 +138,10 @@ in `logical_cpus` and `omp_max_threads`. It needs `SharedArrayBuffer`:
 - In a browser, only a cross-origin-isolated page has it: the page must be served with
   `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`,
   which make `crossOriginIsolated` true.
-- In Node.js it needs Node 22 or later. The pool is sized from `navigator.hardwareConcurrency`,
-  which Node 20 does not define, so the module fails to load there.
+- In Node.js, every supported version (Node 20 or later) has it without any setting.
+
+The pool is sized like the OpenMP team, from the same core count: Node's `os.cpus()` under
+Node.js, and `navigator.hardwareConcurrency` in a browser or worker.
 
 The module exports `ENV`, so engine and OpenMP environment variables can be set from a `preRun`
 hook before the engine starts.
