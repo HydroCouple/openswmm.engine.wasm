@@ -73,6 +73,13 @@ jobs:
           if-no-files-found: error
           retention-days: 7
 
+      # Packaged here, not in the deploy job: deploy-pages can look the artifact up before an
+      # upload made in its own job is listed ("No artifacts named github-pages").
+      - name: Package the site for Pages
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: docs/_build/html/
+
   # ---------------------------------------------------------------------------
   # Publish the built manual to GitHub Pages (Pages source: GitHub Actions),
   # at https://www.hydrocouple.org/openswmm.engine.wasm/, from main only.
@@ -93,20 +100,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Download the site
-        uses: actions/download-artifact@v5
-        with:
-          name: documentation-html
-          path: site/
-
-      - name: Configure Pages
-        uses: actions/configure-pages@v5
-
-      - name: Upload the Pages artifact
-        uses: actions/upload-pages-artifact@v4
-        with:
-          path: site/
-
       - name: Deploy
         id: deployment
         uses: actions/deploy-pages@v5
