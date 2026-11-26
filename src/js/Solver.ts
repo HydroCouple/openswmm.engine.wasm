@@ -50,19 +50,66 @@
  * @license  Apache-2.0
  */
 
-import { EngineState, FlowUnits } from "./enums.js";
-import { BadHandleError, EngineError, raiseForCode } from "./errors.js";
+import { BackendSolver, EngineState, FilePathRole, FlowUnits, InpProfile } from "./enums.js";
+import { BadHandleError, EngineError, LifecycleError, raiseForCode } from "./errors.js";
 import { Nodes } from "./Nodes.js";
 import { Links } from "./Links.js";
 import { Subcatchments } from "./Subcatchments.js";
 import { Gages } from "./Gages.js";
+import { SECONDS_PER_DAY } from "./units.js";
 import { Controls } from "./Controls.js";
-import { Transport } from "./Transport.js";
+import {
+  Transport,
+  effectiveThreads,
+  threadInfo,
+  transportMatrix,
+  type EffectiveThreads,
+  type ThreadInfo,
+  type TransportMatrix,
+} from "./Transport.js";
 import { Forcing } from "./Forcing.js";
+import { Fields } from "./Fields.js";
 import { Surface2D } from "./Surface2D.js";
-import { type OpenSwmmWasmModule, oadateToDate } from "./types.js";
-import type { RawApi } from "./raw.js";
-import { rawOf } from "./mem.js";
+import { Patterns, Tables } from "./Tables.js";
+import type { OpenSwmmWasmModule } from "./types.js";
+import { CALLBACK_SIGNATURES, type RawApi } from "./raw.js";
+import {
+  checkedAlloc,
+  rawOf,
+  withCString,
+  withCStrings,
+  withDouble,
+  withDoubleInput,
+  withInt,
+} from "./mem.js";
+import { datetimeToOadate, oadateToDatetime } from "./dates.js";
+import { EventsView, SimulationOptions, UserFlags } from "./SolverViews.js";
+import { Snow } from "./Snow.js";
+import { Aquifers, Snowpacks } from "./NamedObjects.js";
+import { InitialQuality } from "./InitialQuality.js";
+import { MassBalance } from "./MassBalance.js";
+import { Pollutants } from "./Pollutants.js";
+import { Quality } from "./Quality.js";
+import { Climate } from "./Climate.js";
+import { Statistics } from "./Statistics.js";
+import { Inflows } from "./Inflows.js";
+import { Checkpoints } from "./Checkpoints.js";
+import { RestartSettings, SaveSchedule } from "./HotStart.js";
+import { Results } from "./Results.js";
+import { Spatial } from "./Spatial.js";
+import { ModelEditor } from "./Edit.js";
+import { Infrastructure } from "./Infrastructure.js";
+import { ProcessComponents } from "./ProcessComponents.js";
+import { WaterAge } from "./WaterAge.js";
+import { Reactions } from "./Reactions.js";
+import { Heat } from "./Heat.js";
+import { Coupling } from "./Coupling.js";
+import { MaterialSplitParticipant, SplitParticipant } from "./Split.js";
+import { PassiveExchange } from "./PassiveExchange.js";
+import type { Groundwater } from "./Groundwater.js";
+
+/** Plugin id of the built-in GeoPackage model writer. */
+const GEOPACKAGE_PLUGIN_ID = "org.hydrocouple.openswmm.plugins.geopackage";
 
 // =============================================================================
 // Solver
@@ -100,10 +147,13 @@ export class Solver {
   }
 
   private _invalidateViews(): void {
+    this._generation++;
     this.nodes.generation++;
     this.links.generation++;
     this.subcatchments.generation++;
     this.gages.generation++;
+    this.tables.generation++;
+    this.patterns.generation++;
   }
 
   // -------------------------------------------------------------------------
@@ -158,10 +208,45 @@ export class Solver {
    * 2D surface routing (Python `solver.surface2d`).
    *
    * Active once the model has a 2D mesh and {@link Solver.initialize} has
-   * run; check {@link Surface2D.isActive}. Results are read here — the WASM
-   * build ignores `[2D_OPTIONS] OUTPUT_FILE`.
+   * run; check {@link Surface2D.isActive}. Live results are read here; a
+   * `[2D_OPTIONS] OUTPUT_FILE` is written to the virtual filesystem.
    */
   readonly surface2d: Surface2D;
+
+  /**
+   * Engine fields by catalog path (`"node.max_depth"`, `"link.stats.max_flow"`, ...),
+   * the addressing the Python catalog, MCP server and gymnasium share.
+   */
+  readonly fields: Fields;
+
+  /** Time series and curves (Python `solver.tables`). */
+  readonly tables: Tables;
+
+  /** Time patterns (Python `solver.patterns`). */
+  readonly patterns: Patterns;
+
+  /** The `[OPTIONS]` block and its typed shortcuts (Python `solver.options`). */
+  readonly options: SimulationOptions;
+
+  /** User flags (Python `solver.userflags`). */
+  readonly userflags: UserFlags;
+
+  /** The `[EVENTS]` periods (Python `solver.events`). */
+  readonly events: EventsView;
+
+  /** @internal */
+  private _generation = 0;
+  /** @internal First error a JavaScript callback raised during the current native call. */
+  private _callbackError: unknown = undefined;
+  /** @internal Function-table slots of the registered callbacks, by kind. */
+  private readonly _callbackSlots = new Map<string, number>();
+  /** @internal Cleanup of the state a registered callback keeps, by kind. */
+  private readonly _callbackReleases = new Map<string, () => void>();
+  /** @internal Paths of the last open (Python `_inp`, `_out`). */
+  private _inp = "";
+  private _out = "";
+  /** @internal Cached `editor` (Python `_editor`). */
+  private _editor: ModelEditor | undefined;
 
   // -------------------------------------------------------------------------
   // Constructor
@@ -187,14 +272,28 @@ export class Solver {
       if (!h) throw new EngineError(7, "swmm_engine_create() returned NULL");
     }
     this._handle = h;
-    this.nodes = new Nodes(mod, h, () => this._assertAlive());
-    this.links = new Links(mod, h, () => this._assertAlive());
-    this.subcatchments = new Subcatchments(mod, h, () => this._assertAlive());
-    this.gages = new Gages(mod, h, () => this._assertAlive());
+    this.nodes = new Nodes(mod, h, () => this._assertAlive(), this);
+    this.links = new Links(mod, h, () => this._assertAlive(), this);
+    this.subcatchments = new Subcatchments(mod, h, () => this._assertAlive(), this);
+    this.gages = new Gages(mod, h, () => this._assertAlive(), this);
     this.controls = new Controls(mod, h, () => this._assertAlive());
     this.transport = new Transport(mod, h, () => this._assertAlive());
     this.forcing = new Forcing(mod, h, () => this._assertAlive());
-    this.surface2d = new Surface2D(mod, h, () => this._assertAlive());
+    this.surface2d = new Surface2D(mod, h, () => this._assertAlive(), this);
+    this.fields = new Fields(mod, () => this.handle);
+    this.tables = new Tables(mod, h, this, () => this._assertAlive());
+    this.patterns = new Patterns(mod, h, this, () => this._assertAlive());
+    const host = {
+      mod,
+      raw: this._raw,
+      solver: this as Solver,
+      get handle(): number {
+        return this.solver.handle;
+      },
+    };
+    this.options = new SimulationOptions(host);
+    this.userflags = new UserFlags(host);
+    this.events = new EventsView(host);
   }
 
   // -------------------------------------------------------------------------
@@ -231,6 +330,19 @@ export class Solver {
     return this._mod.FS.readFile(path, { encoding: "binary" });
   }
 
+  /** Save the currently opened model to a file in the virtual filesystem. */
+  writeModel(path: string, outputPluginId = ""): void {
+    this._requireIdle();
+    const h = this.handle;
+    const rc = this._operation(() =>
+      outputPluginId
+        ? this._raw.swmm_model_write_with_plugin(h, path, outputPluginId)
+        : this._raw.swmm_model_write(h, path),
+    );
+    this._rethrowCallbackError();
+    raiseForCode(rc, rc ? this._raw.swmm_get_last_error_msg(h) : undefined);
+  }
+
   // -------------------------------------------------------------------------
   // Configuration
   // -------------------------------------------------------------------------
@@ -264,8 +376,14 @@ export class Solver {
    * @throws {@link LifecycleError} if the engine is not in `CREATED` state.
    */
   open(inp: string, rpt: string, out: string, pluginLib = ""): void {
+    this._requireIdle();
     this._invalidateViews();
-    const rc = this._raw.swmm_engine_open(this.handle, inp, rpt, out, pluginLib || null);
+    this._inp = inp;
+    this._out = out;
+    const rc = this._operation(() =>
+      this._raw.swmm_engine_open(this.handle, inp, rpt, out, pluginLib || null),
+    );
+    this._rethrowCallbackError();
     if (rc !== 0) {
       const msg = this._raw.swmm_get_last_error_msg(this.handle);
       raiseForCode(rc, msg);
@@ -278,7 +396,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `OPENED` state.
    */
   initialize(): void {
-    const rc = this._raw.swmm_engine_initialize(this.handle);
+    this._requireIdle();
+    const rc = this._operation(() => this._raw.swmm_engine_initialize(this.handle));
+    this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
@@ -291,7 +411,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `INITIALIZED` state.
    */
   start(saveResults = true): void {
-    const rc = this._raw.swmm_engine_start(this.handle, saveResults ? 1 : 0);
+    this._requireIdle();
+    const rc = this._operation(() => this._raw.swmm_engine_start(this.handle, saveResults ? 1 : 0));
+    this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
@@ -307,14 +429,16 @@ export class Solver {
    * @throws {@link LifecycleError}  if not in `STARTED` or `RUNNING` state.
    */
   step(): number {
-    const ptr = this._mod._malloc(8);
+    this._requireIdle();
+    const ptr = checkedAlloc(this._mod, 8);
     try {
-      const rc = this._raw.swmm_engine_step(this.handle, ptr);
+      const rc = this._operation(() => this._raw.swmm_engine_step(this.handle, ptr));
+      this._rethrowCallbackError();
       if (rc !== 0) {
         raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
       }
       // Elapsed is in OA days; convert to seconds.
-      return this._mod.getValue(ptr, "double") * 86400.0;
+      return this._mod.getValue(ptr, "double") * SECONDS_PER_DAY;
     } finally {
       this._mod._free(ptr);
     }
@@ -328,25 +452,29 @@ export class Solver {
    *          Returns `0` when the end time has been reached.
    */
   stride(nSteps: number): number {
-    const ptr = this._mod._malloc(8);
+    this._requireIdle();
+    const ptr = checkedAlloc(this._mod, 8);
     try {
-      const rc = this._raw.swmm_engine_stride(this.handle, nSteps, ptr);
+      const rc = this._operation(() => this._raw.swmm_engine_stride(this.handle, nSteps, ptr));
+      this._rethrowCallbackError();
       if (rc !== 0) {
         raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
       }
-      return this._mod.getValue(ptr, "double") * 86400.0;
+      return this._mod.getValue(ptr, "double") * SECONDS_PER_DAY;
     } finally {
       this._mod._free(ptr);
     }
   }
 
   /**
-   * Finalise the simulation (compute mass balances, etc.).
+   * Finalize the simulation (compute mass balances, etc.).
    *
    * @throws {@link LifecycleError} if not in `RUNNING` or `STARTED` state.
    */
   end(): void {
-    const rc = this._raw.swmm_engine_end(this.handle);
+    this._requireIdle();
+    const rc = this._operation(() => this._raw.swmm_engine_end(this.handle));
+    this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
@@ -358,7 +486,9 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `ENDED` state.
    */
   report(): void {
-    const rc = this._raw.swmm_engine_report(this.handle);
+    this._requireIdle();
+    const rc = this._operation(() => this._raw.swmm_engine_report(this.handle));
+    this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
@@ -370,8 +500,10 @@ export class Solver {
    * @throws {@link LifecycleError} if not in `ENDED` state.
    */
   close(): void {
+    this._requireIdle();
     this._invalidateViews();
-    const rc = this._raw.swmm_engine_close(this.handle);
+    const rc = this._operation(() => this._raw.swmm_engine_close(this.handle));
+    this._rethrowCallbackError();
     if (rc !== 0) {
       raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
     }
@@ -383,15 +515,20 @@ export class Solver {
    */
   destroy(): void {
     if (!this._handle) return;
+    this._requireIdle();
     this._raw.swmm_engine_destroy(this._handle);
     this._handle = 0;
+    for (const slot of this._callbackSlots.values()) this._mod.removeFunction(slot);
+    this._callbackSlots.clear();
+    for (const release of this._callbackReleases.values()) release();
+    this._callbackReleases.clear();
     this._invalidateViews();
   }
 
   /**
    * Run a complete simulation from open to close in a single call.
    *
-   * The engine is opened, initialised, started, stepped until completion,
+   * The engine is opened, initialized, started, stepped until completion,
    * ended, reported, and closed. The handle remains valid for inspection or
    * re-opening; call {@link Solver.destroy} when done.
    *
@@ -402,15 +539,30 @@ export class Solver {
    * @param pluginLib   Optional plugin library path.
    */
   run(inp: string, rpt: string, out: string, saveResults = true, pluginLib = ""): void {
-    this.open(inp, rpt, out, pluginLib);
-    this.initialize();
-    this.start(saveResults);
-    while (this.step() > 0) {
-      /* step until completion */
+    let opened = false;
+    try {
+      this.open(inp, rpt, out, pluginLib);
+      opened = true;
+      this.initialize();
+      this.start(saveResults);
+      while (this.step() > 0) {
+        /* step until completion */
+      }
+      this.end();
+      this.report();
+      this.close();
+    } catch (error) {
+      try {
+        if (opened) this.close();
+      } catch (cleanupError) {
+        if (error instanceof Error) {
+          error.message += `; cleanup also failed: ${String(cleanupError)}`;
+        }
+      } finally {
+        this.destroy();
+      }
+      throw error;
     }
-    this.end();
-    this.report();
-    this.close();
   }
 
   // -------------------------------------------------------------------------
@@ -421,7 +573,7 @@ export class Solver {
    * Current lifecycle state of the engine.
    */
   get state(): EngineState {
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_engine_get_state(this.handle, ptr));
       return this._mod.getValue(ptr, "i32") as EngineState;
@@ -430,32 +582,43 @@ export class Solver {
     }
   }
 
-  /**
-   * Simulation start date/time.
-   * Only valid after {@link Solver.open}.
-   */
+  /** Configured simulation start (`[OPTIONS] START_DATE/TIME`, UTC wall clock). */
   get startDatetime(): Date {
-    const ptr = this._mod._malloc(8);
-    try {
-      raiseForCode(this._raw.swmm_get_start_time(this.handle, ptr));
-      return oadateToDate(this._mod.getValue(ptr, "double"));
-    } finally {
-      this._mod._free(ptr);
-    }
+    return this._oadate(this._raw.swmm_options_get_start_date);
+  }
+  set startDatetime(value: Date) {
+    raiseForCode(this._raw.swmm_options_set_start_date(this.handle, datetimeToOadate(value)));
   }
 
-  /**
-   * Simulation end date/time.
-   * Only valid after {@link Solver.open}.
-   */
+  /** Configured simulation end (`[OPTIONS] END_DATE/TIME`). */
   get endDatetime(): Date {
-    const ptr = this._mod._malloc(8);
-    try {
-      raiseForCode(this._raw.swmm_get_end_time(this.handle, ptr));
-      return oadateToDate(this._mod.getValue(ptr, "double"));
-    } finally {
-      this._mod._free(ptr);
-    }
+    return this._oadate(this._raw.swmm_options_get_end_date);
+  }
+  set endDatetime(value: Date) {
+    raiseForCode(this._raw.swmm_options_set_end_date(this.handle, datetimeToOadate(value)));
+  }
+
+  /** Configured report start (`[OPTIONS] REPORT_START_DATE/TIME`). */
+  get reportStartDatetime(): Date {
+    return this._oadate(this._raw.swmm_options_get_report_start);
+  }
+  set reportStartDatetime(value: Date) {
+    raiseForCode(this._raw.swmm_options_set_report_start(this.handle, datetimeToOadate(value)));
+  }
+
+  /** Resolved simulation start the engine runs from (`swmm_get_start_time`). */
+  get simStartTime(): Date {
+    return this._oadate(this._raw.swmm_get_start_time);
+  }
+
+  /** Resolved simulation end (`swmm_get_end_time`). */
+  get simEndTime(): Date {
+    return this._oadate(this._raw.swmm_get_end_time);
+  }
+
+  /** @internal Read an OADate through `getter(engine, double*)`. */
+  private _oadate(getter: (engine: number, out: number) => number): Date {
+    return oadateToDatetime(withDouble(this._mod, (p) => getter(this.handle, p)));
   }
 
   /**
@@ -465,11 +628,11 @@ export class Solver {
   get currentDatetime(): Date {
     // swmm_get_current_time reports ELAPSED SECONDS since the start, not an
     // OADate (Python's current_datetime makes the same correction).
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_get_current_time(this.handle, ptr));
       const elapsedSeconds = this._mod.getValue(ptr, "double");
-      return new Date(this.startDatetime.getTime() + elapsedSeconds * 1000);
+      return new Date(this.simStartTime.getTime() + elapsedSeconds * 1000);
     } finally {
       this._mod._free(ptr);
     }
@@ -480,7 +643,7 @@ export class Solver {
    * Only valid after {@link Solver.initialize}.
    */
   get routingStep(): number {
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_get_routing_step(this.handle, ptr));
       return this._mod.getValue(ptr, "double");
@@ -494,7 +657,7 @@ export class Solver {
    * Only valid after {@link Solver.open}.
    */
   get flowUnits(): FlowUnits {
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_get_flow_units(this.handle, ptr));
       return this._mod.getValue(ptr, "i32") as FlowUnits;
@@ -529,6 +692,651 @@ export class Solver {
   }
 
   // -------------------------------------------------------------------------
+  // Python Solver members (wave A4)
+  // -------------------------------------------------------------------------
+
+  /** Model generation: bumped on open/close; views from an older generation are stale. */
+  get generation(): number {
+    return this._generation;
+  }
+
+  /** @internal The WASM module this solver runs in. */
+  get module(): OpenSwmmWasmModule {
+    return this._mod;
+  }
+
+  /** @internal Native calls in progress that can run JavaScript callbacks. */
+  private _active = 0;
+
+  /**
+   * @internal Run a native call that may call back into JavaScript (Python
+   * `_operation`); lifecycle calls are refused until it returns.
+   */
+  _operation<T>(fn: () => T): T {
+    this._active++;
+    try {
+      return fn();
+    } finally {
+      this._active--;
+    }
+  }
+
+  /** @internal Python `require_idle`: no lifecycle change from a native call or callback. */
+  _requireIdle(): void {
+    if (this._active) {
+      throw new LifecycleError("Cannot change lifecycle during a native call or callback");
+    }
+  }
+
+  /** @internal A structural edit happened: invalidate views, as Python's `_bump_generation`. */
+  _bumpGeneration(): void {
+    this._invalidateViews();
+  }
+
+  /** Snow model, UEB packs, radiation and snow state (Python `solver.snow`). */
+  get snow(): Snow {
+    return new Snow(this);
+  }
+
+  /** The `[AQUIFERS]` entries (Python `solver.aquifers`). */
+  get aquifers(): Aquifers {
+    return new Aquifers(this);
+  }
+
+  /** The `[SNOWPACKS]` entries (Python `solver.snowpacks`). */
+  get snowpacks(): Snowpacks {
+    return new Snowpacks(this);
+  }
+
+  /** The `[POLLUTANTS]` entries (Python `solver.pollutants`). */
+  get pollutants(): Pollutants {
+    return new Pollutants(this);
+  }
+
+  /** Land uses, buildup, washoff and treatment (Python `solver.quality`). */
+  get quality(): Quality {
+    return new Quality(this);
+  }
+
+  /** The `[INITIAL_QUALITY]` rows (Python `solver.initial_quality`). */
+  get initialQuality(): InitialQuality {
+    return new InitialQuality(this);
+  }
+
+  /** Continuity errors and totals (Python `solver.mass_balance`). */
+  get massBalance(): MassBalance {
+    return new MassBalance(this);
+  }
+
+  /** Temperature, evaporation, wind, humidity and snowmelt settings (Python `solver.climate`). */
+  get climate(): Climate {
+    return new Climate(this);
+  }
+
+  /** Run statistics and report summary tables (Python `solver.statistics`). */
+  get statistics(): Statistics {
+    return new Statistics(this);
+  }
+
+  /** External, dry-weather and RDII inflows and unit hydrographs (Python `solver.inflows`). */
+  get inflows(): Inflows {
+    return new Inflows(this);
+  }
+
+  /**
+   * Delete objects with their references, undo recorded deletes, convert
+   * types, split and fuse conduits (Python `solver.editor`).
+   */
+  get editor(): ModelEditor {
+    this._assertAlive();
+    return (this._editor ??= new ModelEditor(this));
+  }
+
+  /** The `[PROCESS_COMPONENTS]` registrations (Python `solver.process_components`). */
+  get processComponents(): ProcessComponents {
+    return new ProcessComponents(this);
+  }
+
+  /** Two-zone aquifer authoring and runtime snapshots (Python `solver.groundwater2d`; `surface2d.groundwater`). */
+  get groundwater2d(): Groundwater {
+    return this.surface2d.groundwater;
+  }
+
+  /** Heat-transport configuration and diagnostics (Python `solver.heat`). */
+  get heat(): Heat {
+    return new Heat(this);
+  }
+
+  /**
+   * Authored frozen-ground rows as `{ name: values }`: `[FROZEN_GROUND]`
+   * (subcatchments or `*`), or with `mesh` `[2D_FROZEN_GROUND]` (mesh tags or
+   * `*`). Each row has ten values: thickness (m), conductivity (W/m/K), heat
+   * capacity (J/m³/K), freezable water content, deep temperature (°C), deep
+   * depth (m), initial temperature (°C), exponent, snow conductivity (W/m/K)
+   * and snow density (kg/m³).
+   */
+  frozenGroundRows(mesh = false): Record<string, number[]> {
+    const h = this.handle;
+    const target = mesh ? 1 : 0;
+    const n = withInt(this._mod, (p) => this._raw.swmm_frozen_ground_count(h, target, p));
+    const values = checkedAlloc(this._mod, 80);
+    try {
+      const rows: Record<string, number[]> = {};
+      for (let i = 0; i < n; i++) {
+        const name = withCString(this._mod, 256, (buf, len) =>
+          this._raw.swmm_frozen_ground_get(h, target, i, buf, len, values),
+        );
+        rows[name] = Array.from(this._mod.HEAPF64.subarray(values >> 3, (values >> 3) + 10));
+      }
+      return rows;
+    } finally {
+      this._mod._free(values);
+    }
+  }
+
+  /**
+   * Add or replace one frozen-ground row (see {@link frozenGroundRows}). The
+   * row is authored input and takes effect when the model is next initialized.
+   */
+  setFrozenGround(name: string, values: ArrayLike<number>, mesh = false): void {
+    if (values.length !== 10) throw new RangeError("a frozen-ground row has ten values");
+    const h = this.handle;
+    withDoubleInput(this._mod, Array.from(values), (p) =>
+      this._raw.swmm_frozen_ground_set(h, mesh ? 1 : 0, name, p),
+    );
+  }
+
+  /** Remove the frozen-ground row with this name. */
+  removeFrozenGround(name: string, mesh = false): void {
+    raiseForCode(this._raw.swmm_frozen_ground_remove(this.handle, mesh ? 1 : 0, name));
+  }
+
+  /** Runtime exchange sources, boundaries and forcing of the default provider (Python `solver.coupling`). */
+  get coupling(): Coupling {
+    return new Coupling(this);
+  }
+
+  /** Experimental native water peer and owned phase snapshots (Python `solver.split`). */
+  get split(): SplitParticipant {
+    return new SplitParticipant(this);
+  }
+
+  /** Experimental in-process material peer and schema-10 packet codec (Python `solver.material_split`). */
+  get materialSplit(): MaterialSplitParticipant {
+    return new MaterialSplitParticipant(this);
+  }
+
+  /** Experimental integrated passive exchange and exact V1 observations (Python `solver.passive_exchange`). */
+  get passiveExchange(): PassiveExchange {
+    return new PassiveExchange(this);
+  }
+
+  /** The multi-species reaction system, `[REACTION_*]` / `.rxn` (Python `solver.reactions`). */
+  get reactions(): Reactions {
+    return new Reactions(this);
+  }
+
+  /** The `[WATER_AGE_SOURCES]` table (Python `solver.water_age`). */
+  get waterAge(): WaterAge {
+    return new WaterAge(this);
+  }
+
+  /**
+   * Whether the model's options are in the 1D finite volume device backend's
+   * scope: `[supported, why]`, where `why` names the first option out of scope
+   * and is empty when supported. A model out of scope still runs; the CPU
+   * solver integrates it.
+   */
+  fvDeviceSupported(): [boolean, string] {
+    const flag = checkedAlloc(this._mod, 4);
+    try {
+      this._mod.HEAP32[flag >> 2] = 0;
+      const why = withCString(this._mod, 256, (buf, len) =>
+        rawOf(this._mod).swmm_fv_device_supported(this.handle, flag, buf, len),
+      );
+      return [this._mod.HEAP32[flag >> 2] !== 0, why];
+    } finally {
+      this._mod._free(flag);
+    }
+  }
+
+  /** Process-wide hardware and OpenMP limits (Python `solver.thread_info`). */
+  get threadInfo(): ThreadInfo {
+    return threadInfo(this._mod);
+  }
+
+  /** Thread team sizes for this model; 0 requests automatic selection. */
+  effectiveThreads(requested = 0): EffectiveThreads {
+    return effectiveThreads(this, requested);
+  }
+
+  /** Transport capability matrix keyed by domain and species class, with reasons. */
+  get transportMatrix(): TransportMatrix {
+    return transportMatrix(this);
+  }
+
+  /** Transects, streets, inlets, inlet placements and LIDs (Python `solver.infrastructure`). */
+  get infrastructure(): Infrastructure {
+    return new Infrastructure(this);
+  }
+
+  /**
+   * Write the model to an OGC GeoPackage (`.gpkg`) with the built-in writer:
+   * nodes, links, subcatchments and rain gages as feature layers. A `crs`
+   * (e.g. `"EPSG:2284"`) is applied through `spatial.crs` first so features
+   * carry that SRS; without one the model's CRS is kept.
+   */
+  writeGeopackage(path: string, crs: string | null = null): void {
+    if (crs !== null) this.spatial.crs = crs;
+    this.writeWithPlugin(path, GEOPACKAGE_PLUGIN_ID);
+  }
+
+  /** Coordinates, polygons, `[MAP]` and the CRS (Python `solver.spatial`). */
+  get spatial(): Spatial {
+    return new Spatial(this);
+  }
+
+  /** Engine checkpoint sessions (Python `solver.checkpoints`). */
+  get checkpoints(): Checkpoints {
+    return new Checkpoints(this);
+  }
+
+  /** The `[SAVE HOTSTART]` schedule (Python `solver.save_schedule`). */
+  get saveSchedule(): SaveSchedule {
+    return new SaveSchedule(this);
+  }
+
+  /**
+   * The `[RESTART]` section (Python `solver.restart`): the saved state the run
+   * starts from and where it records its own.
+   */
+  get restart(): RestartSettings {
+    return new RestartSettings(this);
+  }
+
+  /**
+   * Python's `create()`. The constructor already creates the engine, so this
+   * only checks it is alive; a destroyed solver cannot be recreated (make a new one).
+   */
+  create(): void {
+    this._assertAlive();
+    this._requireIdle();
+  }
+
+  /**
+   * Open only the model's metadata (no simulation state), for inspecting or
+   * editing a model without running it.
+   */
+  openMetadata(inp: string): void {
+    this._requireIdle();
+    this._invalidateViews();
+    this._inp = inp;
+    const rc = this._operation(() => this._raw.swmm_engine_open_metadata(this.handle, inp));
+    this._rethrowCallbackError();
+    if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
+  }
+
+  /**
+   * Open the model only as far as its simulation period: the 2D mesh and the
+   * rows that address its cells are skipped, so a large 2D model opens fast.
+   */
+  openSimulationPeriod(inp: string): void {
+    this._requireIdle();
+    this._invalidateViews();
+    this._inp = inp;
+    const rc = this._operation(() =>
+      this._raw.swmm_engine_open_simulation_period(this.handle, inp),
+    );
+    this._rethrowCallbackError();
+    if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
+  }
+
+  /**
+   * Step until the elapsed time reaches `seconds` (or the run ends).
+   * @returns Elapsed seconds actually reached.
+   */
+  advanceTo(seconds: number): number {
+    this._requireIdle();
+    const ptr = checkedAlloc(this._mod, 8);
+    try {
+      const rc = this._operation(() => this._raw.swmm_engine_advance_to(this.handle, seconds, ptr));
+      this._rethrowCallbackError();
+      if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(this.handle));
+      return this._mod.HEAPF64[ptr >> 3];
+    } finally {
+      this._mod._free(ptr);
+    }
+  }
+
+  /** Step to the end, yielding the elapsed seconds after each routing step. */
+  *steps(): Generator<number, void, undefined> {
+    for (;;) {
+      const elapsed = this.step();
+      if (!elapsed) return;
+      yield elapsed;
+    }
+  }
+
+  /**
+   * Step until `target`: a `Date` (UTC wall clock) or elapsed seconds from the
+   * configured start. Returns the elapsed seconds reached, which is less than
+   * the target when the run ends first (0 at the end, like {@link step}).
+   */
+  until(target: Date | number): number {
+    const targetSeconds =
+      target instanceof Date ? (target.getTime() - this.startDatetime.getTime()) / 1000 : target;
+    if (typeof targetSeconds !== "number" || Number.isNaN(targetSeconds)) {
+      throw new TypeError("until(target) expects a Date or elapsed seconds");
+    }
+    const now = this.elapsed;
+    if (targetSeconds <= now) return now;
+    for (;;) {
+      const elapsed = this.step();
+      if (!elapsed || elapsed >= targetSeconds) return elapsed;
+    }
+  }
+
+  /** Elapsed simulation time in seconds. */
+  get elapsed(): number {
+    return withDouble(this._mod, (p) => this._raw.swmm_engine_get_elapsed_seconds(this.handle, p));
+  }
+
+  /** Errors recorded while opening the model (lenient open keeps going). */
+  get openErrors(): string[] {
+    const h = this.handle;
+    const n = this._raw.swmm_get_error_count(h);
+    return Array.from({ length: n }, (_, i) => this._raw.swmm_get_error_at(h, i) ?? "");
+  }
+
+  /** Warnings recorded while opening or writing the model. */
+  get openWarnings(): string[] {
+    const h = this.handle;
+    const n = this._raw.swmm_get_warning_count(h);
+    return Array.from({ length: n }, (_, i) => this._raw.swmm_get_warning_at(h, i) ?? "");
+  }
+
+  /**
+   * Open result readers for this solver's files (Python `open_results`).
+   * Call after {@link end}; while the engine is alive the configured 2D
+   * `OUTPUT_FILE` is found automatically (relative paths resolve against the
+   * input file's folder), after {@link destroy} pass `surface`. With `live`,
+   * only the binary 1D output is opened, during a run. The returned
+   * {@link Results} owns its readers and is closed separately.
+   */
+  openResults({
+    surface,
+    live = false,
+  }: { surface?: string | null; live?: boolean } = {}): Results {
+    this._requireIdle();
+    let surfacePath = surface ?? null;
+    if (this._handle) {
+      const state = this.state;
+      if (!live && state !== EngineState.ENDED && state !== EngineState.CLOSED) {
+        throw new LifecycleError(
+          "Call end() before opening saved results, or use live for 1D output",
+        );
+      }
+      if (surfacePath === null && !live) {
+        let configured = "";
+        try {
+          const [absolute, original] = withCStrings(this._mod, 4096, 2, ([a, o], len) =>
+            this._raw.swmm_file_path_get(this._handle, FilePathRole.OUTPUT_2D, "", a, len, o, len),
+          );
+          configured = absolute || original;
+        } catch (err) {
+          if (!(err instanceof EngineError)) throw err;
+        }
+        if (configured) {
+          const slash = this._inp.lastIndexOf("/");
+          const folder = slash < 0 ? "." : this._inp.slice(0, slash) || "/";
+          surfacePath = configured.startsWith("/") ? configured : `${folder}/${configured}`;
+        }
+      }
+    }
+    return Results.open(this._mod, this._out || null, { surface: surfacePath, live });
+  }
+
+  /** Coordinate reference system of the model (empty when none). */
+  get crs(): string {
+    return withCString(this._mod, 1024, (buf, len) =>
+      this._raw.swmm_get_crs(this.handle, buf, len),
+    );
+  }
+
+  /** True while the current time falls between `[EVENTS]` periods. */
+  get isBetweenEvents(): boolean {
+    return withInt(this._mod, (p) => this._raw.swmm_is_between_events(this.handle, p)) !== 0;
+  }
+
+  /** Skip steady-state periods (`[OPTIONS] SKIP_STEADY_STATE`). */
+  get steadyStateSkip(): boolean {
+    return withInt(this._mod, (p) => this._raw.swmm_get_steady_state_skip(this.handle, p)) !== 0;
+  }
+  set steadyStateSkip(value: boolean) {
+    raiseForCode(this._raw.swmm_set_steady_state_skip(this.handle, value ? 1 : 0));
+  }
+
+  /** Number of `[EVENTS]` entries. */
+  get eventCount(): number {
+    return withInt(this._mod, (p) => this._raw.swmm_get_event_count(this.handle, p));
+  }
+
+  /** `"US"` (CFS, GPM, MGD) or `"SI"` (CMS, LPS, MLD). */
+  get unitSystem(): "US" | "SI" {
+    return withInt(this._mod, (p) => this._raw.swmm_get_unit_system(this.handle, p)) === 1
+      ? "SI"
+      : "US";
+  }
+
+  /** Write the model to an `.inp` file (Python `write`). */
+  write(path: string): void {
+    this.writeModel(path);
+  }
+
+  /** Write the model through an output plugin (`""` = built-in INP writer). */
+  writeWithPlugin(path: string, outputPluginId = ""): void {
+    this.writeModel(path, outputPluginId);
+  }
+
+  /**
+   * Write FULL, OpenSWMM-legacy or stock EPA SWMM 5 input ({@link InpProfile}).
+   * Conversion warnings appear in {@link openWarnings}; the model is unchanged.
+   */
+  writeCompat(path: string, profile: InpProfile): void {
+    this._requireIdle();
+    const h = this.handle;
+    const rc = this._operation(() => this._raw.swmm_model_write_compat(h, path, profile));
+    this._rethrowCallbackError();
+    if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(h));
+  }
+
+  /**
+   * Write the built-in INP outputs to staging paths: `mapper(finalPath, kind)`
+   * (kind 0 = model, 1 = mesh, 2 = component configuration) returns where to
+   * write each output, or `null` to refuse it. References stay relative to
+   * `finalPath`; publishing the staged files is up to the caller. The mapper
+   * must not use the engine.
+   */
+  writeStaged(finalPath: string, mapper: (finalPath: string, kind: number) => string | null): void {
+    const mod = this._mod;
+    let current = 0;
+    let failure: unknown = undefined;
+    const release = () => {
+      if (current) mod._free(current);
+      current = 0;
+    };
+    const slot = mod.addFunction((_user: number, pathPtr: number, kind: number) => {
+      release();
+      if (failure !== undefined) return 0;
+      try {
+        const staged = mapper(mod.UTF8ToString(pathPtr), kind);
+        if (!staged) return 0;
+        const bytes = mod.lengthBytesUTF8(staged) + 1;
+        current = checkedAlloc(mod, bytes);
+        mod.stringToUTF8(staged, current, bytes);
+        return current;
+      } catch (err) {
+        failure = err;
+        return 0;
+      }
+    }, "iiii");
+    try {
+      const h = this.handle;
+      const rc = this._operation(() => this._raw.swmm_model_write_staged(h, finalPath, slot, 0));
+      if (failure !== undefined) throw failure;
+      this._rethrowCallbackError();
+      if (rc !== 0) raiseForCode(rc, this._raw.swmm_get_last_error_msg(h));
+    } finally {
+      release();
+      mod.removeFunction(slot);
+    }
+  }
+
+  /** Open a runoff interface file to save runoff results into. */
+  openRunoffInterfaceWrite(path: string): void {
+    raiseForCode(this._raw.swmm_runoff_iface_open_write(this.handle, path));
+  }
+
+  /** Open a runoff interface file to route previously saved runoff. */
+  openRunoffInterfaceRead(path: string): void {
+    raiseForCode(this._raw.swmm_runoff_iface_open_read(this.handle, path));
+  }
+
+  /** Save the current runoff step (`dt` in seconds) to the interface file. */
+  saveRunoffStep(dt: number): void {
+    raiseForCode(this._raw.swmm_runoff_iface_save_step(this.handle, dt));
+  }
+
+  /** Read the next runoff step; false when the file has no more data. */
+  readRunoffStep(): boolean {
+    return withInt(this._mod, (p) => this._raw.swmm_runoff_iface_read_step(this.handle, p)) !== 0;
+  }
+
+  /** Close the runoff interface file. */
+  closeRunoffInterface(): void {
+    raiseForCode(this._raw.swmm_runoff_iface_close(this.handle));
+  }
+
+  // ---- callbacks ------------------------------------------------------------
+  //
+  // A callback must not throw across the engine's C++ frames, so each one is
+  // wrapped: its first error is kept, later callbacks of the same native call
+  // are skipped, and the error is rethrown when that call returns. `null`
+  // removes the callback. Callbacks may read the model; they must not change
+  // it or call back into stepping.
+
+  /** @internal Rethrow the first error a callback raised during the last native call. */
+  _rethrowCallbackError(): void {
+    if (this._callbackError !== undefined) {
+      const err = this._callbackError;
+      this._callbackError = undefined;
+      throw err;
+    }
+  }
+
+  /**
+   * @internal Install (or with `fn === null`, remove) one kind of callback.
+   * A callback that returns a status hands `failed` back to native code when
+   * it throws, or when an earlier callback of the same native call did.
+   * `release` runs once the registration is replaced, removed or destroyed.
+   * `check` raises for a nonzero setter code (default: the engine's last error).
+   */
+  _setCallback(
+    kind: string,
+    setter: (engine: number, fn: number, user: number) => number,
+    signature: string,
+    fn: ((...args: number[]) => number | void) | null,
+    {
+      failed,
+      release,
+      check,
+    }: { failed?: number; release?: () => void; check?: (rc: number) => void } = {},
+  ): void {
+    this._requireIdle();
+    const h = this.handle;
+    const previous = this._callbackSlots.get(kind);
+    let slot = 0;
+    if (fn) {
+      slot = this._mod.addFunction((...args: number[]) => {
+        if (this._callbackError !== undefined) return failed;
+        try {
+          return fn(...args);
+        } catch (err) {
+          this._callbackError = err;
+          return failed;
+        }
+      }, signature);
+    }
+    const rc = setter(h, slot, 0);
+    if (rc !== 0) {
+      if (slot) this._mod.removeFunction(slot);
+      release?.();
+      if (check) check(rc);
+      raiseForCode(rc, this._raw.swmm_get_last_error_msg(h));
+    }
+    if (previous) this._mod.removeFunction(previous);
+    this._callbackReleases.get(kind)?.();
+    this._callbackReleases.delete(kind);
+    if (slot) this._callbackSlots.set(kind, slot);
+    else this._callbackSlots.delete(kind);
+    if (slot && release) this._callbackReleases.set(kind, release);
+  }
+
+  /** `callback(elapsedFraction)` as the run progresses, fraction in [0, 1]. */
+  setProgressCallback(callback: ((elapsedFraction: number) => void) | null): void {
+    this._setCallback(
+      "progress",
+      this._raw.swmm_set_progress_callback,
+      CALLBACK_SIGNATURES.SWMM_ProgressCallback,
+      callback && ((_engine, fraction) => callback(fraction)),
+    );
+  }
+
+  /** `callback(code, message)` for each engine warning. */
+  setWarningCallback(callback: ((code: number, message: string) => void) | null): void {
+    this._setCallback(
+      "warning",
+      this._raw.swmm_set_warning_callback,
+      CALLBACK_SIGNATURES.SWMM_WarningCallback,
+      callback &&
+        ((_engine, code, message) =>
+          callback(code, message ? this._mod.UTF8ToString(message) : "")),
+    );
+  }
+
+  /** `callback(simTime, dt)` before each routing step. */
+  setStepBeginCallback(callback: ((simTime: number, dt: number) => void) | null): void {
+    this._setCallback(
+      "stepBegin",
+      this._raw.swmm_set_step_begin_callback,
+      CALLBACK_SIGNATURES.SWMM_StepBeginCallback,
+      callback && ((_engine, simTime, dt) => callback(simTime, dt)),
+    );
+  }
+
+  /** `callback(simTime, dt)` after each routing step. */
+  setStepEndCallback(callback: ((simTime: number, dt: number) => void) | null): void {
+    this._setCallback(
+      "stepEnd",
+      this._raw.swmm_set_step_end_callback,
+      CALLBACK_SIGNATURES.SWMM_StepEndCallback,
+      callback && ((_engine, simTime, dt) => callback(simTime, dt)),
+    );
+  }
+
+  /** `callback(phase, startSeconds, endSeconds)` for each engine phase of a step. */
+  setPhaseCallback(
+    callback: ((phase: number, startSeconds: number, endSeconds: number) => void) | null,
+  ): void {
+    this._setCallback(
+      "phase",
+      this._raw.swmm_set_phase_callback,
+      CALLBACK_SIGNATURES.SWMM_PhaseCallback,
+      callback && ((_engine, phase, start, end) => callback(phase, start, end)),
+    );
+  }
+
+  // -------------------------------------------------------------------------
   // Explicit resource management (TC39 proposal Stage 3)
   // -------------------------------------------------------------------------
 
@@ -540,5 +1348,97 @@ export class Solver {
    */
   [Symbol.dispose](): void {
     this.destroy();
+  }
+}
+
+// =============================================================================
+// Module-level functions (Python `abi_tag`, `run`, `run_with_callback`)
+// =============================================================================
+
+/** Whether a compute backend is installed and usable (Python `backend_info`). */
+export interface BackendInfo {
+  /** True when a run can use the backend. */
+  usable: boolean;
+  /** Device the backend would run on; empty when none. */
+  deviceName: string;
+  /** Device memory in bytes; 0 when unknown or a host backend. */
+  deviceMemBytes: number;
+  /** Why the backend is not usable; empty when usable. */
+  reason: string;
+}
+
+/**
+ * Whether a compute backend is installed and usable, without a model. `backend`
+ * is a name as written in an input file (`"CPU"`, `"AUTO"`, `"OMP"`, `"CUDA"`,
+ * `"HIP"`, `"SYCL"`, ...). A model that asks for an unusable backend still runs
+ * on the CPU solver.
+ */
+export function backendInfo(
+  mod: OpenSwmmWasmModule,
+  solver: BackendSolver,
+  backend: string,
+): BackendInfo {
+  // SWMM_BackendInfo on wasm32: int usable @0, char device_name[128] @4,
+  // unsigned long long device_mem_bytes @136, char reason[256] @144; 400 bytes.
+  const p = checkedAlloc(mod, 400);
+  try {
+    mod.HEAPU8.fill(0, p, p + 400);
+    raiseForCode(rawOf(mod).swmm_backend_info(solver, String(backend), p));
+    return {
+      usable: mod.HEAP32[p >> 2] !== 0,
+      deviceName: mod.UTF8ToString(p + 4, 128),
+      deviceMemBytes: mod.HEAPU32[(p + 136) >> 2] + mod.HEAPU32[(p + 140) >> 2] * 2 ** 32,
+      reason: mod.UTF8ToString(p + 144, 256),
+    };
+  } finally {
+    mod._free(p);
+  }
+}
+
+/** The engine's ABI tag, the identity plugins and bindings are checked against. */
+export function abiTag(mod: OpenSwmmWasmModule): string {
+  return rawOf(mod).swmm_engine_abi_tag() ?? "";
+}
+
+/** Run a whole simulation from files in the virtual filesystem. */
+export function run(
+  mod: OpenSwmmWasmModule,
+  inp: string,
+  rpt: string | null = null,
+  out: string | null = null,
+  { pluginLib = null }: { pluginLib?: string | null } = {},
+): void {
+  raiseForCode(rawOf(mod).swmm_engine_run(inp, rpt, out, pluginLib));
+}
+
+/**
+ * {@link run} with `callback(elapsedFraction)` as the run progresses. An error
+ * the callback throws is rethrown when the run returns.
+ */
+export function runWithCallback(
+  mod: OpenSwmmWasmModule,
+  inp: string,
+  rpt: string | null = null,
+  out: string | null = null,
+  callback: ((elapsedFraction: number) => void) | null = null,
+  { pluginLib = null }: { pluginLib?: string | null } = {},
+): void {
+  let failure: unknown = undefined;
+  const slot = callback
+    ? mod.addFunction((_engine: number, fraction: number) => {
+        if (failure !== undefined) return;
+        try {
+          callback(fraction);
+        } catch (err) {
+          failure = err;
+        }
+      }, CALLBACK_SIGNATURES.SWMM_ProgressCallback)
+    : 0;
+  try {
+    const rc = rawOf(mod).swmm_engine_run_with_callback(inp, rpt, out, pluginLib, slot, 0);
+    if (failure !== undefined) throw failure;
+    raiseForCode(rc);
+  } finally {
+    if (slot) mod.removeFunction(slot);
   }
 }

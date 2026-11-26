@@ -12,24 +12,23 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ## [Unreleased]
 
-### Changed
-
-- **Version qualifier follows the Python bindings**: `6.0.0-alpha.4.dev.2`
-  for Python `6.0.0a4.dev2`; dev-qualified versions publish under the `dev`
-  dist-tag.
-
 ### Added
 
-- **Trivial 2D example** (`examples/trivial_2d.inp`, `examples/trivial_2d.mjs`,
-  shipped in the package): rain on a two-triangle sloped plane draining
-  through one edge, with no 1D network. Featured in the README and run by
-  `npm run smoke`.
+- **Restart records**, mirroring Python: `solver.restart` (`RestartSettings`,
+  the `[RESTART]` section), `probeRestartFile()` and `inspectRestartFile()`
+  (`tests/wasm/restart_records.test.ts`).
+- `backendInfo()`, `solver.fvDeviceSupported()` and
+  `massBalance.routingReportContinuityError`, the routing continuity error as
+  the report prints it.
 
 ### Fixed
 
-- **`Solver.currentDatetime`** returned 1900-era dates: `swmm_get_current_time`
-  reports elapsed seconds, not an OADate. It is now start + elapsed, as in
-  Python's `current_datetime`.
+- The generated raw layer and Python surface fixture are current for the
+  pinned engine again; pins since 9965040 had moved the engine without
+  regenerating them, which failed the "Generated binding drift" check.
+- With the engine pin at 4c286864, a WebGPU 2D run budgets a coupled node's
+  1D-to-2D spill from the pond the node's depth holds, as the CPU marcher
+  does. Before it, six Rubinato shaft rows were throttled on WebGPU only.
 
 ## [6.0.0-alpha.4.dev.2]
 
@@ -38,18 +37,297 @@ First release of the package.
 ### Added
 
 - **Raw C API** generated from the engine headers (`tools/gen_bindings.py`):
-  1,244 functions (1,048 without the 2D module), struct layouts and the
+  1,535 functions (1,272 without the 2D headers), struct layouts and the
   callback typedefs with their `addFunction()` signatures, exported as
   `@hydrocouple/openswmm-engine-wasm/raw`.
-- **TypeScript layer** mirroring the Python API for the solver lifecycle,
-  nodes, links, subcatchments, gages, controls, runtime forcing, ARD transport,
-  `ModelBuilder` and 2D surface routing (`Surface2D`, mesh infiltration);
-  81 enum classes and the engine error hierarchy.
-- **2D surface routing** built in, without the HDF5 results writer
-  (`OUTPUT_FILE` is ignored with a warning; read results through `surface2d`).
+- **TypeScript layer** mirroring the Python API member for member (all 2,484
+  public members, checked by `tests/python_surface.test.ts`), the 97 enum
+  classes and the engine error hierarchy; the entries below list it by area.
+- **2D surface routing** built in; with HDF5 (below) the `OUTPUT_FILE` results
+  file is written as well.
 - **GeoPackage** support, with SQLite compiled from the pinned amalgamation.
 - **Smoke tests** for 1D and 2D runs that compare against native reference
   reports built with the WASM arithmetic (`tools/native_reference.sh`).
+- **Frozen ground**, mirroring Python: `solver.frozenGroundRows()`,
+  `setFrozenGround()` and `removeFrozenGround()` for the `[FROZEN_GROUND]`
+  and (with `mesh`) `[2D_FROZEN_GROUND]` rows, `Subcatchment.frozenGround`
+  (temperature, frozen fraction and infiltration factor, or `null` without a
+  row) and `surface2d.infiltration.frozenGround()` per triangle
+  (`tests/wasm/frozen_ground.test.ts`, identical to native Python).
+- **Coupling family** (wave F), mirroring Python's `_coupling`, `_split`,
+  `_passive_exchange` and `_trace`; with it, every one of the 2,484 public
+  Python members has a TypeScript counterpart (`pending` is empty).
+  `solver.coupling` (`Coupling`: providers, `applyFrame` of sources,
+  boundaries, forcing and clears, `capabilities`) and `DomainSources`
+  (sources, receipts, runtime boundaries, forcing, infiltration receipts,
+  surface species ledger), also reached as `surface2d.sources` and
+  `groundwater2d.sources` with the Python shortcuts (`setWaterSource`,
+  `setHeatSource`, `setSpeciesSource`, `setHeadBoundary`, `setFlowBoundary`,
+  `boundaryReceipt`, `sourceReceipt`, `clearSource`, ...). `solver.split`
+  (`SplitParticipant`, `SplitFrame`) runs a network and a surface peer in one
+  module; `solver.passiveExchange` copies the V1 status, pool, receipt, row
+  and leg observations; `solver.materialSplit` covers the material codec and
+  pair checkpoints; `FlowTracer` traces over supplied averages or a saved
+  output, with its HDF5 cache. The material peer and the split packet codec
+  need an engine built with HydroCouple and raise `PluginError` in WASM.
+- **HDF5 in the WASM build** (`-DOPENSWMM_WASM_HDF5=ON`, the default): HDF5
+  2.1.1, the native engine's vcpkg release, is downloaded and built during
+  configure. The 2D `[2D_OPTIONS] OUTPUT_FILE` results file is now written and
+  readable through `swmm_output2d_*`, and `.h5` model output and HDF5
+  checkpoints are available. Without zlib, like the native build, so the files
+  open in native readers. About 3.3 MB more `.wasm`. Smoke test:
+  `tests/smoke/hdf5.mjs`, which also reopens the `.h5` model with
+  `org.hydrocouple.openswmm.plugins.hdf5` and runs it like the `.inp`.
+- **Tables, patterns, cross-sections and dates** mirroring Python's
+  `_tables`, `_xsect`, `_geometry`, `_dates` and `_datetime`:
+  `solver.tables` (`TimeSeries`, `Curve`, point editing, validated replacement,
+  lookup), `solver.patterns`, `XSectionGeometry` (shapes, transects, shape
+  curves, streets, a link's geometry; scalar or array queries), `CrossSection`,
+  `oadateToDatetime`/`datetimeToOadate` and the engine's DateTime functions
+  (`encodeDate(mod, ...)` ...). Also `GeoPackageError`. The parity gate maps
+  Python's `ModelBuilder.add_subcatch`, `get_file_path`, `set_file_path` and
+  `userflag_def_count` onto the existing `addSubcatchment`, `filePathGet`,
+  `filePathSet` and `getUserflagDefCount`.
+- **Gages, controls, forcing and snow** (wave B, part 1), mirroring Python:
+  `Gages.add/rename/ids/has/reloadRainFiles`, `Gage.setFile/setTimeseries/
+  setRainInterval/rainfallSeries/solver`; `Controls.append/insert/set/delete/
+  clear/replaceProgram/findReferences/validateMessage`; forcing by id or index
+  for subcatchment rainfall/evaporation/snowfall, node and link quality,
+  climate temperature/wind/evaporation/dry-only and element climate;
+  `solver.snow` (`Snow`: model, step, UEB options and monthly ranges, packs,
+  `applyPacks`, snow state, UEB ledger, radiation, cloud, meteorology preview).
+  As in Python, adding or renaming an element invalidates that collection's
+  earlier views.
+- **Groundwater** (wave E, part 6), mirroring Python: `solver.groundwater2d`;
+  `AquiferOptions` and `GroundwaterTransportOptions` (key iteration,
+  `setProcessOptions`), node and link beds with `replaceNodes`, authored
+  boundaries and receipts, species, concentrations, layer quality, species
+  ledgers and execution status; on `transport` the parameter, sorption,
+  initial-quality and boundary tables, XY sources (`sources` rows now carry
+  `byXy`, `x`, `y`) and the initial-quality file. The runtime source members
+  wait for the coupling wave.
+- **2D surface remainder** (wave E, part 5), mirroring Python: initial,
+  initial-bed and boundary quality rows, species and per-cell
+  concentrations, edge exterior test, boundary groups and concentrations,
+  wall drag, initial HGL, node coupling records and parameters, surface
+  owners (get, preview with token, replace), `setResultsFile`,
+  `setAutoBackendCpu`, `geometryScaleToSi`, `getReportRainfallBulk`, and on
+  `surface2d.infiltration` authored rows and ownership. `defaults` is now a
+  live `Infil2DDefaults` mapping (get/set/delete/has, iterates tags; was a
+  `Map` snapshot). The runtime source members wait for the coupling wave.
+- **Heat** (wave E, part 4), mirroring Python: `solver.heat` with `modules`,
+  `radiative`, `solar`, `cloud`, `sources`, `sediment`, `nodeOverrides` and
+  `elementOverrides`, shortwave mode and series, `effectiveElement`, mesh,
+  ground and channel-ground status and values, `previewChannelGroundMap`
+  (paged, with a cancellable progress callback), `HeatSnapshot` and
+  `editAtomic` (rolled back natively when the callback throws). Results
+  match native Python on the engine's heat test deck.
+- **Lifecycle guard**, as in Python: open/initialize/start/step/end/report/
+  close/destroy/write and the callback setters throw `LifecycleError` while
+  a native call that can run JavaScript callbacks is in progress, so a
+  callback cannot free or re-enter the engine mid-call.
+- The generator now emits every callback typedef's `addFunction()`
+  signature, including those declared next to their API (heat edit, staged
+  output, split, material transport, surface-owner progress, trace
+  progress): 14 in `CALLBACK_SIGNATURES`.
+- **Reactions** (wave E, part 3), mirroring Python: `solver.reactions` with
+  `species`, `coefficients` and `terms` (live views: expressions, initial
+  and rainfall concentrations, values), `initial` rows, options, `validate`,
+  and the `.rxn` text contract (`serialize`, `checkText`, `applyText`,
+  `save`), plus the model-free `Reactions.hydraulicVariables` and
+  `Reactions.functions`. Serialized text matches native Python byte for
+  byte.
+- **Process components, water age, mesh snow and surface quality** (wave E,
+  part 2), mirroring Python: `solver.processComponents` (register, remove,
+  arguments, `known`, `libraries`, `addSearchPath`), `solver.waterAge`
+  (`globals`, `nodeOverrides`, `save`), `surface2d.snow` (`MeshSnow`) and
+  `surface2d.quality` (`SurfaceQuality` with coverage, loading and
+  curb-length rows and `buildup`), plus `capabilities(mod)`, which returns
+  the same JSON document as Python's `capabilities()`, and `VERSION`
+  (checked against package.json by `tools/check_version.py`).
+- **Transport, threads and the catalog** (wave E, part 1), mirroring Python:
+  `Transport.previewMatrix`, `detailedOutput`, conduit dispersion, boundary
+  and source rows; `solver.transportMatrix`, `solver.threadInfo`,
+  `solver.effectiveThreads()` and the module functions (`transportMatrix`,
+  `threadInfo`, `effectiveThreads`, `transportDomainName`,
+  `transportClassName`); `catalog` (`lookup`, `members`, `targets`,
+  `resolve`, `canonical`, `unitLabel`, `UNIT_KINDS`, revisions), with the
+  engine's `catalog.json` embedded by `tools/gen_fields.py`
+  (`src/js/catalog.generated.ts`, about 600 KB, parsed on first use).
+- **GeoPackage** (wave D, part 4), mirroring Python: `GeoPackage` (simulation
+  ids and object counts, result series and summaries, observed series with
+  single and bulk writes, transactions, read-only SQL), `registerGeoPackage` /
+  `isGeoPackageRegistered` (Python `_geopackage.register` / `is_registered`)
+  and `solver.writeGeopackage(path, crs)`. The written model matches a
+  natively written GeoPackage table for table.
+- **Infrastructure** (wave D, part 3), mirroring Python:
+  `solver.infrastructure` with `transects` (stations, roughness, banks,
+  encroachment, modifiers, comments, remove/rename), `streets`, `inlets`
+  (parameters, full designs with `validateDesign`, comments), `inletUsages`
+  (conduit and inlet-junction placements) and `lids` (control layers,
+  removals, extra fields, storage-node stacks with treatments and Richards
+  flow options, node assignments, bottoms, outlet anchors, snapshots and
+  `[LID_USAGE]` records), plus `LidNodeLayer`, `LidNodeLayerKind` and
+  `LidLayerTreatment`. Nine more structs join the generated layouts. Checked
+  against native Python running the same edits.
+- **Spatial data and the model editor** (wave D, part 2), mirroring Python:
+  `solver.spatial` (`Spatial`: CRS, `[MAP]` dimensions and units, annotation
+  sections, node/link/subcatchment/gage coordinates, link polylines and
+  subcatchment polygons as `[n, 2]` arrays) and `solver.editor` /
+  `new ModelEditor(builder)` (impact analysis and deletes for every object
+  kind, batch and recorded deletes with `DeleteRecord.restore()`, node/link
+  conversion, batch `convertTypes` preview, virtual and inlet junction split
+  and fuse, counts and dates). Checked against native Python running the same
+  edits.
+- **Saved results** (wave D, part 1), mirroring Python: `OutputReader` (binary
+  `.out`: metadata, ids, period times, per-period results, series, attribute
+  maps, node statistics; `live` reading with `refresh()`), `Output2DReader`
+  (2D HDF5 results: datasets, attributes, shapes, numpy-style selections) and
+  the `Results` facade (`ResultCollection`, `SeriesField`, `SurfaceResults`,
+  `SurfaceField`, mesh, species, 2D mass balance), opened from a run by
+  `solver.openResults()`. Reads return `NDArray` (`{ shape, data }`);
+  `slice()` and `ELLIPSIS` build selections. Checked against native Python
+  reading the same files.
+- **Report snapshot** (wave C, part 5), mirroring Python `_report.py`:
+  `getReportSnapshot(solver)` returns runoff, routing and quality continuity
+  (errors in percent), routing diagnostics, flooded nodes, storage, link flow,
+  pumping and subcatchment summaries. Its routing continuity error is the
+  engine's exact ledger; the printed report uses legacy half-step totals, so
+  the two can differ.
+- **Hot starts and checkpoints** (wave C, part 4), mirroring Python:
+  `HotStart` (save from a solver, open native or legacy files, metadata,
+  node/link/subcatchment records with species, state edits, apply;
+  `close()`/`using`), `solver.saveSchedule` (`[SAVE HOTSTART]` entries and
+  formats) and `solver.checkpoints` (capabilities, session start/status,
+  inspect, save, restore). Saving never replaces an existing file: under
+  Emscripten the engine claims the destination with an exclusive create and
+  renames onto the claim (engine `118c552a`), so the capabilities include
+  SAVE_NEW and BUNDLE_EXPORT.
+- **Inflows** (wave C, part 3), mirroring Python: `solver.inflows` for
+  external inflows (time series, scale, baseline, pattern), dry-weather
+  inflows (average and four patterns), RDII rows, unit-hydrograph groups
+  (R/T/K, initial abstraction, gages, rename/remove) and RDII decay.
+- **Climate and statistics** (wave C, part 2), mirroring Python:
+  `solver.climate` (temperature source, evaporation, wind, humidity, snowmelt,
+  areal depletion and monthly adjustments; `previewEvaporation` from the model
+  or a draft configuration) and `solver.statistics` (node, link and
+  subcatchment statistics as arrays or per element; report summary tables
+  with titles, columns, rows and values).
+- **Pollutants, quality, initial quality and mass balance** (wave C, part 1),
+  mirroring Python: `solver.pollutants` (`Pollutant` concentrations, decay,
+  units, snow-only, co-pollutant; add/rename, node and link quality),
+  `solver.quality` (land uses with sweeping, buildup and washoff per land use
+  and pollutant or reaction species, node treatment and its validator),
+  `solver.initialQuality` (`[INITIAL_QUALITY]` rows incl. water age and
+  temperature, file path) and `solver.massBalance` (continuity errors,
+  runoff/routing totals, routing diagnostics, Courant, quality losses).
+- **Subcatchments, aquifers and snowpacks** (wave B, part 3), mirroring
+  Python: subcatchment roughness, depression storage, scale factors, tag,
+  snowpack, gage, outlet (node or subcatchment), aquifer and groundwater node,
+  groundwater parameters and state, snow state, rainfall/evaporation/
+  infiltration/snow depth, quality and ponded quality, and the `infiltration`,
+  `coverage`, `loadings` (pollutants or reaction species) and `stats`
+  sub-views; collection `add`/`rename`/`ids`/`has`, bulk values and custom
+  groundwater flow expressions; `solver.aquifers` and `solver.snowpacks`.
+- **Nodes and links** (wave B, part 2), mirroring Python: node tag, virtual
+  and inlet flags with their eligibility codes, rim/surcharge/ponded/initial
+  depths, crown elevation, full volume, degree, quality and mass flux, and the
+  `storage`, `outfall` (incl. `exportReceipt`) and `divider` sub-views; link
+  geometry and hydraulics (length, roughness, offsets, losses, flap gate,
+  seepage, culvert, barrels, ...), `fromNode`/`toNode`/`setNodes`, the `xsect`,
+  `stats`, `pump`, `weir`, `orifice` and `outlet` sub-views; collection
+  `add`/`popLast`/`rename`/`ids`/`has`, bulk inflows/outflows/losses,
+  volumes, settings, hydraulic power, qualities and pump statistics. Sub-views
+  of the wrong element type throw `TypeError`.
+- **Structs by layout:** `readStruct`/`writeStruct`/`withStruct` read and write
+  engine structs through the generated wasm32 layouts; the generator now
+  handles nested structs and lays out the snow and radiation structs (all
+  checked by `static_assert` under wasm32).
+- **Solver members from Python's `_solver`** (wave A4): `options` (with
+  `ext`), `userflags`, `events`; `openMetadata`, `openSimulationPeriod`,
+  `advanceTo`, `until`, `steps()`, `elapsed`; `write`, `writeWithPlugin`,
+  `writeCompat`, `writeStaged`; runoff interface files; diagnostics (`crs`,
+  `openErrors`, `openWarnings`, `unitSystem`, `eventCount`, ...); and progress,
+  warning, step-begin/end and phase callbacks through `addFunction`. A
+  callback's error is kept and rethrown when the engine call returns, so it
+  never unwinds through the engine. Module functions `run`, `runWithCallback`
+  and `abiTag`. Accessors for later facade waves (climate, heat, coupling ...)
+  are listed as pending in the parity gate.
+- **Python API parity gate.** `tools/gen_python_surface.py` records the
+  pinned engine's public Python surface (stubs and pure-Python modules) in
+  `tests/fixtures/python_surface.json`; `tests/python_surface.test.ts` checks
+  every member against the TypeScript classes, module by module, with aliases,
+  reasoned exclusions and pending facade waves in `tools/python_surface_map.json`.
+  Coverage per module is written to `tests/_work/python_parity_report.json`.
+- **Real-module test tier** (`tests/wasm/`, vitest): runs the built
+  `dist/` module; skipped with the reason in the title when `dist/` has no
+  build. CI runs it after the Emscripten build. First test: the report summary
+  tables after a full run.
+- **`solver.fields`: engine fields by catalog path.** `fields.get("node.max_depth", "J1")`,
+  `fields.set("link.roughness", "C1", 0.012)` and `fields.getAll("node.depth")`
+  use the dotted paths of the engine catalog, the same names the Python
+  bindings, the MCP server and the gymnasium use. The table is generated from
+  the catalog (`tools/gen_fields.py`, run by `npm run gen` and checked in CI):
+  181 of the catalog's 389 properties, every one that maps onto a single C
+  getter and setter. `tests/fixtures/facade_coverage.json` records that
+  coverage per target, and `tools/verify_fields_native.py` checks the table
+  against the native engine and the Python bindings.
+- **Trivial 2D example** (`examples/trivial_2d.inp`, `examples/trivial_2d.mjs`,
+  shipped in the package): rain on a two-triangle sloped plane draining
+  through one edge, with no 1D network. Featured in the README and run by
+  `npm run smoke`.
+
+### Changed
+
+- License changed from MIT to Apache-2.0.
+- **`Solver.startDatetime` / `endDatetime` are the configured `[OPTIONS]`
+  dates**, as Python's `start_datetime` / `end_datetime`, and are now
+  settable; `simStartTime` / `simEndTime` give the resolved times the engine
+  runs (what `startDatetime` returned before; the two agree once a model is
+  open). Dates are rounded to the millisecond.
+- **Engine pin advanced** from `ed32a16f` to `swmm6_rel` `d07ac62e`. The raw
+  layer grows from 1,414 to 1,535 C functions (1,272 without the 2D headers):
+  hot-start contents and legacy hot starts, recorded deletes and type
+  conversion (`swmm_convert_types`), LID extras and storage LIDs, summary
+  tables (`swmm_summary_*`), divider parameters, 2D initial HGL and results
+  path, process-component arguments, frozen ground (`swmm_frozen_ground_*`,
+  `swmm_subcatch_get_frozen_ground`, `swmm_infil2d_get_frozen_ground_bulk`),
+  compute-backend information (`swmm_backend_info`,
+  `swmm_fv_device_supported`), and the new split, material-split, split
+  packet and passive-exchange headers. Adds the `SWMM_PhaseCallback` typedef
+  (`"viiddi"`) and the `SplitRole`, `SplitPhase`, `LidExtraField`,
+  `SummaryTable` and `SummaryObject` enums; `GroundwaterVariable` gains `QX`
+  and `QY`. No function was removed or changed signature.
+- **Snow records use camelCase keys** like every other record (`sweM`,
+  `forestFraction`, `stepSeconds`, `geometryEnergyKj`; mesh snow rows
+  `groundHeatWm2`, `extinctionDepthM`, `slopeDeg`, `aspectDeg`; snowpack rows
+  `removalSubcatch`). Reads convert the engine's C field names and writes map
+  back through each struct's own field list, so a C name is refused.
+- **Version qualifier follows the Python bindings**: `6.0.0-alpha.4.dev.2`
+  for Python `6.0.0a4.dev2`; dev-qualified versions publish under the `dev`
+  dist-tag.
+
+### Fixed
+
+- **Raw functions with 64-bit integer arguments threw** "Cannot convert … to
+  a BigInt": the module passes `uint64_t` by value as a wasm i64, which only a
+  `bigint` fills. The six such functions (`swmm_passive_exchange_enable`,
+  `_receipt_v1`, `_row_v1`, `_leg_v1`, `_leg_v2`, `swmm_split_material_bind`)
+  now take `bigint` in `RawApi`.
+- **A string argument over about 1 MB corrupted memory**: cwrap copies
+  strings onto the 1 MB stack, so a larger one overran it silently and a later
+  call trapped with "memory access out of bounds". Strings over 16,384
+  characters are now copied to the heap (`tests/wasm/raw_layer.test.ts`).
+- **The 1D-only build (`-DOPENSWMM_WASM_2D=OFF`) did not link**: its export
+  list named the 17 `openswmm_coupling.h` and 3 `openswmm_surface_ownership.h`
+  functions, which the engine implements in its 2D module. Both headers are now
+  optional 2D headers, so the 1D-only export list has 1,265 functions.
+- **Bit-flag enums were missing**: the enum generator skipped Python `IntFlag`
+  classes, so `TraceFlags` and `TraceNodeFlags` were absent from the package.
+  All 97 Python enum classes are now generated.
+- **`Solver.currentDatetime`** returned 1900-era dates: `swmm_get_current_time`
+  reports elapsed seconds, not an OADate. It is now start + elapsed, as in
+  Python's `current_datetime`.
 
 ### Build
 
@@ -57,7 +335,3 @@ First release of the package.
 - ESLint 9, Prettier and Ruff; CI workflows for build/test (Node 20, 22,
   24), lint, CLA and tag-driven releases to npm, GitHub Packages and GitHub
   Releases.
-
-### Changed
-
-- Licence changed from MIT to Apache-2.0.

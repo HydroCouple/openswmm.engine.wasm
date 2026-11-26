@@ -34,7 +34,8 @@
 // ---------------------------------------------------------------------------
 // Solver (main lifecycle controller)
 // ---------------------------------------------------------------------------
-export { Solver } from "./Solver.js";
+export { Solver, abiTag, backendInfo, run, runWithCallback } from "./Solver.js";
+export type { BackendInfo } from "./Solver.js";
 
 // ---------------------------------------------------------------------------
 // Model builder (programmatic model construction)
@@ -45,12 +46,117 @@ export type { UserFlagDef, FilePaths, PluginEntry } from "./ModelBuilder.js";
 // ---------------------------------------------------------------------------
 // Domain collections and element accessors
 // ---------------------------------------------------------------------------
-export { Nodes, Node } from "./Nodes.js";
+export { Nodes, Node, StorageView, OutfallView, DividerView } from "./Nodes.js";
+export type { OutfallExportReceipt } from "./Nodes.js";
 export type { NodeStats } from "./Nodes.js";
 
-export { Links, Link } from "./Links.js";
+export {
+  Links,
+  Link,
+  LinkStatsView,
+  XSection,
+  PumpView,
+  WeirView,
+  OrificeView,
+  OutletView,
+} from "./Links.js";
 
-export { Subcatchments, Subcatchment } from "./Subcatchments.js";
+export {
+  Subcatchments,
+  Subcatchment,
+  SubcatchmentStatsView,
+  InfiltrationView,
+  CoverageView,
+  LoadingsView,
+} from "./Subcatchments.js";
+export type { GroundwaterParams } from "./Subcatchments.js";
+export { Aquifers, Snowpacks } from "./NamedObjects.js";
+export { Pollutant, Pollutants } from "./Pollutants.js";
+export { Landuse, Landuses, Quality } from "./Quality.js";
+export type { Buildup, Washoff } from "./Quality.js";
+export { InitialQuality } from "./InitialQuality.js";
+export type { InitialQualityEntry } from "./InitialQuality.js";
+export { MassBalance } from "./MassBalance.js";
+export { getReportSnapshot } from "./Report.js";
+export { OutputReader, OutputNodeStats } from "./OutputReader.js";
+export type { SeriesRange } from "./OutputReader.js";
+export { Output2DReader } from "./Output2D.js";
+export type { Output2DDType, Output2DSelection } from "./Output2D.js";
+export {
+  Results,
+  ResultCollection,
+  ResultField,
+  ResultObject,
+  SeriesField,
+  SurfaceCell,
+  SurfaceCells,
+  SurfaceField,
+  SurfaceResults,
+} from "./Results.js";
+export type { ResultMesh, ResultReadOptions, ResultSelection, Selector } from "./Results.js";
+export { ELLIPSIS, slice } from "./ndarray.js";
+export { ModelEditor, DeleteRecord, ImpactEntry, ConversionResult, TypeChange } from "./Edit.js";
+export type { ConvertTypesOptions, EditorOwner } from "./Edit.js";
+export { Spatial } from "./Spatial.js";
+export { Infrastructure, Transects, Streets, Inlets, InletUsages, LIDs } from "./Infrastructure.js";
+export type {
+  StreetParams,
+  InletParams,
+  InletDesign,
+  InletUsageRecord,
+  LidFlowOptions,
+  LidMaterial,
+  StorageLidState,
+  StorageLidAnchor,
+  LidNodeSnapshot,
+  LidUsageRecord,
+  LidUsage,
+} from "./Infrastructure.js";
+export { LidNodeLayerKind, LidNodeLayer, LidLayerTreatment } from "./LidNodes.js";
+export { GeoPackage, registerGeoPackage, isGeoPackageRegistered } from "./GeoPackage.js";
+export type { XYArray } from "./Spatial.js";
+export type { AxisKey, NDArray, NumericData, Slice } from "./ndarray.js";
+export type {
+  RoutingDiagnostics,
+  RunoffContinuity,
+  RoutingContinuity,
+  QualityContinuity,
+  NodeFloodingEntry,
+  LinkFlowEntry,
+  PumpEntry,
+  SubcatchmentEntry,
+  ReportSnapshot,
+} from "./Report.js";
+export { Climate } from "./Climate.js";
+export type { EvapPreview, EvapPreviewSample } from "./Climate.js";
+export { Statistics } from "./Statistics.js";
+export type { ReportTable, SummaryColumn, SummaryRow } from "./Statistics.js";
+export { Inflows } from "./Inflows.js";
+export {
+  HotStart,
+  RestartSettings,
+  SaveSchedule,
+  inspectRestartFile,
+  probeRestartFile,
+} from "./HotStart.js";
+export type {
+  HotStartNodeRecord,
+  HotStartLinkRecord,
+  HotStartSubcatchmentRecord,
+  RestartFileKind,
+  SaveScheduleEntry,
+} from "./HotStart.js";
+export { Checkpoints } from "./Checkpoints.js";
+export type {
+  RDIIEntry,
+  HydrographEntry,
+  HydrographGageEntry,
+  RDIIDecayEntry,
+  RDIIDecayParams,
+  ExternalInflow,
+  DryWeatherInflow,
+} from "./Inflows.js";
+export type { SnowSurface, SnowRemoval } from "./NamedObjects.js";
 
 export { Gages, Gage } from "./Gages.js";
 
@@ -82,6 +188,7 @@ export {
   DependencyError,
   ElementNotFoundError,
   StaleObjectError,
+  GeoPackageError,
   raiseForCode,
 } from "./errors.js";
 
@@ -90,6 +197,26 @@ export {
 // ---------------------------------------------------------------------------
 export type { OpenSwmmWasmModule, EmscriptenFS } from "./types.js";
 export { oadateToDate, dateToOadate } from "./types.js";
+export { oadateToDatetime, datetimeToOadate } from "./dates.js";
+export {
+  encodeDate,
+  encodeTime,
+  decodeDate,
+  decodeTime,
+  addSeconds,
+  timeDiff,
+} from "./datetime.js";
+export { CrossSection } from "./geometry.js";
+export { PointTable, TimeSeries, Curve, Tables, Pattern, Patterns } from "./Tables.js";
+export type { TablePoint, PointRows } from "./Tables.js";
+export { XSectionGeometry, shapeName } from "./XSectionGeometry.js";
+export type { XSectUnits } from "./XSectionGeometry.js";
+export { SimulationOptions, OptionsExtView, UserFlags, EventsView } from "./SolverViews.js";
+export type { SimulationEvent, UserFlagValue } from "./SolverViews.js";
+export { Snow } from "./Snow.js";
+export type { SnowRecord, SnowpackRow } from "./Snow.js";
+export { readStruct, writeStruct, withStruct, withStructs } from "./structs.js";
+export type { StructName, StructValue, StructField } from "./structs.js";
 
 // ---------------------------------------------------------------------------
 // Raw layer (generated) — for advanced users; also published as "./raw"
@@ -106,12 +233,89 @@ export {
 } from "./mem.js";
 
 export { Transport } from "./Transport.js";
-export type { TransportRow, ConduitDispersion } from "./Transport.js";
+export { Fields } from "./Fields.js";
+export type { FieldValue } from "./Fields.js";
+export { CATALOG_REVISION, ELEMENTS, FIELDS } from "./fields.generated.js";
+export type { FieldKind, FieldSpec, ElementSpec } from "./fields.generated.js";
+export type {
+  TransportRow,
+  ConduitDispersion,
+  ThreadInfo,
+  EffectiveThreads,
+  TransportMatrix,
+  TransportDraft,
+} from "./Transport.js";
+export {
+  TransportCell,
+  threadInfo,
+  effectiveThreads,
+  transportMatrix,
+  transportDomainName,
+  transportClassName,
+} from "./Transport.js";
+export * as catalog from "./catalog.js";
+export { capabilities, CHECKPOINT_FEATURES } from "./capabilities.js";
+export type { Capabilities } from "./capabilities.js";
+export { VERSION } from "./version.js";
+export { ProcessComponents } from "./ProcessComponents.js";
+export type {
+  ProcessComponent,
+  KnownProcessComponent,
+  ComponentLibrary,
+} from "./ProcessComponents.js";
+export { WaterAge, WaterAgeGlobals, WaterAgeOverrides } from "./WaterAge.js";
+export type { WaterAgeOverride, WaterAgeSourceKey } from "./WaterAge.js";
+export {
+  Reactions,
+  ReactionSpecies,
+  ReactionCoefficient,
+  ReactionTerm,
+  SpeciesCollection,
+  CoefficientCollection,
+  TermCollection,
+  InitialQualityRows,
+} from "./Reactions.js";
+export type {
+  ReactionHydVar,
+  ReactionFunction,
+  ReactionInitialEntry,
+  ExpressionDiagnostic,
+} from "./Reactions.js";
+export {
+  Heat,
+  HeatSnapshot,
+  HeatModules,
+  HeatRadiative,
+  HeatSolar,
+  HeatCloud,
+  HeatSources,
+  HeatSediment,
+  HeatNodeOverrides,
+  HeatElementOverrides,
+} from "./Heat.js";
+export type {
+  HeatNodeOverride,
+  HeatElementOverride,
+  HeatLidMaterial,
+  HeatElementValue,
+  ChannelGroundContact,
+  ChannelGroundPreview,
+} from "./Heat.js";
+export { MeshSnow } from "./Snow2D.js";
+export type { MeshSnowRow } from "./Snow2D.js";
+export {
+  SurfaceQuality,
+  SurfaceCoverage,
+  SurfaceLoading,
+  SurfaceCurbLength,
+} from "./SurfaceQuality.js";
+export type { ScopeTarget } from "./SurfaceQuality.js";
+export type { Catalog, CatalogEntry } from "./catalog.js";
 
 // ---------------------------------------------------------------------------
 // 2D surface routing (solver.surface2d)
 // ---------------------------------------------------------------------------
-export { Surface2D, Infiltration2D } from "./Surface2D.js";
+export { Surface2D, Infiltration2D, Infil2DDefaults } from "./Surface2D.js";
 export type {
   SurfaceForcingOptions,
   TriangleCouplingRow,
@@ -121,4 +325,77 @@ export type {
   RunStats2D,
   Infil2DRow,
   Infil2DCell,
+  InitialQuality2D,
+  BoundaryQuality2D,
+  QualityTarget,
+  Infil2DAuthoredRow,
+  SurfaceOwnerObject,
+  SurfaceOwnerShare,
+  SurfaceOwnerPreview,
 } from "./Surface2D.js";
+
+export {
+  Groundwater,
+  GroundwaterTransport,
+  GroundwaterOptions,
+  AquiferOptions,
+  GroundwaterTransportOptions,
+} from "./Groundwater.js";
+export type {
+  AquiferRow,
+  AquiferNode,
+  AquiferLink,
+  AquiferBoundary,
+  GroundwaterParameters,
+  GroundwaterSorption,
+  GroundwaterInitialQuality,
+  GroundwaterBoundary,
+  GroundwaterSource,
+  GroundwaterSourceTerm,
+  GroundwaterClockStats,
+  GroundwaterClosureStats,
+} from "./Groundwater.js";
+
+// ---------------------------------------------------------------------------
+// Coupling family: runtime exchange, native peers, passive exchange, tracing
+// ---------------------------------------------------------------------------
+export { Coupling, DomainSources } from "./Coupling.js";
+export type {
+  CouplingDomain,
+  RuntimeSource,
+  RuntimeBoundary,
+  RuntimeForcing,
+  RuntimeClear,
+  CouplingFrame,
+  SourceReceipt,
+  BoundaryReceipt,
+  CouplingCapabilities,
+  CouplingWaterTotals,
+  SurfaceSpeciesLedger,
+  SourceOptions,
+  PerCell,
+} from "./Coupling.js";
+export { SplitFrame, SplitParticipant, MaterialSplitParticipant } from "./Split.js";
+export type { SplitFrameNode, SplitFrameSource } from "./Split.js";
+export { PassiveExchange } from "./PassiveExchange.js";
+export type {
+  PassiveAmount,
+  PassiveStatus,
+  PassivePool,
+  PassiveReceipt,
+  PassiveRow,
+  PassiveLeg,
+} from "./PassiveExchange.js";
+export { FlowTracer, TraceError } from "./Trace.js";
+export type {
+  TraceNode,
+  TraceLink,
+  TraceOptions,
+  TraceNodeAverage,
+  TraceLinkAverage,
+  TraceInfo,
+  TraceValue,
+  TraceSummary,
+  TraceResult,
+  TraceProgress,
+} from "./Trace.js";

@@ -1,6 +1,8 @@
 # Build artifacts
 tests/_work/
 build/
+docs/_build/
+docs/api/generated/
 tools/host_shim/out/
 dist/
 *.wasm
@@ -32,3 +34,7 @@ Makefile
 
 # Python
 __pycache__/
+
+# Local implementation plans and validation logs
+/plans/
+/build-*/

@@ -1,0 +1,54 @@
+{
+  "$comment": "Maps the Python public surface (tests/fixtures/python_surface.json) onto the TypeScript classes for tests/parity.test.ts. Python snake_case members are checked as camelCase. 'dunders' lists the accepted TypeScript names for each Python protocol method. 'classAliases' and 'memberAliases' rename ('Class', 'Class.member' or 'module.function'). 'excluded' takes 'module', 'module.Class', 'module.Class.member' or 'module.function' keys, each with the reason it has no TypeScript counterpart. 'pending' lists the modules whose facade wave (plans: A-F) has not landed; the gate skips them and the report counts them.",
+  "dunders": {
+    "__len__": ["length"],
+    "__getitem__": ["get"],
+    "__setitem__": ["set"],
+    "__delitem__": ["delete"],
+    "__contains__": ["has"],
+    "__iter__": ["[Symbol.iterator]"],
+    "__enter__": ["[Symbol.dispose]", "destroy"],
+    "__exit__": ["[Symbol.dispose]", "destroy"],
+    "__call__": ["call"]
+  },
+  "classAliases": {
+    "Infiltration2DView": "Infiltration2D",
+    "_PointTable": "PointTable",
+    "_OptionsExtView": "OptionsExtView",
+    "Event": "SimulationEvent",
+    "NodeStatsView": "NodeStats",
+    "_OutputNodeStats": "OutputNodeStats",
+    "_ResultObject": "ResultObject",
+    "_SurfaceCell": "SurfaceCell",
+    "_SurfaceCells": "SurfaceCells",
+    "_WaterAgeGlobals": "WaterAgeGlobals",
+    "_WaterAgeOverrides": "WaterAgeOverrides",
+    "_SpeciesCollection": "SpeciesCollection",
+    "_CoefficientCollection": "CoefficientCollection",
+    "_TermCollection": "TermCollection",
+    "_InitialQualityRows": "InitialQualityRows",
+    "_HeatCloud": "HeatCloud",
+    "_HeatElementOverrides": "HeatElementOverrides",
+    "_HeatModules": "HeatModules",
+    "_HeatNodeOverrides": "HeatNodeOverrides",
+    "_HeatRadiative": "HeatRadiative",
+    "_HeatSediment": "HeatSediment",
+    "_HeatSolar": "HeatSolar",
+    "_HeatSources": "HeatSources"
+  },
+  "memberAliases": {
+    "ModelBuilder.add_subcatch": "addSubcatchment",
+    "ModelBuilder.get_file_path": "filePathGet",
+    "ModelBuilder.set_file_path": "filePathSet",
+    "ModelBuilder.userflag_def_count": "getUserflagDefCount",
+    "Link.closed": "isClosed",
+    "_geopackage.register": "registerGeoPackage",
+    "_geopackage.is_registered": "isGeoPackageRegistered"
+  },
+  "excluded": {
+    "_access": "Python-internal owner registry and native-access locking; the TypeScript views use generation counters and guardedRaw (single-threaded WASM).",
+    "_results.ResultField.to_pandas": "Converts to a pandas/xarray object; those are Python libraries. read() returns the shaped array and the field carries its times, ids and units.",
+    "_results.ResultField.to_xarray": "Converts to a pandas/xarray object; those are Python libraries. read() returns the shaped array and the field carries its times, ids and units."
+  },
+  "pending": {}
+}

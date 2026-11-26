@@ -13,7 +13,10 @@ import { GageDataSource, GageRainType } from "./enums.js";
 import { ElementNotFoundError, StaleObjectError, raiseForCode } from "./errors.js";
 import type { OpenSwmmWasmModule } from "./types.js";
 import type { RawApi } from "./raw.js";
-import { guardedRaw } from "./mem.js";
+import { checkedAlloc, guardedRaw, withCString } from "./mem.js";
+import { oadateToDatetime } from "./dates.js";
+import type { ModelBuilder } from "./ModelBuilder.js";
+import type { Solver } from "./Solver.js";
 
 // =============================================================================
 // Gage
@@ -78,7 +81,7 @@ export class Gage {
   /** Rainfall data format ({@link GageRainType}). */
   get rainType(): GageRainType {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_gage_get_rain_type(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as GageRainType;
@@ -87,10 +90,15 @@ export class Gage {
     }
   }
 
+  set rainType(value: GageRainType) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_rain_type(this._engine, this.index, value));
+  }
+
   /** Data source ({@link GageDataSource}). */
   get dataSource(): GageDataSource {
     this._checkStale();
-    const ptr = this._mod._malloc(4);
+    const ptr = checkedAlloc(this._mod, 4);
     try {
       raiseForCode(this._raw.swmm_gage_get_data_source(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "i32") as GageDataSource;
@@ -99,10 +107,15 @@ export class Gage {
     }
   }
 
+  set dataSource(value: GageDataSource) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_data_source(this._engine, this.index, value));
+  }
+
   /** Multiplier applied to all recorded rainfall values. */
   get scaleFactor(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_gage_get_scale_factor(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -120,7 +133,7 @@ export class Gage {
   /** Recording interval (seconds). */
   get rainInterval(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_gage_get_rain_interval(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -129,16 +142,158 @@ export class Gage {
     }
   }
 
+  set rainInterval(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_rain_interval(this._engine, this.index, value));
+  }
+
   /** Snow catch correction factor. */
   get snowFactor(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_gage_get_snow_factor(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
     } finally {
       this._mod._free(ptr);
     }
+  }
+
+  set snowFactor(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_snow_factor(this._engine, this.index, value));
+  }
+
+  /** Rain depth unit for a file source: 0 = inches, 1 = millimeters. */
+  get rainUnits(): number {
+    this._checkStale();
+    const ptr = checkedAlloc(this._mod, 4);
+    try {
+      raiseForCode(this._raw.swmm_gage_get_rain_units(this._engine, this.index, ptr));
+      return this._mod.getValue(ptr, "i32");
+    } finally {
+      this._mod._free(ptr);
+    }
+  }
+
+  set rainUnits(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_rain_units(this._engine, this.index, value));
+  }
+
+  /** Assigned time series identifier. */
+  get timeseries(): string {
+    this._checkStale();
+    return withCString(this._mod, 256, (buf, len) =>
+      this._raw.swmm_gage_get_timeseries(this._engine, this.index, buf, len),
+    );
+  }
+
+  set timeseries(value: string) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_timeseries(this._engine, this.index, value));
+  }
+
+  get stationId(): string {
+    this._checkStale();
+    return withCString(this._mod, 256, (buf, len) =>
+      this._raw.swmm_gage_get_station_id(this._engine, this.index, buf, len),
+    );
+  }
+
+  set stationId(value: string) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_station_id(this._engine, this.index, value));
+  }
+
+  get fileColumn(): string {
+    this._checkStale();
+    return withCString(this._mod, 256, (buf, len) =>
+      this._raw.swmm_gage_get_file_column(this._engine, this.index, buf, len),
+    );
+  }
+
+  set fileColumn(value: string) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_file_column(this._engine, this.index, value));
+  }
+
+  get fileFormat(): number {
+    this._checkStale();
+    const ptr = checkedAlloc(this._mod, 4);
+    try {
+      raiseForCode(this._raw.swmm_gage_get_file_format(this._engine, this.index, ptr));
+      return this._mod.getValue(ptr, "i32");
+    } finally {
+      this._mod._free(ptr);
+    }
+  }
+
+  set fileFormat(value: number) {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_file_format(this._engine, this.index, value));
+  }
+
+  /** Select a rainfall file and optional station identifier. */
+  setFilename(path: string, stationId = ""): void {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_filename(this._engine, this.index, path, stationId));
+  }
+
+  /**
+   * Read rainfall from an external file (Python `set_file`). `column` picks a
+   * column of a multi-column CSV/TSV/TSF file (the `FILE "path:col"` form).
+   */
+  setFile(path: string, stationId: string, column?: string): void {
+    this.setFilename(path, stationId);
+    if (column !== undefined) {
+      raiseForCode(this._raw.swmm_gage_set_file_column(this._engine, this.index, column));
+    }
+  }
+
+  /** Read rainfall from a named time series (Python `set_timeseries`). */
+  setTimeseries(tsId: string): void {
+    this.timeseries = tsId;
+  }
+
+  /** Set the rain interval in seconds (Python `set_rain_interval`). */
+  setRainInterval(seconds: number): void {
+    this._checkStale();
+    raiseForCode(this._raw.swmm_gage_set_rain_interval(this._engine, this.index, seconds));
+  }
+
+  /** The gage's rainfall as `[time, value]` rows (times in whole seconds, UTC). */
+  get rainfallSeries(): [Date, number][] {
+    this._checkStale();
+    const n = (() => {
+      const p = checkedAlloc(this._mod, 4);
+      try {
+        raiseForCode(this._raw.swmm_gage_get_rainfall_series_count(this._engine, this.index, p));
+        return this._mod.HEAP32[p >> 2];
+      } finally {
+        this._mod._free(p);
+      }
+    })();
+    if (n === 0) return [];
+    const block = checkedAlloc(this._mod, 16 * n);
+    try {
+      raiseForCode(
+        this._raw.swmm_gage_get_rainfall_series(this._engine, this.index, block, block + 8 * n, n),
+      );
+      const base = block >> 3;
+      return Array.from({ length: n }, (_, i) => {
+        const t = oadateToDatetime(this._mod.HEAPF64[base + i]);
+        t.setUTCMilliseconds(0);
+        return [t, this._mod.HEAPF64[base + n + i]] as [Date, number];
+      });
+    } finally {
+      this._mod._free(block);
+    }
+  }
+
+  /** The solver (or model builder) this gage belongs to. */
+  get solver(): Solver | ModelBuilder | null {
+    return this._collection.solver;
   }
 
   // -------------------------------------------------------------------------
@@ -148,7 +303,7 @@ export class Gage {
   /** Current rainfall rate at this gage (in/hr or mm/hr). */
   get rainfall(): number {
     this._checkStale();
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       raiseForCode(this._raw.swmm_gage_get_rainfall(this._engine, this.index, ptr));
       return this._mod.getValue(ptr, "double");
@@ -200,6 +355,8 @@ export class Gages implements Iterable<Gage> {
     mod: OpenSwmmWasmModule,
     engine: number,
     private readonly _checkOwner: () => void = () => {},
+    /** The solver (or model builder) that owns the collection. */
+    readonly solver: Solver | ModelBuilder | null = null,
   ) {
     this._mod = mod;
     this._raw = guardedRaw(mod, this._checkOwner);
@@ -236,6 +393,37 @@ export class Gages implements Iterable<Gage> {
     return new Gage(this._mod, this._engine, this, this.generation, indexOrId);
   }
 
+  /** True when a gage with this index or id exists. */
+  has(key: number | string): boolean {
+    if (typeof key === "string") return this.getIndex(key) >= 0;
+    return Number.isInteger(key) && key >= 0 && key < this.length;
+  }
+
+  /** Every gage id, in index order. */
+  get ids(): string[] {
+    return Array.from({ length: this.length }, (_, i) => this.getId(i));
+  }
+
+  /** Add a rain gage; earlier gage views become stale, as in Python. */
+  add(gageId: string): Gage {
+    raiseForCode(this._raw.swmm_gage_add(this._engine, gageId));
+    this.generation++;
+    return this.get(gageId);
+  }
+
+  /** Rename a gage; references follow. Earlier gage views become stale. */
+  rename(key: number | string, newId: string): void {
+    const idx = this.get(key).index;
+    raiseForCode(this._raw.swmm_gage_rename(this._engine, idx, newId));
+    this.generation++;
+  }
+
+  /** Re-read every gage's rain file. Earlier gage views become stale. */
+  reloadRainFiles(): void {
+    raiseForCode(this._raw.swmm_gage_reload_rain_files(this._engine));
+    this.generation++;
+  }
+
   /** Return the zero-based index for a string gage ID, or -1. */
   getIndex(id: string): number {
     return this._raw.swmm_gage_index(this._engine, id);
@@ -256,7 +444,7 @@ export class Gages implements Iterable<Gage> {
   get rainfalls(): Float64Array {
     const n = this.length;
     const result = new Float64Array(n);
-    const ptr = this._mod._malloc(8);
+    const ptr = checkedAlloc(this._mod, 8);
     try {
       for (let i = 0; i < n; i++) {
         raiseForCode(this._raw.swmm_gage_get_rainfall(this._engine, i, ptr));

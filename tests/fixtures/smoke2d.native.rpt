@@ -9,7 +9,7 @@
   2D rainfall: no located gages; using the uniform system mean.
   WARNING: 2D-coupled node 'J1' has exchange AREA 2.000 m² — 28x the largest connected conduit area (0.0707 m²). The orifice can inject far more than the pipe can convey; expect the node to fill and spill back each window. Consider AREA ~ the inlet/barrel area.
   WARNING: 2D-coupled node 'ST1' has exchange AREA 10.000 m² — 318x the largest connected conduit area (0.0314 m²). The orifice can inject far more than the pipe can convey; expect the node to fill and spill back each window. Consider AREA ~ the inlet/barrel area.
-  2D solver: cpu (explicit marcher); MOMENTUM_EQUATION LOCAL_INERTIAL; LTS_TIERS 4; 8 cells (0 quads)
+  2D solver: cpu (explicit marcher); MOMENTUM_EQUATION FULL_SWE; LTS_TIERS 4; 8 cells (0 quads)
   
   ****************
   Analysis Options
@@ -43,15 +43,14 @@
   Wet Weather Inflow .......         0.000         0.000
   Groundwater Inflow .......         0.000         0.000
   RDII Inflow ..............         0.000         0.000
-  External Inflow ..........         0.465         4.646
-  External Outflow .........         0.192         1.915
+  External Inflow ..........         0.215         2.149
+  External Outflow .........         0.215         2.146
   Flooding Loss ............         0.000         0.000
-  2D Coupling Outflow ......         0.271         2.707
   Evaporation Loss .........         0.000         0.000
   Exfiltration Loss ........         0.000         0.000
   Initial Stored Volume ....         0.000         0.000
-  Final Stored Volume ......         0.001         0.007
-  Continuity Error (%) .....         0.368
+  Final Stored Volume ......         0.001         0.006
+  Continuity Error (%) .....        -0.134
   
   
   **************************        Volume        Volume
@@ -59,39 +58,38 @@
   **************************     ---------     ---------
   Initial Stored Volume ....         0.000         0.000
   Rainfall Inflow ..........         0.333         0.000
-  1D -> 2D Spill Inflow ....      2707.360         2.707
+  1D -> 2D Spill Inflow ....         0.000         0.000
   Outfall Inflow ...........         0.000         0.000
-  Boundary Inflow ..........    512901.420       512.901
-  2D -> 1D Drain Outflow ...      4648.707         4.649
+  Boundary Inflow ..........    513830.357       513.830
+  2D -> 1D Drain Outflow ...      2151.642         2.152
   Outfall Withdrawal .......         0.000         0.000
-  Boundary Outflow .........    510849.442       510.849
+  Boundary Outflow .........    511568.944       511.569
   Evaporation Loss .........         0.000         0.000
   Infiltration Loss ........         0.000         0.000
-  Final Stored Volume ......       110.963         0.111
+  Final Stored Volume ......       110.104         0.110
   Continuity Error (%) .....        -0.000
   
   
   *************************
   2D Solver Statistics
   *************************
-  Internal Steps ...........         38491
-  Face-Kernel Evals ........        307928
-  Avg Internal Step (s) ....        0.5612
-  Last Internal Step (s) ...        0.3758
+  Internal Steps ...........         96417
+  Face-Kernel Evals ........        771336
+  Avg Internal Step (s) ....        0.2240
+  Last Internal Step (s) ...        0.1798
   Active Cells min/mean/max    100.0 /100.0 /100.0  (%)
-  LTS Tier 0 Occupancy (%) .          87.5
-  LTS Tier 1 Occupancy (%) .          12.5
-  LTS Tier 2 Occupancy (%) .           0.0
+  LTS Tier 0 Occupancy (%) .          90.8
+  LTS Tier 1 Occupancy (%) .           8.6
+  LTS Tier 2 Occupancy (%) .           0.6
   LTS Tier 3 Occupancy (%) .           0.0
   
   
   **************************        Volume        Volume
   1D <-> 2D Exchange Reconcil.   hectare-m      10^6 ltr
   **************************     ---------     ---------
-  1D -> 2D Spill ...........         0.271         2.707
-  2D -> 1D Drain ...........         0.465         4.649
-  Net 1D -> 2D .............        -0.194        -1.941
-  Flow Continuity w/ Exchange Internal (%)    0.000
+  1D -> 2D Spill ...........         0.000         0.000
+  2D -> 1D Drain ...........         0.215         2.152
+  Net 1D -> 2D .............        -0.215        -2.152
   
   
   
@@ -117,18 +115,18 @@
   *************************
   Routing Time Step Summary
   *************************
-  Minimum Time Step           :     6.47 sec
-  Average Time Step           :    14.97 sec
+  Minimum Time Step           :     0.72 sec
+  Average Time Step           :    14.98 sec
   Maximum Time Step           :    15.00 sec
   % of Time in Steady State   :     0.00
-  Average Iterations per Step :     4.45
-  % of Steps Not Converging   :    29.94
+  Average Iterations per Step :     2.01
+  % of Steps Not Converging   :     0.00
   Time Step Frequencies       :
      15.000 -  7.597 sec      :    99.93 %
-      7.597 -  3.848 sec      :     0.07 %
+      7.597 -  3.848 sec      :     0.00 %
       3.848 -  1.949 sec      :     0.00 %
       1.949 -  0.987 sec      :     0.00 %
-      0.987 -  0.500 sec      :     0.00 %
+      0.987 -  0.500 sec      :     0.07 %
   
   
   
@@ -144,8 +142,8 @@
                                    Depth    Depth      HGL   Occurrence   Max Depth
   Node                 Type       Meters   Meters   Meters  days hr:min      Meters
   ---------------------------------------------------------------------------------
-  J1                   JUNCTION     0.72     1.95   100.95     0  03:01        1.50
-  OUT1                 OUTFALL      0.19     0.28    98.28     0  03:00        0.28
+  J1                   JUNCTION     0.26     0.31    99.31     0  03:07        0.31
+  OUT1                 OUTFALL      0.24     0.25    98.25     0  02:55        0.25
   OUT2                 OUTFALL      0.00     0.00    98.00     0  00:00        0.00
   ST1                  STORAGE      0.00     0.00    99.50     0  00:00        0.00
   
@@ -160,8 +158,8 @@
                                    Inflow   Inflow   Occurrence      Volume      Volume       Error
   Node                 Type           CMS      CMS  days hr:min    10^6 ltr    10^6 ltr     Percent
   -------------------------------------------------------------------------------------------------
-  J1                   JUNCTION     4.442    4.442     0  03:01        1.94        4.65       0.479
-  OUT1                 OUTFALL      0.000    0.158     0  03:00           0        1.92       0.000
+  J1                   JUNCTION     0.115    0.115     0  00:01        2.15        2.15       0.155
+  OUT1                 OUTFALL      0.000    0.103     0  02:55           0        2.15       0.000
   OUT2                 OUTFALL      0.000    0.000     0  00:00           0           0       0.000 ltr
   ST1                  STORAGE      0.000    0.000     0  00:00           0           0       0.000 ltr
   
@@ -176,21 +174,14 @@
                                    Hours       Above Crown    Below Rim
   Node                 Type      Surcharged         Meters       Meters
   ---------------------------------------------------------------------
-  J1                   JUNCTION        3.84          1.654        0.000
+  J1                   JUNCTION        0.45          0.011        1.189
   
   
   *********************
   Node Flooding Summary
   *********************
-
-  Flooding refers to all water that overflows a node, whether it ponds or not.
-  --------------------------------------------------------------------------
-                                                             Total   Maximum
-                                 Maximum   Time of Max       Flood    Ponded
-                        Hours       Rate    Occurrence      Volume     Depth
-  Node                 Flooded       CMS   days hr:min    10^6 ltr    Meters
-  --------------------------------------------------------------------------
-  J1                      0.58     3.205      0  03:01       1.612     0.454
+  
+  No nodes were flooded.
   
   
   **********************
@@ -214,10 +205,10 @@
                          Freq      Flow      Flow      Volume 
   Outfall Node           Pcnt       CMS       CMS    10^6 ltr 
   -----------------------------------------------------------
-  OUT1                  78.45     0.113     0.158       1.915
+  OUT1                  99.79     0.100     0.103       2.146
   OUT2                   0.00     0.000     0.000       0.000 
   -----------------------------------------------------------
-  System                39.22     0.113     0.158       1.915
+  System                49.90     0.100     0.103       2.146
   
   
   ********************
@@ -229,7 +220,7 @@
                                   |Flow|   Occurrence   |Veloc|    Full    Full
   Link                 Type          CMS  days hr:min     m/sec    Flow   Depth
   -----------------------------------------------------------------------------
-  C1                   CONDUIT     0.158     0  03:00      2.25    1.63    0.98
+  C1                   CONDUIT     0.103     0  02:55      1.59    1.07    0.91
   C2                   CONDUIT     0.000     0  00:00      0.00    0.00    0.00
   
   
@@ -242,7 +233,7 @@
                        /Actual         Up    Down  Sub   Sup   Up    Down  Norm  Inlet 
   Conduit               Length    Dry  Dry   Dry   Crit  Crit  Crit  Crit  Ltd   Ctrl  
   -------------------------------------------------------------------------------------
-  C1                      1.00   0.00  0.00  0.00  0.84  0.15  0.00  0.00  0.03  0.00
+  C1                      1.00   0.00  0.00  0.00  1.00  0.00  0.00  0.00  0.00  0.00
   C2                      1.00   1.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00  0.00
   
   *************************
@@ -254,10 +245,10 @@
                          --------- Hours Full --------   Above Full   Capacity
   Conduit                Both Ends  Upstream  Dnstream   Normal Flow   Limited
   ----------------------------------------------------------------------------
-  C1                          0.01      3.77      0.01      3.89         0.01
+  C1                          0.01      0.45      0.01      5.97         0.01
   
   
 
-  Analysis begun on:  Sun Oct 11 12:15:29 2026
-  Analysis ended on:  Sun Oct 11 12:15:29 2026
-  Total elapsed time: < 1 sec
+  Analysis begun on:  Tue Nov 24 06:55:33 2026
+  Analysis ended on:  Tue Nov 24 06:55:34 2026
+  Total elapsed time: 00:00:01

@@ -23,6 +23,15 @@ export function rawOf(mod: OpenSwmmWasmModule): RawApi {
   return raw;
 }
 
+/** Allocate a nonempty wasm32 block or fail before touching the heap. */
+export function checkedAlloc(mod: OpenSwmmWasmModule, bytes: number): number {
+  if (!Number.isSafeInteger(bytes) || bytes <= 0 || bytes > 0xffffffff)
+    throw new RangeError("Invalid engine allocation size");
+  const ptr = mod._malloc(bytes);
+  if (!ptr) throw new RangeError("Cannot allocate engine buffer");
+  return ptr;
+}
+
 /**
  * Call a C function that fills a caller-provided `char* buf, int buflen` and
  * return the string. Throws the mapped `EngineError` on a non-zero code.
@@ -32,18 +41,42 @@ export function withCString(
   size: number,
   call: (buf: number, len: number) => number,
 ): string {
-  const buf = mod._malloc(size);
-  try {
-    raiseForCode(call(buf, size));
-    return mod.UTF8ToString(buf, size);
-  } finally {
-    mod._free(buf);
+  return withCStrings(mod, size, 1, ([buf], len) => call(buf, len))[0];
+}
+
+/** Read one or more success-on-truncation native strings without splitting UTF-8. */
+export function withCStrings(
+  mod: OpenSwmmWasmModule,
+  initialSize: number,
+  count: number,
+  call: (buffers: number[], len: number) => number,
+): string[] {
+  if (!Number.isInteger(count) || count < 1)
+    throw new RangeError("String buffer count must be positive");
+  const limit = 64 * 1024 * 1024;
+  for (let size = Math.max(256, initialSize); size <= limit; size *= 2) {
+    const buffers: number[] = [];
+    try {
+      for (let i = 0; i < count; i++) {
+        const ptr = checkedAlloc(mod, size);
+        buffers.push(ptr);
+        mod.HEAPU8.fill(0, ptr, ptr + size);
+      }
+      raiseForCode(call(buffers, size));
+      // Legacy getters report success for truncated strings. A value reaching
+      // the penultimate byte is ambiguous, so retry before UTF-8 decoding.
+      if (buffers.some((ptr) => mod.HEAPU8[ptr + size - 2] !== 0)) continue;
+      return buffers.map((ptr) => mod.UTF8ToString(ptr, size));
+    } finally {
+      for (const ptr of buffers) mod._free(ptr);
+    }
   }
+  throw new RangeError("Engine string exceeds 64 MiB");
 }
 
 /** Call a C function with a `double*` out-parameter and return the value. */
 export function withDouble(mod: OpenSwmmWasmModule, call: (ptr: number) => number): number {
-  const ptr = mod._malloc(8);
+  const ptr = checkedAlloc(mod, 8);
   try {
     raiseForCode(call(ptr));
     return mod.getValue(ptr, "double");
@@ -54,7 +87,7 @@ export function withDouble(mod: OpenSwmmWasmModule, call: (ptr: number) => numbe
 
 /** Call a C function with an `int*` out-parameter and return the value. */
 export function withInt(mod: OpenSwmmWasmModule, call: (ptr: number) => number): number {
-  const ptr = mod._malloc(4);
+  const ptr = checkedAlloc(mod, 4);
   try {
     raiseForCode(call(ptr));
     return mod.getValue(ptr, "i32");
@@ -72,8 +105,10 @@ export function withDoubleArray(
   n: number,
   call: (ptr: number) => number,
 ): Float64Array {
-  if (n <= 0) return new Float64Array(0);
-  const ptr = mod._malloc(8 * n);
+  if (!Number.isSafeInteger(n) || n < 0 || n > 0x1fffffff)
+    throw new RangeError("Invalid engine array length");
+  if (n === 0) return new Float64Array(0);
+  const ptr = checkedAlloc(mod, 8 * n);
   try {
     raiseForCode(call(ptr));
     return new Float64Array(mod.HEAPF64.buffer, ptr, n).slice();
@@ -89,9 +124,12 @@ export function withDoubleInput(
   call: (ptr: number, n: number) => number,
 ): void {
   const n = values.length;
-  const ptr = mod._malloc(8 * Math.max(n, 1));
+  if (!Number.isSafeInteger(n) || n < 0 || n > 0x1fffffff)
+    throw new RangeError("Invalid engine array length");
+  const input = Array.from(values);
+  const ptr = checkedAlloc(mod, 8 * Math.max(n, 1));
   try {
-    mod.HEAPF64.set(Array.from(values), ptr / 8);
+    mod.HEAPF64.set(input, ptr / 8);
     raiseForCode(call(ptr, n));
   } finally {
     mod._free(ptr);

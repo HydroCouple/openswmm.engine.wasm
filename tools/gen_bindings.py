@@ -40,14 +40,17 @@ EXCLUDED_HEADERS: set[str] = set()
 # calling one of these then throws "export ... is not available".
 OPTIONAL_2D_HEADERS = {
     "openswmm_2d.h",
+    "openswmm_coupling.h",
+    "openswmm_surface_ownership.h",
     "openswmm_infil2d.h",
     "openswmm_gw2d.h",
     "openswmm_gw_transport.h",
     "openswmm_sq2d.h",
 }
-# Non-API headers. The callbacks header declares no functions; its function-
-# pointer typedefs are parsed separately (parse_callbacks) so the TS layer gets
-# the wasm32 addFunction() signature of each callback.
+# Non-API headers. The callbacks header declares no functions. Function-pointer
+# typedefs (there and in the API headers) are parsed separately
+# (parse_callbacks) so the TS layer gets each callback's wasm32 addFunction()
+# signature.
 CALLBACK_HEADER = "openswmm_callbacks.h"
 SKIP_HEADERS = {"openswmm_engine_export.h", CALLBACK_HEADER}
 
@@ -62,16 +65,99 @@ STRUCTS_OF_INTEREST = [
     "SWMM_ImpactEntry",
     "SWMM_ImpactReport",
     "SWMM_ConversionResult",
+    "SWMM_TypeChange",
     "SWMM_ThreadInfo",
     "SWMM_InletDesign",
     "SWMM_InletUsage",
     "SWMM_2DRunStats",
     "SWMM_Infil2DOptions",
     "SWMM_Infil2DRow",
+    "SWMM_GwClockStats",
+    # Snow (wave B): openswmm_snow.h / openswmm_climate.h
+    "SWMM_SnowLedger",
+    "SWMM_UebSnowpack",
+    "SWMM_RadiationConfig",
+    "SWMM_ClimateCloudConfig",
+    "SWMM_ClimateMetSummary",
+    "SWMM_SnowpackEdit",
+    "SWMM_SnowState",
+    # Nodes (wave B): openswmm_nodes.h
+    "SWMM_OutfallExportReceipt",
+    "SWMM_DividerParams",
+    # Climate (wave C): openswmm_climate.h
+    "SWMM_EvapPreviewSample",
+    "SWMM_EvapPreviewSummary",
+    "SWMM_EvapPreviewConfig",
+    # Checkpoints (wave C): openswmm_checkpoint.h
+    "SWMM_CheckpointSessionOptions",
+    # Infrastructure (wave D): openswmm_infrastructure.h
+    "SWMM_LidNodeLayer",
+    "SWMM_LidLayerTreatment",
+    "SWMM_LidRichardsOptions",
+    "SWMM_LidRichardsMaterial",
+    "SWMM_LidRichardsStatistics",
+    "SWMM_LidBottomState",
+    "SWMM_StorageLidState",
+    "SWMM_StorageLidAnchor",
+    "SWMM_LidUsageRecord",
+    # Transport (wave E): openswmm_engine.h
+    "SWMM_TransportCell",
+    "SWMM_TransportMatrix",
+    "SWMM_TransportDraft",
+    # Process components, mesh snow (wave E)
+    "SWMM_ComponentLibraryInfo",
+    "SWMM_MeshSnowLedger",
+    "SWMM_MeshSnowOverrides",
+    # Heat (wave E): openswmm_heat.h
+    "SWMM_Heat2DStatus",
+    "SWMM_GroundHeatStatus",
+    "SWMM_ChannelGroundStatus",
+    "SWMM_ChannelGroundContact",
+    "SWMM_ChannelGroundPreview",
+    # 2D remainder (wave E): authored infiltration rows, node coupling, surface owners
+    "SWMM_Infil2DAuthoredRow",
+    "SWMM_NodeCoupling2DParam",
+    "SWMM_SurfaceOwnerObject",
+    "SWMM_SurfaceOwnerShare",
+    # Groundwater (wave E): openswmm_gw2d.h / openswmm_gw_transport.h
+    "SWMM_GwNodeBed",
+    "SWMM_LidNodeBottomEdit",
+    "SWMM_GwExecutionStatus",
+    "SWMM_GwBoundary",
+    "SWMM_GwParams",
+    # Coupling family (wave F): openswmm_coupling.h / _passive_exchange.h / _trace.h
+    "SWMM_CouplingSource",
+    "SWMM_CouplingReceipt",
+    "SWMM_CouplingBoundary",
+    "SWMM_CouplingForcing",
+    "SWMM_CouplingClear",
+    "SWMM_CouplingFrame",
+    "SWMM_PassiveAmountV1",
+    "SWMM_PassiveStatusV1",
+    "SWMM_PassivePoolV1",
+    "SWMM_PassiveReceiptV1",
+    "SWMM_PassiveRowV1",
+    "SWMM_PassiveLegV1",
+    "SWMM_PassiveLegV2",
+    "SWMM_TraceNodeInput",
+    "SWMM_TraceLinkInput",
+    "SWMM_TraceOptions",
+    "SWMM_TraceNodeAverage",
+    "SWMM_TraceLinkAverage",
+    "SWMM_TraceInfo",
+    "SWMM_TraceValue",
+    "SWMM_TraceSummary",
 ]
 
 WASM32 = {
     "int": (4, 4),
+    "uint32_t": (4, 4),
+    "unsigned": (4, 4),
+    "unsigned int": (4, 4),
+    "unsigned long": (4, 4),
+    "size_t": (4, 4),
+    "uint64_t": (8, 8),
+    "unsigned long long": (8, 8),
     "double": (8, 8),
     "float": (4, 4),
     "long": (4, 4),
@@ -98,7 +184,7 @@ def norm(t: str) -> str:
 
 def split_param(p: str) -> tuple[str, str]:
     """'const char* name' -> ('const char*', 'name'); arrays -> pointer."""
-    p = p.strip()
+    p = " ".join(p.split())
     if p.endswith("*"):  # unnamed pointer parameter such as 'const SWMM_CouplingFrame*'
         return norm(p), ""
     m = re.match(r"^(.*?)(\w+)\s*(\[[^\]]*\])?$", p)
@@ -113,11 +199,18 @@ def split_param(p: str) -> tuple[str, str]:
     return typ, name
 
 
+# 64-bit integers passed by value are wasm i64 values, which Emscripten's
+# default WASM_BIGINT build maps to JavaScript BigInt (a number throws).
+INT64_BY_VALUE = {"int64_t", "uint64_t", "long long", "unsigned long long"}
+
+
 def js_kind(ctype: str, *, is_return: bool) -> str | None:
     if ctype == "void":
         return None if is_return else "number"
     if ctype == "const char*":
         return "string"
+    if ctype in INT64_BY_VALUE:
+        return "bigint"
     return "number"
 
 
@@ -170,8 +263,15 @@ def wasm_sig_char(ctype: str, *, is_return: bool) -> str:
 
 
 def parse_callbacks(header_dir: Path):
-    """Function-pointer typedefs of openswmm_callbacks.h -> name, prototype, addFunction signature."""
-    text = strip_comments((header_dir / CALLBACK_HEADER).read_text(encoding="utf-8"))
+    """Function-pointer typedefs -> name, prototype, addFunction signature.
+
+    openswmm_callbacks.h comes first; typedefs declared next to the API that
+    takes them (heat edits, split and trace callbacks, ...) follow by header.
+    """
+    headers = [header_dir / CALLBACK_HEADER] + [
+        h for h in sorted(header_dir.glob("openswmm_*.h")) if h.name not in SKIP_HEADERS
+    ]
+    text = "\n".join(strip_comments(h.read_text(encoding="utf-8")) for h in headers)
     callbacks = []
     for m in CALLBACK_RE.finditer(text):
         ret = norm(m.group("ret"))
@@ -191,66 +291,100 @@ def parse_callbacks(header_dir: Path):
 
 
 def parse_defines(header_dir: Path) -> dict[str, int]:
-    """Integer object-like macros (array bounds such as SWMM_INFIL2D_MAX_PARAMS)."""
+    """Integer object-like macros and explicitly valued enum constants (array
+    bounds such as SWMM_INFIL2D_MAX_PARAMS and SWMM_TRACE_TERMINAL_COUNT)."""
     defines = {}
     for h in sorted(header_dir.glob("*.h")):
         text = strip_comments(h.read_text(encoding="utf-8"))
         for m in re.finditer(r"^\s*#\s*define\s+(\w+)\s+\(?\s*(\d+)\s*\)?\s*$", text, re.M):
             defines[m.group(1)] = int(m.group(2))
+        for body in re.findall(r"\benum\b[^{;]*\{([^}]*)\}", text):
+            for m in re.finditer(r"\b(\w+)\s*=\s*(\d+)\s*(?=,|$)", body.strip()):
+                defines[m.group(1)] = int(m.group(2))
     return defines
 
 
 def parse_struct_field(decl: str, defines: dict[str, int]) -> tuple[str, str, int]:
     """'double p[N]' -> ('double', 'p', N); scalars and pointers have count 1."""
-    m = re.match(r"^(.*?)(\w+)\s*\[\s*(\w+)\s*\]$", decl.strip())
+    m = re.match(r"^(.*?)(\w+)\s*((?:\[\s*\w+\s*\]\s*)+)$", decl.strip())
     if not m:
         typ, fname = split_param(decl)
         return typ, fname, 1
-    bound = m.group(3)
-    count = int(bound) if bound.isdigit() else defines.get(bound)
-    if count is None:
-        raise SystemExit(f"array bound {bound!r} is not an integer macro")
+    count = 1
+    for bound in re.findall(r"\[\s*(\w+)\s*\]", m.group(3)):
+        dimension = int(bound) if bound.isdigit() else defines.get(bound)
+        if dimension is None:
+            raise SystemExit(f"array bound {bound!r} is not an integer macro")
+        count *= dimension
     return norm(m.group(1)), m.group(2), count
 
 
 def parse_structs(header_dir: Path):
-    """Compute wasm32 layouts for the structs of interest."""
-    structs = {}
+    """Compute wasm32 layouts for the structs of interest.
+
+    A field whose type is another struct of interest takes that struct's
+    layout (nested structs must be listed too); layouts are computed on demand,
+    so declaration order across headers does not matter.
+    """
     defines = parse_defines(header_dir)
+    bodies = {}
     for h in sorted(header_dir.glob("*.h")):
         if h.name in EXCLUDED_HEADERS:
             continue
         text = strip_comments(h.read_text(encoding="utf-8"))
         for m in re.finditer(r"typedef\s+struct\s*(\w*)\s*\{(.*?)\}\s*(\w+)\s*;", text, re.S):
-            sname = m.group(3)
-            if sname not in STRUCTS_OF_INTEREST:
+            if m.group(3) in STRUCTS_OF_INTEREST:
+                bodies[m.group(3)] = (h.name, m.group(2))
+
+    structs = {}
+
+    def layout(sname):
+        if sname in structs:
+            return structs[sname]
+        header, body = bodies[sname]
+        fields = []
+        offset = 0
+        max_align = 1
+        declarations = []
+        for group in body.split(";"):
+            parts = group.strip().split(",")
+            if not parts[0]:
                 continue
-            fields = []
-            offset = 0
-            max_align = 1
-            for decl in m.group(2).split(";"):
-                decl = decl.strip()
-                if not decl:
-                    continue
-                typ, fname, count = parse_struct_field(decl, defines)
-                base = "ptr" if typ.endswith("*") else typ.replace("const ", "")
-                if base not in WASM32:
-                    raise SystemExit(f"{sname}.{fname}: unsupported field type {typ!r}")
+            declarations.append(parts[0])
+            if len(parts) > 1:
+                typ, _, _ = parse_struct_field(parts[0], defines)
+                declarations.extend(f"{typ} {part.strip()}" for part in parts[1:])
+        for decl in declarations:
+            decl = decl.strip()
+            if not decl:
+                continue
+            typ, fname, count = parse_struct_field(decl, defines)
+            base = "ptr" if typ.endswith("*") else typ.replace("const ", "")
+            if base in WASM32:
                 size, align = WASM32[base]
-                offset = (offset + align - 1) // align * align
-                field = {
-                    "name": fname,
-                    "type": typ if count == 1 else f"{typ}[{count}]",
-                    "offset": offset,
-                    "size": size * count,
-                }
-                if count != 1:
-                    field["count"] = count
-                fields.append(field)
-                offset += size * count
-                max_align = max(max_align, align)
-            total = (offset + max_align - 1) // max_align * max_align
-            structs[sname] = {"header": h.name, "size": total, "align": max_align, "fields": fields}
+            elif base in bodies:
+                nested = layout(base)
+                size, align = nested["size"], nested["align"]
+            else:
+                raise SystemExit(f"{sname}.{fname}: unsupported field type {typ!r}")
+            offset = (offset + align - 1) // align * align
+            field = {
+                "name": fname,
+                "type": typ if count == 1 else f"{typ}[{count}]",
+                "offset": offset,
+                "size": size * count,
+            }
+            if count != 1:
+                field["count"] = count
+            fields.append(field)
+            offset += size * count
+            max_align = max(max_align, align)
+        total = (offset + max_align - 1) // max_align * max_align
+        structs[sname] = {"header": header, "size": total, "align": max_align, "fields": fields}
+        return structs[sname]
+
+    for sname in bodies:
+        layout(sname)
     missing = set(STRUCTS_OF_INTEREST) - set(structs)
     if missing:
         raise SystemExit(f"structs not found: {sorted(missing)}")
@@ -274,6 +408,8 @@ def ts_type(kind: str | None, *, is_return: bool) -> str:
         return "void"
     if kind == "string":
         return "string" if is_return else "string | null"
+    if kind == "bigint":
+        return "bigint"
     return "number"
 
 
@@ -318,7 +454,8 @@ def emit_raw_ts(funcs, structs, callbacks) -> str:
         "/**\n * @file raw.ts\n * @brief GENERATED by tools/gen_bindings.py — do not edit.\n *\n"
         " * Typed access to every exported OpenSWMM Engine C function. Pointers and\n"
         " * handles are heap offsets (numbers); `const char*` inputs are JS strings\n"
-        " * (copied to a temporary C string per call; `null` passes NULL).\n"
+        " * (copied to a temporary C string per call; `null` passes NULL); 64-bit\n"
+        " * integers passed by value are `bigint`.\n"
         " * Functions from the 2D headers throw when the module was built with\n"
         " * -DOPENSWMM_WASM_2D=OFF.\n */\n\n"
     )
@@ -341,16 +478,61 @@ def emit_raw_ts(funcs, structs, callbacks) -> str:
     out.append("}\n\n")
     out.append(
         "/** Bind every C function on `mod`. Direct `_name` binding when no strings are involved. */\n"
+        "/** Module helpers for string arguments copied to the heap. */\n"
+        "interface HeapStrings {\n"
+        "  _malloc(bytes: number): number;\n"
+        "  _free(ptr: number): void;\n"
+        "  lengthBytesUTF8(text: string): number;\n"
+        "  stringToUTF8(text: string, ptr: number, bytes: number): void;\n"
+        "  UTF8ToString(ptr: number): string;\n"
+        "}\n\n"
+        "/**\n"
+        " * cwrap copies string arguments onto the module's 1 MB stack, and a larger\n"
+        " * one overruns it and corrupts memory. Strings longer than this many\n"
+        " * characters (at most three UTF-8 bytes each) are copied to the heap.\n"
+        " */\n"
+        "const HEAP_STRING_CHARS = 16384;\n\n"
         "export function bindRaw(mod: RawModule): RawApi {\n"
         "  const api: Record<string, unknown> = {};\n"
+        "  const missing = (name: string) => () => {\n"
+        "    throw new Error(`openswmm wasm: export _${name} is not available in this module`);\n"
+        "  };\n"
+        "  /** Call an export with its string arguments in heap copies (freed afterwards). */\n"
+        "  const heapCall = (name: string, ret: string | null, args: string[], values: unknown[]) => {\n"
+        "    const m = mod as unknown as HeapStrings;\n"
+        "    const fn = mod[`_${name}`];\n"
+        '    if (typeof fn !== "function") return missing(name)();\n'
+        "    const owned: number[] = [];\n"
+        "    try {\n"
+        "      const native = values.map((v, i) => {\n"
+        '        if (args[i] !== "string") return v;\n'
+        "        if (v === null || v === undefined) return 0;\n"
+        "        const text = String(v);\n"
+        "        const bytes = m.lengthBytesUTF8(text) + 1;\n"
+        "        const ptr = m._malloc(bytes);\n"
+        "        if (!ptr) throw new Error(`openswmm wasm: cannot allocate ${bytes} bytes for ${name}`);\n"
+        "        owned.push(ptr);\n"
+        "        m.stringToUTF8(text, ptr, bytes);\n"
+        "        return ptr;\n"
+        "      });\n"
+        "      const result = (fn as (...a: unknown[]) => unknown)(...native);\n"
+        '      return ret === "string" ? m.UTF8ToString(result as number) : result;\n'
+        "    } finally {\n"
+        "      for (const ptr of owned) m._free(ptr);\n"
+        "    }\n"
+        "  };\n"
         "  const bind = (name: string, ret: string | null, args: string[]): void => {\n"
         '    if (ret !== "string" && !args.includes("string")) {\n'
         "      const fn = mod[`_${name}`];\n"
-        '      api[name] = typeof fn === "function" ? fn : () => {\n'
-        "        throw new Error(`openswmm wasm: export _${name} is not available in this module`);\n"
-        "      };\n"
+        '      api[name] = typeof fn === "function" ? fn : missing(name);\n'
         "    } else {\n"
-        "      api[name] = mod.cwrap(name, ret, args);\n"
+        "      const wrapped = mod.cwrap(name, ret, args);\n"
+        "      api[name] = (...values: unknown[]) =>\n"
+        "        values.some(\n"
+        '          (v, i) => args[i] === "string" && typeof v === "string" && v.length > HEAP_STRING_CHARS,\n'
+        "        )\n"
+        "          ? heapCall(name, ret, args, values)\n"
+        "          : wrapped(...values);\n"
         "    }\n"
         "  };\n"
     )
@@ -484,7 +666,7 @@ def emit_enums(engine_root: Path) -> str:
     for node in tree.body:
         if not isinstance(node, ast.ClassDef):
             continue
-        if not any(isinstance(b, ast.Name) and b.id == "IntEnum" for b in node.bases):
+        if not any(isinstance(b, ast.Name) and b.id in ("IntEnum", "IntFlag") for b in node.bases):
             continue
         out.append(f"export enum {node.name} {{\n")
         for stmt in node.body:

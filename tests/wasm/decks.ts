@@ -1,0 +1,386 @@
+/**
+ * Decks shared by the real-module tests, copied from the engine's Python
+ * tests so both suites exercise the same models.
+ */
+
+/** MODEL of python/tests/engine/_groundwater_cases.py. */
+export const MIXED_CELL_MODEL = `[OPTIONS]
+FLOW_UNITS CMS
+FLOW_ROUTING DYNWAVE
+START_DATE 01/01/2026
+START_TIME 00:00:00
+END_DATE 01/01/2026
+END_TIME 00:10:00
+REPORT_STEP 00:01:00
+WET_STEP 00:01:00
+ROUTING_STEP 5
+[POLLUTANTS]
+TSS MG/L 0 0 0 0
+[JUNCTIONS]
+J1 -2 4 0 0 0
+[OUTFALLS]
+O1 -2.5 FREE NO
+[CONDUITS]
+C1 J1 O1 30 0.013 0 0 0
+[XSECTIONS]
+C1 CIRCULAR 0.5 0 0 0 1
+[TIMESERIES]
+INPUT 0:00 0.5
+INPUT 1:00 0.5
+[2D_OPTIONS]
+INTEGRATOR EXPLICIT
+LTS_TIERS 2
+MAX_TIMESTEP 5
+DRY_DEPTH 0.001
+REPORT_2D NO
+RAINFALL_MODE SYSTEM
+[2D_VERTICES]
+0 0 0
+10 0 0
+10 10 0
+0 10 0
+20 0 0
+[2D_TRIANGLES]
+1 4 2 0.03 0.1 FAR
+[2D_QUADS]
+0 1 2 3 0.03 0.1 PAN
+[REPORT]
+INPUT NO
+`;
+
+/** The `.rxn` of python/tests/engine/test_reactions.py (`_reactions_model`). */
+export const REACTIONS_RXN = `[REACTION_OPTIONS]
+RATE_UNITS SEC
+[REACTION_SPECIES]
+BULK X MG
+BULK Y MG
+[REACTION_COEFFICIENTS]
+CONSTANT Kb 0.05
+[REACTION_TERMS]
+Kf 0.5 * DT
+[REACTION_PIPES]
+RATE X -Kb * Kf * X
+RATE Y -Kb * X
+[REACTION_TANKS]
+RATE X -Kb * X
+RATE Y 0
+[REACTION_QUALITY]
+GLOBAL X 8
+`;
+
+/** Text that parses as `.rxn` but does not compile (from the same Python test). */
+export const UNCOMPILABLE_RXN = `[REACTION_OPTIONS]
+RATE_UNITS SEC
+[REACTION_SPECIES]
+BULK Z MG
+[REACTION_PIPES]
+RATE Z -NO_SUCH_COEF * Z
+`;
+
+/** The reaction-enabled `.inp` of the same Python test, bound to `rxnName`. */
+export function reactionsInp(rxnName: string): string {
+  return `[TITLE]
+Python reactions-binding round-trip deck
+
+[OPTIONS]
+FLOW_UNITS           CFS
+FLOW_ROUTING         DYNWAVE
+QUALITY_SOLVER       EULERIAN_ARD
+START_DATE           01/01/2026
+START_TIME           00:00:00
+END_DATE             01/01/2026
+END_TIME             01:00:00
+ROUTING_STEP         5
+REPORT_STEP          00:05:00
+
+[JUNCTIONS]
+;;Name Elev MaxDepth InitDepth SurDepth Aponded
+J0  10.0  10  1.5  0  0
+J1   9.4  10  1.5  0  0
+
+[OUTFALLS]
+OUT  7.0  FREE  NO
+
+[CONDUITS]
+C1  J0  J1   500  0.013  0  0  0
+C2  J1  OUT  500  0.013  0  0  0
+
+[XSECTIONS]
+C1  CIRCULAR  2.0  0  0  0
+C2  CIRCULAR  2.0  0  0  0
+
+[INFLOWS]
+J0  FLOW  ""  FLOW  1.0  1.0  5
+
+[POLLUTANTS]
+;;Name Units Crain Cgw Crdii Kdecay SnowOnly CoPollut CoFrac Cdwf Cinit
+TSS   MG/L  0  0  0  0  NO  *  0  0  10
+
+[PROCESS_COMPONENTS]
+org.hydrocouple.openswmm.reactions config="${rxnName}"
+
+[REPORT]
+INPUT NO
+`;
+}
+
+/** The heat component config of python/tests/engine/test_heat.py. */
+export const HEAT_CONFIG = `[HEAT_SOURCES]
+DWF             GLOBAL  15.0
+INITIAL_STATE   GLOBAL  20.0
+DWF             NODE    J1  22.0
+
+[HEAT_FLUXES]
+RADIATIVE_EXCHANGE  ON
+
+[RADIATIVE_FLUXES]
+SHORTWAVE  GLOBAL  250.0
+
+[CLOUD_COVER]
+FRACTION  GLOBAL  0.25
+`;
+
+/** The heat deck of the same Python test, bound to `heatName`. */
+export function heatInp(heatName: string): string {
+  return `[TITLE]
+Python heat-binding round-trip deck
+
+[OPTIONS]
+FLOW_UNITS           CFS
+FLOW_ROUTING         DYNWAVE
+HEAT_TRANSPORT       ON
+START_DATE           06/21/2026
+START_TIME           12:00:00
+END_DATE             06/21/2026
+END_TIME             12:10:00
+ROUTING_STEP         10
+REPORT_STEP          00:05:00
+
+[TEMPERATURE]
+TIMESERIES  air_ts
+HUMIDITY    50.0
+
+[TIMESERIES]
+air_ts    06/21/2026 00:00 50.0
+air_ts    06/22/2026 00:00 50.0
+sw_ts     06/21/2026 00:00 700.0
+sw_ts     06/22/2026 00:00 700.0
+cloud_ts  06/21/2026 00:00 0.5
+cloud_ts  06/22/2026 00:00 0.5
+
+[JUNCTIONS]
+;;Name Elev MaxDepth InitDepth SurDepth Aponded
+J1  9.0  10  1.0  0  0
+J2  8.5  10  1.0  0  0
+
+[OUTFALLS]
+OUT  8.0  FREE  NO
+
+[CONDUITS]
+C1  J1  J2   500  0.013  0  0  0
+C2  J2  OUT  500  0.013  0  0  0
+
+[XSECTIONS]
+C1  CIRCULAR  3.0  0  0  0
+C2  CIRCULAR  3.0  0  0  0
+
+[PROCESS_COMPONENTS]
+org.hydrocouple.openswmm.heat config="${heatName}"
+
+[REPORT]
+INPUT NO
+`;
+}
+
+/** SURFACE_MODEL of python/tests/engine/test_runtime_coupling_r0.py (runtime sources). */
+export const RUNTIME_SURFACE_MODEL = `[OPTIONS]
+FLOW_UNITS CMS
+FLOW_ROUTING DYNWAVE
+START_DATE 01/01/2026
+START_TIME 00:00:00
+END_DATE 01/01/2026
+END_TIME 02:00:00
+REPORT_STEP 00:05:00
+ROUTING_STEP 5
+[POLLUTANTS]
+TSS MG/L 0 0 0 0
+[JUNCTIONS]
+J1 0.0 3.0
+[OUTFALLS]
+O1 -1.0 FREE
+[CONDUITS]
+C1 J1 O1 10 0.013 0 0
+[XSECTIONS]
+C1 CIRCULAR 0.5 0 0 0
+[2D_OPTIONS]
+MOMENTUM_EQUATION LOCAL_INERTIAL
+MAX_TIMESTEP 5
+DRY_DEPTH 0.001
+[2D_VERTICES]
+0 0 0
+10 0 0
+10 10 0
+0 10 0
+[2D_TRIANGLES]
+0 1 2 0.03
+0 2 3 0.03
+`;
+
+/** DECK of python/tests/engine/test_native_split.py (native water peers). */
+export const SPLIT_DECK = `[OPTIONS]
+FLOW_UNITS CMS
+FLOW_ROUTING DYNWAVE
+START_DATE 01/01/2026
+START_TIME 00:00:00
+END_DATE 01/01/2026
+END_TIME 00:00:02
+ROUTING_STEP .31
+REPORT_STEP 00:00:01
+IGNORE_QUALITY YES
+ALLOW_PONDING YES
+MIN_SURFAREA 1
+MINIMUM_STEP .001
+VARIABLE_STEP 0
+[JUNCTIONS]
+J 0 1 .1 2 10
+[OUTFALLS]
+O 0 FIXED 0 NO
+[CONDUITS]
+C J O 30 .013 0 0
+[XSECTIONS]
+C CIRCULAR 1 0 0 0 1
+[COORDINATES]
+J 2 2
+O 12 2
+[2D_OPTIONS]
+BACKEND CPU
+MAX_TIMESTEP .2
+RECONSTRUCTION_ORDER 1
+REPORT_2D YES
+REPORT_2D_STEP 1
+TRANSPORT_POLLUTANTS NO
+TRANSPORT_MSX NO
+TRANSPORT_AGE NO
+TRANSPORT_TEMPERATURE NO
+BED_HEAT_MODEL NONE
+COUPLING_SYNC .7
+[2D_VERTICES]
+0 0 1
+10 0 1
+10 10 1
+0 10 1
+[2D_TRIANGLES]
+0 1 2 .03 .2
+0 2 3 .03 .1
+[2D_TRIANGLE_NODE_MAP]
+0 J .6 .02
+`;
+
+/** tests/unit/engine/data/passive_exchange_c/positive.inp (passive exchange, material peers). */
+export const PASSIVE_DECK = `[OPTIONS]
+FLOW_UNITS CMS
+FLOW_ROUTING DYNWAVE
+START_DATE 01/01/2026
+START_TIME 00:00:00
+END_DATE 01/01/2026
+END_TIME 00:00:01
+ROUTING_STEP 0.00048828125
+VARIABLE_STEP 0
+REPORT_STEP 00:00:01
+THREADS 1
+ALLOW_PONDING YES
+IGNORE_QUALITY NO
+[STORAGE]
+Tank -10 1 10 FUNCTIONAL 0 0 2.0002227231051135 2.0002227231051135 0
+[2D_OPTIONS]
+MOMENTUM_EQUATION LOCAL_INERTIAL
+INTEGRATOR EXPLICIT
+BACKEND CPU
+LTS_TIERS 1
+MAX_TIMESTEP 0.00048828125
+COUPLING_SYNC 0.001953125
+REPORT_2D NO
+COUPLING_EQUALIZE NO
+[2D_VERTICES]
+0 0 -1.5
+6 0 -1.5
+0 1 -1.5
+0 -1 -1.5
+0 -2 -1.5
+6 -1 -1.5
+8 0 -1.5
+10 0 -1.5
+8 1 -1.5
+8 -1 -1.5
+8 -2 -1.5
+10 -1 -1.5
+16 0 -1.5
+18 0 -1.5
+16 1 -1.5
+16 -1 -1.5
+16 -2 -1.5
+18 -1 -1.5
+[2D_TRIANGLES]
+0 1 2 .03 1.8
+3 4 5 .03 1.25
+[2D_VERTEX_NODE_MAP]
+0 Tank .7 0.1754150390625
+3 Tank .7 0.1754150390625
+[POLLUTANTS]
+Dye MG/L 0 0 0 0 NO * 0 0 1
+[2D_INITIAL_QUALITY]
+* Dye 2
+[REPORT]
+INPUT NO
+`;
+
+/** MODEL of python/tests/engine/test_frozen_ground.py (frozen ground under a cold rain). */
+export const FROZEN_GROUND_MODEL = `[OPTIONS]
+FLOW_UNITS           CMS
+FLOW_ROUTING         DYNWAVE
+INFILTRATION         HORTON
+START_DATE           01/10/2026
+START_TIME           00:00:00
+REPORT_START_DATE    01/10/2026
+REPORT_START_TIME    00:00:00
+END_DATE             01/10/2026
+END_TIME             06:00:00
+REPORT_STEP          00:15:00
+WET_STEP             00:05:00
+DRY_STEP             00:05:00
+ROUTING_STEP         0:01:00
+
+[RAINGAGES]
+RG1  INTENSITY 1:00 1.0 TIMESERIES RAIN
+
+[TEMPERATURE]
+TIMESERIES AIR
+
+[SUBCATCHMENTS]
+S1  RG1  J1  2.0  0  100  1.0  0
+
+[SUBAREAS]
+S1  0.015  0.2  1.0  2.0  0  OUTLET
+
+[INFILTRATION]
+S1  80  10  4  7  0
+
+[TIMESERIES]
+RAIN  01/10/2026 00:00 0
+RAIN  01/10/2026 02:00 12
+RAIN  01/10/2026 05:00 0
+AIR   01/10/2026 00:00 -8
+AIR   01/10/2026 06:00 -8
+
+[JUNCTIONS]
+J1  10.0  3.0  0.0  0.0  0.0
+
+[OUTFALLS]
+O1  9.0  FREE
+
+[CONDUITS]
+C1  J1  O1  100.0  0.013  0  0
+
+[XSECTIONS]
+C1  CIRCULAR  1.0  0  0  0  1
+`;
