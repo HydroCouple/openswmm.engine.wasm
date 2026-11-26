@@ -127,6 +127,22 @@ Node's `fs` and the browser's storage are not visible to the engine.
 
 ## Threads
 
-The module is single threaded. `capabilities(mod).threads` reports one logical CPU, and engine
-features that run in parallel natively run serially here. Calls are synchronous: a JavaScript
-callback the engine calls (progress, step, warning) runs inside the engine call that triggered it.
+The published module is single threaded. `capabilities(mod).threads` reports one logical CPU and
+`omp_available: false`, and engine features that run in parallel natively run serially here.
+
+A build configured with `-DOPENSWMM_WASM_THREADS=ON` ({doc}`../development/building`) runs the
+engine's OpenMP loops on WebAssembly threads: a pool of workers, one per logical core, starts
+with the module, and `capabilities(mod).threads` reports `omp_available: true` and the core count
+in `logical_cpus` and `omp_max_threads`. It needs `SharedArrayBuffer`:
+
+- In a browser, only a cross-origin-isolated page has it: the page must be served with
+  `Cross-Origin-Opener-Policy: same-origin` and `Cross-Origin-Embedder-Policy: require-corp`,
+  which make `crossOriginIsolated` true.
+- In Node.js it needs Node 22 or later. The pool is sized from `navigator.hardwareConcurrency`,
+  which Node 20 does not define, so the module fails to load there.
+
+The module exports `ENV`, so engine and OpenMP environment variables can be set from a `preRun`
+hook before the engine starts.
+
+Calls are synchronous in either build: a JavaScript callback the engine calls (progress, step,
+warning) runs inside the engine call that triggered it.

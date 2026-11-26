@@ -62,9 +62,11 @@ manual.
 
 ## What it does not do
 
-- It is single threaded: one WebAssembly instance, no worker pool. `capabilities(mod)` reports one
-  logical CPU.
-- HydroCouple component libraries cannot be loaded, and the GPU plugin is not part of the build.
+- The published build is single threaded: one WebAssembly instance, no worker pool, and
+  `capabilities(mod)` reports one logical CPU. Threads and the WebGPU 2D marcher are build options
+  ({doc}`development/building`).
+- HydroCouple component libraries cannot be loaded, and the native GPU plugin is not part of the
+  build.
   The material split peer and the split packet codec raise `PluginError`.
 - The package is not on the public npm registry yet. Releases are on
   [GitHub Releases](https://github.com/HydroCouple/openswmm.engine.wasm/releases); see

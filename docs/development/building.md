@@ -36,6 +36,16 @@ the first configure of a build directory. Options:
 | `OPENSWMM_WASM_2D` | `ON` | The 2D surface module; `OFF` saves about 0.6 MB |
 | `OPENSWMM_WASM_GEOPACKAGE` | `ON` | GeoPackage models, with SQLite compiled in |
 | `OPENSWMM_WASM_HDF5` | `ON` | The 2D results file, `.h5` models and HDF5 checkpoints (about 3.3 MB) |
+| `OPENSWMM_WASM_THREADS` | `OFF` | WebAssembly threads with Emscripten's OpenMP runtime: the engine's parallel loops run on a pool of workers, one per logical core ([threads](../guide/concepts.md#threads)) |
+| `OPENSWMM_WASM_WEBGPU` | `OFF` | The WebGPU 2D marcher, chosen per model with `[2D_OPTIONS] BACKEND WEBGPU` ([the WebGPU marcher](../guide/surface-2d.md#the-webgpu-marcher)); needs `OPENSWMM_WASM_THREADS` and `OPENSWMM_WASM_2D` |
+
+The published package is the default build. The threaded and WebGPU builds write the same two
+files to `dist/`, replacing the default build's:
+
+```bash
+emcmake cmake -B build-threads -DCMAKE_BUILD_TYPE=Release -DOPENSWMM_WASM_THREADS=ON -DOPENSWMM_WASM_WEBGPU=ON
+cmake --build build-threads --parallel
+```
 
 The module is linked as an ES module factory (`-sMODULARIZE -sEXPORT_ES6`, named
 `createOpenSwmmModule`) for the web, workers and Node.js, with WebAssembly exceptions, memory

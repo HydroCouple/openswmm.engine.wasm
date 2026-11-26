@@ -684,8 +684,11 @@ zlib or szip, so files are written uncompressed and native builds can read
 them. Reopen an `.h5` model by naming its input plugin:
 `solver.open(path, rpt, out, "org.hydrocouple.openswmm.plugins.hdf5")`
 (without it the built-in `.inp` reader is used). `-DOPENSWMM_WASM_HDF5=OFF` leaves
-HDF5 out (`OUTPUT_FILE` is then ignored with a warning). The GPU plugin is not
-part of the WASM build.
+HDF5 out (`OUTPUT_FILE` is then ignored with a warning). The native GPU plugin is
+not part of the WASM build. `-DOPENSWMM_WASM_THREADS=ON` builds a threaded module
+(WebAssembly threads and OpenMP, for cross-origin-isolated pages and Node 22+), and
+`-DOPENSWMM_WASM_WEBGPU=ON` adds the WebGPU 2D marcher to it, chosen per model with
+`[2D_OPTIONS] BACKEND WEBGPU`; see `docs/development/building.md`.
 
 The npm package then ships:
 
@@ -796,8 +799,10 @@ console.log(transport.boundaries); // independent snapshots
 `destroy()` is idempotent. Element views are invalidated on close/open;
 builder views are invalidated on structural edits or ownership transfer.
 Views obtained directly from numeric handles without an owner callback and all
-raw API handles remain caller-managed. This package is single-threaded WASM;
-the Python native-access lock is not a browser-worker sharing contract.
+raw API handles remain caller-managed. The published package is single-threaded
+WASM (a threads build runs the engine's OpenMP loops on workers, but the classes
+are still called from one thread); the Python native-access lock is not a
+browser-worker sharing contract.
 
 ### Checks when updating the engine
 
