@@ -56,6 +56,25 @@ members in snake_case.
 With the FULL_SWE momentum equation the surface reports no runtime capabilities
 (`solver.coupling.capabilities`) and refuses runtime sources.
 
+## The WebGPU marcher
+
+The published module runs the 2D surface on the CPU marcher. A build with
+`-DOPENSWMM_WASM_WEBGPU=ON` ({doc}`../development/building`), which also needs the threads build,
+carries the engine's WebGPU marcher. It is opt-in per model: `[2D_OPTIONS] BACKEND WEBGPU` selects
+it, the `OPENSWMM_2D_BACKEND` environment variable overrides the model's choice, and `AUTO` never
+chooses it. It runs in a browser that offers WebGPU (`navigator.gpu`) on a cross-origin-isolated
+page, and computes the dynamics in 32-bit floats where the CPU marcher uses 64-bit.
+
+When it cannot serve a model, the engine says why on standard error and runs the CPU marcher.
+`solver.surface2d.runStats.backend` names the marcher that ran:
+
+| Situation | `runStats.backend` |
+| --- | --- |
+| The WebGPU marcher runs the model | `webgpu` |
+| The model uses an option the WebGPU marcher does not implement | `cpu (explicit marcher; WebGPU not applicable)` |
+| No WebGPU device: Node.js, or a browser without WebGPU | `cpu (explicit marcher; no WebGPU device)` |
+| A build without `OPENSWMM_WASM_WEBGPU` | `cpu (explicit marcher; WebGPU not in this build)` |
+
 ## Builds without 2D
 
 `-DOPENSWMM_WASM_2D=OFF` builds a module without the 2D headers' functions; it is about 0.6 MB

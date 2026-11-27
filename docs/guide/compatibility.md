@@ -28,8 +28,8 @@ Python's `openswmm.engine.capabilities()`, so a service can publish either uncha
 
 | Feature | In this package |
 | --- | --- |
-| Threads | One thread; parallel engine features run serially |
-| GPU plugin | Not part of the build; the 2D solver runs on the CPU |
+| Threads | One thread in the published build; a threads build runs the engine's OpenMP loops on WebAssembly threads ([threads](concepts.md#threads)) |
+| GPU | The native GPU plugin is not part of the build; a WebGPU build carries the WebGPU 2D marcher, opt-in per model ([the WebGPU marcher](surface-2d.md#the-webgpu-marcher)) |
 | HydroCouple component libraries | Not loadable: `solver.processComponents.libraries` is empty and `addSearchPath` throws |
 | Material split peer, split packet codec | Raise `PluginError`; they need an engine built with HydroCouple |
 | HDF5 compression | None (like the native vcpkg build): files are written uncompressed and native builds read them |
