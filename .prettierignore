@@ -20,5 +20,7 @@ src/js/fields.generated.ts
 src/js/catalog.generated.ts
 # Native reference reports
 tests/fixtures/
+# Written by the CLA Assistant workflow
+.github/cla-signatures.json
 # Prose (legal documents and README are formatted by hand)
 *.md

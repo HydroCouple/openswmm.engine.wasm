@@ -12,6 +12,10 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ## [Unreleased]
 
+## [6.0.0-alpha.4]
+
+Built from the engine pinned at 4c286864, whose Python bindings are `6.0.0a4`.
+
 ### Added
 
 - **Restart records**, mirroring Python: `solver.restart` (`RestartSettings`,
