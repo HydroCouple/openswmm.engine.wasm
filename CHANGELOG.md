@@ -12,6 +12,25 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ## [Unreleased]
 
+### Changed
+
+- The engine pin moves from 4c286864 to fdef8d32 (still `6.0.0a4`). The C API
+  is unchanged, so the raw layer, fields and Python surface fixture are too;
+  the engine's CHANGELOG has the details of what a run sees:
+  - `[2D_NODE_COUPLING] H_EPS` sets the `WEIR_ORIFICE` law's regularization
+    head per node (0.02 m unless authored).
+  - A `WEIR_ORIFICE` coupling whose sewer head stands within that head of the
+    crest has its weir drowned at the crest; results change for such nodes.
+  - `[OPTIONS] RUNOFF_ODE_SOLVER EXACT` and
+    `[2D_OPTIONS] LAZY_SOURCE_LANDING REBUILD` are new and opt-in.
+    `[2D_OPTIONS] INFIL_MEMORY` is new; its default, `APPLIED`, changes 2D
+    infiltration results, and `OFFER` reproduces the earlier ones.
+  - Results change for the seven masonry conduit shapes and for the
+    closed-form soil column.
+  - Input is checked as SWMM 5 checks it (keyword prefixes, short node rows,
+    unknown types and pollutant units, a `REPORT_STEP` shorter than the
+    `ROUTING_STEP`), so some decks that ran before now stop with an error.
+
 ## [6.0.0-alpha.4]
 
 Built from the engine pinned at 4c286864, whose Python bindings are `6.0.0a4`.
