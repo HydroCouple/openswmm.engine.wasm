@@ -12,11 +12,28 @@ built from the pinned engine (`tools/check_version.py`): Python
 
 ## [Unreleased]
 
+## [6.0.0-alpha.4]
+
+Built from the engine pinned at fdef8d32, whose Python bindings are `6.0.0a4`.
+A first cut of this version, built from the 4c286864 pin, was on GitHub
+Releases and GitHub Packages for a few hours on 2026-11-28 and was withdrawn;
+this release replaces it.
+
+### Added
+
+- **Restart records**, mirroring Python: `solver.restart` (`RestartSettings`,
+  the `[RESTART]` section), `probeRestartFile()` and `inspectRestartFile()`
+  (`tests/wasm/restart_records.test.ts`).
+- `backendInfo()`, `solver.fvDeviceSupported()` and
+  `massBalance.routingReportContinuityError`, the routing continuity error as
+  the report prints it.
+
 ### Changed
 
-- The engine pin moves from 4c286864 to fdef8d32 (still `6.0.0a4`). The C API
-  is unchanged, so the raw layer, fields and Python surface fixture are too;
-  the engine's CHANGELOG has the details of what a run sees:
+- The engine pin moves from 4c286864, the first cut, to fdef8d32 (still
+  `6.0.0a4`). The C API is unchanged, so the raw layer, fields and Python
+  surface fixture are too; the engine's CHANGELOG has the details of what a
+  run sees:
   - `[2D_NODE_COUPLING] H_EPS` sets the `WEIR_ORIFICE` law's regularization
     head per node (0.02 m unless authored).
   - A `WEIR_ORIFICE` coupling whose sewer head stands within that head of the
@@ -31,19 +48,6 @@ built from the pinned engine (`tools/check_version.py`): Python
     unknown types and pollutant units, a `REPORT_STEP` shorter than the
     `ROUTING_STEP`), so some decks that ran before now stop with an error.
 
-## [6.0.0-alpha.4]
-
-Built from the engine pinned at 4c286864, whose Python bindings are `6.0.0a4`.
-
-### Added
-
-- **Restart records**, mirroring Python: `solver.restart` (`RestartSettings`,
-  the `[RESTART]` section), `probeRestartFile()` and `inspectRestartFile()`
-  (`tests/wasm/restart_records.test.ts`).
-- `backendInfo()`, `solver.fvDeviceSupported()` and
-  `massBalance.routingReportContinuityError`, the routing continuity error as
-  the report prints it.
-
 ### Fixed
 
 - A threads build (`-DOPENSWMM_WASM_THREADS=ON`) loads on Node 20. Its
@@ -53,7 +57,7 @@ Built from the engine pinned at 4c286864, whose Python bindings are `6.0.0a4`.
 - The generated raw layer and Python surface fixture are current for the
   pinned engine again; pins since 9965040 had moved the engine without
   regenerating them, which failed the "Generated binding drift" check.
-- With the engine pin at 4c286864, a WebGPU 2D run budgets a coupled node's
+- Since engine 4c286864, a WebGPU 2D run budgets a coupled node's
   1D-to-2D spill from the pond the node's depth holds, as the CPU marcher
   does. Before it, six Rubinato shaft rows were throttled on WebGPU only.
 
